@@ -24,7 +24,7 @@ bindtokey (f, n, k)
   register int c;
   char xname[NXNAME];
 
-  if ((s = eread ("Function: ", xname, NXNAME, EFAUTO, NULL)) != TRUE)
+  if ((s = ereadv ("Function: ", xname, NXNAME, EFAUTO)) != TRUE)
     return (s);
   if ((sp = symlookup (xname)) == NULL)
     {
@@ -77,7 +77,7 @@ extend (f, n, k)
   register int s;
   char xname[NXNAME];
 
-  if ((s = eread (": ", xname, NXNAME, EFNEW | EFAUTO, NULL)) != TRUE)
+  if ((s = ereadv (": ", xname, NXNAME, EFNEW | EFAUTO)) != TRUE)
     return (s);
   if ((sp = symlookup (xname)) != NULL)
     {
@@ -310,7 +310,7 @@ insertmacro (f, n, k)
   /* Read the name of the symbol to use, store the name in
    * a local array.
    */
-  if ((named = eread ("Macro name: ", xname, NXNAME, EFAUTO, NULL)) == ABORT)
+  if ((named = ereadv ("Macro name: ", xname, NXNAME, EFAUTO)) == ABORT)
     return (named);
   if (named == FALSE)		/* no name given?       */
     mp = &kbdm[0];		/* use current macro    */
