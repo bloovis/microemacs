@@ -16,7 +16,7 @@ CC	= @CC@
 LD	= @CC@
 DEBUG	= -g
 CFLAGS	= @CFLAGS@ @DEFS@ @DEFINES@ -I. -I@srcdir@ -Wall
-LDFLAGS = 
+LDFLAGS = @LDFLAGS@
 # $(DEBUG) -v
 LIBS	= -ltermcap
 
