@@ -1,4 +1,4 @@
-/* $Header: /home/bloovis/cvsroot/pe/random.c,v 1.1 2003-11-06 02:51:52 bloovis Exp $
+/* $Header: /home/bloovis/cvsroot/pe/random.c,v 1.2 2003-12-03 22:14:34 bloovis Exp $
  * Name:	MicroEMACS
  *		Assorted commands.
  * Version:	29
@@ -11,8 +11,11 @@
  * that they are all command processors.
  *
  * $Log: random.c,v $
- * Revision 1.1  2003-11-06 02:51:52  bloovis
- * Initial revision
+ * Revision 1.2  2003-12-03 22:14:34  bloovis
+ * (vmwareindent): New function to do VMware-style indenting.
+ *
+ * Revision 1.1.1.1  2003/11/06 02:51:52  bloovis
+ * Imported sources
  *
  * Revision 1.6  2002/01/23 22:36:08  malexander
  * (checkheap): Don't call heapcheck with bcc on Linux.
@@ -583,6 +586,41 @@ borlandindent (f, n, k)
     nicol += 4;
   else if (f && (n == 16))
     nicol = nicol < 4 ? 0 : nicol - 4;
+
+  /* Insert a newline followed by the correct number of
+     tabs and spaces to get the desired indentation.
+   */
+  return nlindent (nicol, i, f);
+}
+
+/*
+ * Similar to indent, but do it according to VMware coding standards.
+ * Insert a newline, then enough tabs and spaces to match the indentation
+ * of the previous line.  If the previous line ends with "{", or an argument
+ * of four (i.e. a single C-U) is specified, indent by three spaces. If an
+ * argument of 16 (i.e. two C-Us) is specified, reduce indentation by three
+ * spaces.  Otherwise retain the same indentation.
+ */
+int
+vmwareindent (f, n, k)
+{
+  int nicol, i;
+  int len = llength (curwp->w_dot.p);
+
+  /* Find indentation of current line.
+   */
+  nicol = currentindent (&i);
+
+  /* Look at the string following the whitespace in the
+   * current line to determine the indentation of the next line.
+   * If a single C-U argument was specified, or the previous line started
+   * with a curly brace, indent by three spaces.
+   * If two C-U arguments were specified, unindent by three spaces.
+   */
+  if ((len > 0 && testline (len - 1, "{")) || (f && (n != 16)))
+    nicol += 3;
+  else if (f && (n == 16))
+    nicol = nicol < 3 ? 0 : nicol - 3;
 
   /* Insert a newline followed by the correct number of
      tabs and spaces to get the desired indentation.
