@@ -1,4 +1,4 @@
-/* $Header: /home/bloovis/cvsroot/pe/def.h,v 1.1 2003-11-06 02:51:52 bloovis Exp $
+/* $Header: /home/bloovis/cvsroot/pe/def.h,v 1.2 2003-12-03 22:14:36 bloovis Exp $
  *
  * Name:	MicroEMACS
  *		Common header file.
@@ -15,8 +15,11 @@
  * the definition of CVMVAS or BACKUP.
  *
  * $Log: def.h,v $
- * Revision 1.1  2003-11-06 02:51:52  bloovis
- * Initial revision
+ * Revision 1.2  2003-12-03 22:14:36  bloovis
+ * (vmwareindent): Declare new function.
+ *
+ * Revision 1.1.1.1  2003/11/06 02:51:52  bloovis
+ * Imported sources
  *
  * Revision 1.11  2003/05/14 23:09:21  malexander
  * (mouse_event): Rename to mouseevent to avoid conflict with
@@ -724,6 +727,7 @@ int delwhite (int f, int n, int k);	/* Delete extra whitespace      */
 int indent (int f, int n, int k);	/* Insert CR-LF, then indent    */
 int gnuindent (int f, int n, int k);	/* Indent by GNU coding rules   */
 int borlandindent (int f, int n, int k);/* Indent by Borland rules	*/
+int vmwareindent (int f, int n, int k);	/* Indent by VMware rules	*/
 int forwdel (int f, int n, int k);	/* Forward delete               */
 int backdel (int f, int n, int k);	/* Backward delete              */
 int killline (int f, int n, int k);	/* Kill forward                 */
