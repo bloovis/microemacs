@@ -1,0 +1,64 @@
+dnl Autoconf configure script for MicroEMACS.
+dnl Process this file with autoconf to produce a configure script.
+
+AC_INIT(display.c)
+AC_PROG_CC
+AC_CANONICAL_SYSTEM
+AC_CONFIG_HEADER(config.h)
+AC_CHECK_HEADERS(unistd.h)
+
+EXTRA_OBJS=""
+case "${host}" in
+*hpux*)		DEFINES="$DEFINES -DHPUX"; ;;
+*linux*)	DEFINES="$DEFINES -DLINUX" ;;
+*solaris*)	DEFINES="$DEFINES -DSOLARIS"; EXTRA_OBJS=bcopy.o ;;
+*)		DEFINES="$DEFINES -DUNKNOWN" ;;
+esac
+echo host is ${host}
+
+dnl Hard-code the system and tty directories for now; eventually
+dnl we might have different ones depending on target platform.
+sysdir=sys/unix
+ttydir=tty/termcap
+
+AC_SUBST(sysdir)
+AC_SUBST(ttydir)
+AC_SUBST(DEFINES)
+AC_SUBST(EXTRA_OBJS)
+
+dnl Check if we can automatically build the dependency file.
+AC_CHECK_PROG(have_makedepend, makedepend, yes, no)
+
+dnl Make symbolic links for files in sys/...
+AC_LINK_FILES($sysdir/sysdef.h, sysdef.h)
+AC_LINK_FILES($sysdir/bcopy.s, bcopy.s)
+AC_LINK_FILES($sysdir/fileio.c, fileio.c)
+AC_LINK_FILES($sysdir/spawn.c, spawn.c)
+AC_LINK_FILES($sysdir/ttyio.c, ttyio.c)
+
+dnl Make symbolic links for files in tty/...
+AC_LINK_FILES($ttydir/ttydef.h, ttydef.h)
+AC_LINK_FILES($ttydir/tty.c, tty.c)
+AC_LINK_FILES($ttydir/ttykbd.c, ttykbd.c)
+
+AC_OUTPUT(Makefile, [
+dnl Create timestamp file so that the first invocation of make
+dnl won't reconfigure.
+echo timestamp > stamp-h
+dnl Create makefile dependencies
+if test $have_makedepend = yes ; then
+    tmp=tmp.mak
+    rm -f $tmp
+    touch $tmp
+    makedepend -w4 -I$srcdir -I. -f$tmp $srcdir/*.c
+    sed -e "s#^$srcdir/##" $tmp | egrep -v /usr >>Makefile
+    rm -f $tmp $tmp.bak
+else
+    cat $srcdir/depend.mak >>Makefile
+fi
+],
+[
+srcdir=$srcdir
+have_makedepend=$have_makedepend
+]
+)

@@ -1,0 +1,103 @@
+# makefile.in - makefile input file for MicroEMACS.
+
+# The top-level source directory.
+
+srcdir	= @srcdir@
+VPATH	= @srcdir@
+
+# Directories containing system- and tty-specific source.
+
+SYS	= @sysdir@
+TTY	= @ttydir@
+
+# Compilers, linkers, and their flags.
+
+CC	= @CC@
+LD	= @CC@
+DEBUG	= -g
+CFLAGS	= @CFLAGS@ @DEFS@ @DEFINES@ -I. -I@srcdir@ -Wall
+LDFLAGS = 
+# $(DEBUG) -v
+LIBS	= -ltermcap
+
+# Objects comprising MicroEMACS.
+
+OBJ :=	@EXTRA_OBJS@ \
+	basic.o \
+	buffer.o \
+	cinfo.o \
+	cscope.o \
+	display.o \
+	echo.o \
+	extend.o \
+	file.o \
+	kbd.o \
+	line.o \
+	main.o \
+	paragraph.o \
+	random.o \
+	regexp.o \
+	region.o \
+	ring.o \
+	search.o \
+	symbol.o \
+	version.o \
+	window.o \
+	word.o \
+	fileio.o \
+	spawn.o \
+	tags.o \
+	ttyio.o \
+	tty.o \
+	ttykbd.o
+
+# How to compile a module.
+
+.c.o:
+	$(CC) -c $(CFLAGS) $<
+
+# How to link MicroEMACS.
+
+pe:		$(OBJ)
+	$(LD) -o pe $(LDFLAGS) $(OBJ) $(LIBS)
+#	strip pe
+
+# Test programs
+
+cstest:	cscope.o
+	$(LD) -o cstest cscope.o
+
+# Miscellaneous rules.
+
+install:
+	cp -p pe /usr/local/bin
+	strip /usr/local/bin/pe
+
+clean:
+	-rm *.o pe
+
+tar:
+	cd $(srcdir); \
+	tar cvfz pe.tgz *.[chs] *.in depend.mak RCS $(SYS)/*.[chs] \
+	   		    $(SYS)/RCS $(TTY)/*.[chs] $(TTY)/RCS 
+
+newtty:
+	-rm tty.c tty.o ttykbd.c ttykbd.o ttydef.h pe
+
+# Rebuild things if config files change
+
+${srcdir}/configure: configure.in
+	cd ${srcdir} && autoconf
+
+config.h: stamp-h
+stamp-h: config.h.in config.status
+	./config.status
+
+Makefile: Makefile.in config.status
+	./config.status
+
+config.status: configure
+	./config.status --recheck
+
+# Source dependencies will be automatically appended here by configure.
+

@@ -1,0 +1,80 @@
+Implement ring of recently visited tag locations.
+
+From EMACS documentation:
+
+Finding a Tag
+-------------
+
+   The most important thing that a tags table enables you to do is to
+find the definition of a specific tag.
+
+`M-. TAG <RET>'
+     Find first definition of TAG (`find-tag').
+
+`C-u M-.'
+     Find next alternate definition of last tag specified.
+
+`C-u - M-.'
+     Go back to previous tag found.
+
+`C-M-. PATTERN <RET>'
+     Find a tag whose name matches PATTERN (`find-tag-regexp').
+
+`C-u C-M-.'
+     Find the next tag whose name matches the last pattern used.
+
+`C-x 4 . TAG <RET>'
+     Find first definition of TAG, but display it in another window
+     (`find-tag-other-window').
+
+`C-x 5 . TAG <RET>'
+     Find first definition of TAG, and create a new frame to select the
+     buffer (`find-tag-other-frame').
+
+`M-*'
+     Pop back to where you previously invoked `M-.' and friends.
+
+   `M-.' (`find-tag') is the command to find the definition of a
+specified tag.  It searches through the tags table for that tag, as a
+string, and then uses the tags table info to determine the file that the
+definition is in and the approximate character position in the file of
+the definition.  Then `find-tag' visits that file, moves point to the
+approximate character position, and searches ever-increasing distances
+away to find the tag definition.
+
+   If an empty argument is given (just type <RET>), the sexp in the
+buffer before or around point is used as the TAG argument.  *Note
+Lists::, for info on sexps.
+
+   You don't need to give `M-.' the full name of the tag; a part will
+do.  This is because `M-.' finds tags in the table which contain TAG as
+a substring.  However, it prefers an exact match to a substring match.
+To find other tags that match the same substring, give `find-tag' a
+numeric argument, as in `C-u M-.'; this does not read a tag name, but
+continues searching the tags table's text for another tag containing
+the same substring last used.  If you have a real <META> key, `M-0 M-.'
+is an easier alternative to `C-u M-.'.
+
+   Like most commands that can switch buffers, `find-tag' has a variant
+that displays the new buffer in another window, and one that makes a
+new frame for it.  The former is `C-x 4 .', which invokes the command
+`find-tag-other-window'.  The latter is `C-x 5 .', which invokes
+`find-tag-other-frame'.
+
+   To move back to places you've found tags recently, use `C-u - M-.';
+more generally, `M-.' with a negative numeric argument.  This command
+can take you to another buffer.  `C-x 4 .' with a negative argument
+finds the previous tag location in another window.
+
+   As well as going back to places you've found tags recently, you can
+go back to places _from where_ you found them.  Use `M-*', which
+invokes the command `pop-tag-mark', for this.  Typically you would find
+and study the definition of something with `M-.' and then return to
+where you were with `M-*'.
+
+   Both `C-u - M-.' and `M-*' allow you to retrace your steps to a
+depth determined by the variable `find-tag-marker-ring-length'.
+
+   The command `C-M-.' (`find-tag-regexp') visits the tags that match a
+specified regular expression.  It is just like `M-.' except that it
+does regexp matching instead of substring matching.

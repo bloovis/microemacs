@@ -1,0 +1,24 @@
+This is a very tiny version of MicroEMACS that is little changed from
+the version originally posted by Dave Conroy to USENET in 1986.  It
+predates the very popular Daniel Lawrence version of MicroEMACS, which
+is also much larger.
+
+I have added a few features over the years, most recently etags and
+cscope support, and ported it to numerous operating systems.
+Currently this source tree supports only Unix and NT.  I seem to have
+lost the source for the DOS and OS/2 versions, but they seem unlikely
+to be useful in the future.
+
+To build on Unix:
+
+  mkdir obj
+  cd obj
+  ../configure
+  make
+
+To build on NT, you must have BCB 5 installed and have Borland make
+in your path.  Then do the following:
+
+  cd nt
+  edit makefile and change the line that defines the BCB directory
+  make
