@@ -1,4 +1,4 @@
-/* $Header: /home/bloovis/cvsroot/pe/symbol.c,v 1.2 2003-12-03 22:14:35 bloovis Exp $
+/* $Header: /home/bloovis/cvsroot/pe/symbol.c,v 1.3 2004-04-20 15:18:18 bloovis Exp $
  *
  * Name:	MicroEMACS
  *		Symbol table stuff.
@@ -10,7 +10,11 @@
  * keymap has been moved to a better place.
  *
  * $Log: symbol.c,v $
- * Revision 1.2  2003-12-03 22:14:35  bloovis
+ * Revision 1.3  2004-04-20 15:18:18  bloovis
+ * (namemacro):  Use ereadv instead of passing NULL arg list
+ * pointer to eread.
+ *
+ * Revision 1.2  2003/12/03 22:14:35  bloovis
  * (USE_VMWAREINDENT): New macro to control whether to use
  * VMware-style indenting by default, initially enabled.
  * (USE_GNUINDENT): Disable.
@@ -424,7 +428,7 @@ namemacro (f, n, k)
   /* Read the name of the symbol to use, store the name in
    * a local array.
    */
-  if ((s = eread ("Macro name: ", xname, NXNAME, EFAUTO, NULL)) != TRUE)
+  if ((s = ereadv ("Macro name: ", xname, NXNAME, EFAUTO)) != TRUE)
     return (s);
 
   /* Compute the size of the macro, then allocate space
