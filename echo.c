@@ -1,4 +1,4 @@
-/* $Header: /home/bloovis/cvsroot/pe/echo.c,v 1.1 2003-11-06 02:51:52 bloovis Exp $
+/* $Header: /home/bloovis/cvsroot/pe/echo.c,v 1.2 2004-04-20 15:18:19 bloovis Exp $
  *
  * Name:	MicroEMACS
  *		Echo line reading and writing.
@@ -10,8 +10,13 @@
  * known universe.
  *
  * $Log: echo.c,v $
- * Revision 1.1  2003-11-06 02:51:52  bloovis
- * Initial revision
+ * Revision 1.2  2004-04-20 15:18:19  bloovis
+ * (egetfname): Use ereadv instead of passing NULL arg list
+ * pointer to eread; this is necessary for compiling on x86_64.
+ * (ereadv): New wrapper for eread that takes a variable number of args.
+ *
+ * Revision 1.1.1.1  2003/11/06 02:51:52  bloovis
+ * Imported sources
  *
  * Revision 1.3  2000/09/29 00:19:38  malexander
  * Numerous changes to eliminate warnings and add prototypes.
@@ -361,7 +366,7 @@ ereplyf (const char *fp, char *buf, int nbuf, int flag, ...)
 int
 egetfname (const char *fp, char *buf, int nbuf)
 {
-  return (eread (fp, buf, nbuf, EFNEW | EFCR | EFFILE, (va_list) NULL));
+  return ereadv (fp, buf, nbuf, EFNEW | EFCR | EFFILE);
 }
 
 /*
@@ -701,6 +706,23 @@ done:
   if (buf[0] == '\0')
     return (FALSE);
   return (TRUE);
+}
+
+/*
+ * An interface to eread that allows it to be called with
+ * a variable number of arguments after flag (to be formatted using
+ * the format string fp)
+ */
+int
+ereadv (const char *fp, char *buf, int nbuf, int flag, ...)
+{
+  va_list ap;
+  int ret;
+
+  va_start (ap, flag);
+  ret = eread (fp, buf, nbuf, flag, ap);
+  va_end (ap);
+  return ret;
 }
 
 /*
