@@ -1,6 +1,7 @@
 #include "def.h"
 #include <unistd.h>
 #include <fcntl.h>
+#include <signal.h>
 
 /* Uncomment this line to build test program. */
 /* #define TEST 1 */
@@ -10,6 +11,7 @@
  */
 static FILE *cscope_input;
 static FILE *cscope_output;
+static int saw_sigpipe;
 
 /*
  * Ignore the prompt characters from cscope.
@@ -27,6 +29,16 @@ ignore_prompt (void)
 }
 
 /*
+ * Signal handler for SIGPIPE, which can occur if cscope terminates
+ * abnormally (e.g. if the current directory has no source files).
+ */
+static void
+sigpipe_handler (int signum)
+{
+   saw_sigpipe = 1;
+}
+
+/*
  * Open a pipe to the cscope program, return TRUE if success.
  */
 static int
@@ -35,6 +47,7 @@ open_cscope (void)
   int in_pipe[2];
   int out_pipe[2];
 
+  saw_sigpipe = 0;
   if (pipe (in_pipe) != 0)
     {
 #if TEST
@@ -91,6 +104,10 @@ open_cscope (void)
       /* Close unneeded pipe handles. */
       close (out_pipe[0]);
       close (in_pipe[1]);
+
+      /* Set up a signal handler for SIGPIPE to prevent ourselves
+         from exiting should cscope bomb for some reason. */
+      signal (SIGPIPE, sigpipe_handler);
     }
 
   return TRUE;
