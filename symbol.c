@@ -1,4 +1,4 @@
-/* $Header: /home/bloovis/cvsroot/pe/symbol.c,v 1.1 2003-11-06 02:51:52 bloovis Exp $
+/* $Header: /home/bloovis/cvsroot/pe/symbol.c,v 1.2 2003-12-03 22:14:35 bloovis Exp $
  *
  * Name:	MicroEMACS
  *		Symbol table stuff.
@@ -10,8 +10,14 @@
  * keymap has been moved to a better place.
  *
  * $Log: symbol.c,v $
- * Revision 1.1  2003-11-06 02:51:52  bloovis
- * Initial revision
+ * Revision 1.2  2003-12-03 22:14:35  bloovis
+ * (USE_VMWAREINDENT): New macro to control whether to use
+ * VMware-style indenting by default, initially enabled.
+ * (USE_GNUINDENT): Disable.
+ * (key): If USE_VMWAREINDENT enabled, bind C-J to vmwareindent.
+ *
+ * Revision 1.1.1.1  2003/11/06 02:51:52  bloovis
+ * Imported sources
  *
  * Revision 1.8  2003/05/14 23:09:19  malexander
  * (mouse_event): Rename to mouseevent to avoid conflict with
@@ -61,7 +67,8 @@
  */
 #include	"def.h"
 
-#define USE_GNUINDENT		/* Define to use gnu indent	*/
+#define USE_VMWAREINDENT	/* Define to use VMware indent	*/
+/* #define USE_GNUINDENT */	/* Define to use gnu indent	*/
 /* #define USE_BORLANDINDENT */	/* Define to use Borland indent	*/
 
 #define	DIRLIST	0		/* Disarmed!                    */
@@ -105,14 +112,22 @@ KEY key[] = {
 #if defined(USE_BORLANDINDENT)
   {KCTRL | 'J',		borlandindent,	"borland-indent"},
   {-1,			gnuindent,	"gnu-indent"},
+  {-1,			vmwareindent,	"vmware-indent"},
   {-1,			indent,		"ins-nl-and-indent"},
 #elif defined(USE_GNUINDENT)
   {-1,			borlandindent,	"borland-indent"},
   {KCTRL | 'J',		gnuindent,	"gnu-indent"},
+  {-1,			vmwareindent,	"vmware-indent"},
+  {-1,			indent,		"ins-nl-and-indent"},
+#elif defined(USE_VMWAREINDENT)
+  {-1,			borlandindent,	"borland-indent"},
+  {-1,			gnuindent,	"gnu-indent"},
+  {KCTRL | 'J',		vmwareindent,	"vmware-indent"},
   {-1,			indent,		"ins-nl-and-indent"},
 #else
   {-1,			borlandindent,	"borland-indent"},
   {-1,			gnuindent,	"gnu-indent"},
+  {-1,			vmwareindent,	"vmware-indent"},
   {KCTRL | 'J',		indent,		"ins-nl-and-indent"},
 #endif
   {KCTRL | 'K',		killline,	"kill-line"},
