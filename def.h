@@ -1,4 +1,4 @@
-/* $Header: /home/bloovis/cvsroot/pe/def.h,v 1.2 2003-12-03 22:14:36 bloovis Exp $
+/* $Header: /home/bloovis/cvsroot/pe/def.h,v 1.3 2004-04-20 15:18:22 bloovis Exp $
  *
  * Name:	MicroEMACS
  *		Common header file.
@@ -15,7 +15,10 @@
  * the definition of CVMVAS or BACKUP.
  *
  * $Log: def.h,v $
- * Revision 1.2  2003-12-03 22:14:36  bloovis
+ * Revision 1.3  2004-04-20 15:18:22  bloovis
+ * (ereadv): Declare new function.
+ *
+ * Revision 1.2  2003/12/03 22:14:36  bloovis
  * (vmwareindent): Declare new function.
  *
  * Revision 1.1.1.1  2003/11/06 02:51:52  bloovis
@@ -610,6 +613,7 @@ void eprintf (const char *, ...);
 int egetfname (const char *fp, char *buf, int nbuf);
 					/* Read filename from echo line	*/
 int eread (const char *fp, char *buf, int nbuf, int flag, va_list ap);
+int ereadv (const char *fp, char *buf, int nbuf, int flag, ...);
 					/* Read input from echo line.	*/
 int eyesno (const char *sp);		/* Ask "yes" or "no" question.	*/
 void eputc (int c);			/* Put a character to screen.	*/
