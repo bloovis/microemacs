@@ -21,6 +21,7 @@
 #endif
 
 #include	<errno.h>
+#include	<unistd.h>
 #include	<sys/ioctl.h>
 #ifdef sun
 #include	<sys/filio.h>
@@ -175,7 +176,7 @@ ttclose (void)
 int
 ttstat (void)
 {
-  long n;
+  int n;
 
   if (ioctl (0, FIONREAD, &n) < 0)
     return (FALSE);
