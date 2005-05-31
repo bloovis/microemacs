@@ -1,4 +1,4 @@
-/* $Header: /home/bloovis/cvsroot/pe/main.c,v 1.1 2003-11-06 02:51:52 bloovis Exp $
+/* $Header: /home/bloovis/cvsroot/pe/main.c,v 1.2 2005-05-31 18:18:22 bloovis Exp $
  *
  * Name:	MicroEMACS
  *		Mainline, macro commands.
@@ -7,8 +7,11 @@
  *		decvax!decwrl!dec-rhea!dec-rex!conroy
  *
  * $Log: main.c,v $
- * Revision 1.1  2003-11-06 02:51:52  bloovis
- * Initial revision
+ * Revision 1.2  2005-05-31 18:18:22  bloovis
+ * (bufinit): w_savep was uninitialized; clear it.
+ *
+ * Revision 1.1.1.1  2003/11/06 02:51:52  bloovis
+ * Imported sources
  *
  * Revision 1.7  2002/01/23 22:36:02  malexander
  * (mouse): New variable for mouse support, set by -m option.
@@ -329,6 +332,7 @@ bufinit (const char *fname)
       wp->w_force = 0;
       wp->w_flag = WFMODE | WFHARD;	/* Full.                */
       wp->w_leftcol = 0;	/* Display at left edge */
+      wp->w_savep = NULL;
     }
 }
 
