@@ -305,6 +305,7 @@ splitwind (int f, int n, int k)
   wp->w_linep = lp;		/* if necessary.        */
   curwp->w_flag |= WFMODE | WFHARD;
   wp->w_flag |= WFMODE | WFHARD;
+  wp->w_savep = NULL;
   return (TRUE);
 }
 
