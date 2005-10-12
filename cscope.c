@@ -220,7 +220,7 @@ prepcscope (char field, const char *string)
 	  return FALSE;
 	}
 
-      /* If the search string is the same as the name of he function where this
+      /* If the search string is the same as the name of the function where this
        * reference was found, this must be the definition of the function,
        * so put the tag at the head of the list instead of the end.
        */
