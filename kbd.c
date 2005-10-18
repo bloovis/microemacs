@@ -1,4 +1,4 @@
-/* $Header: /home/bloovis/cvsroot/pe/kbd.c,v 1.1 2003-11-06 02:51:52 bloovis Exp $
+/* $Header: /home/bloovis/cvsroot/pe/kbd.c,v 1.2 2005-10-18 02:18:03 bloovis Exp $
  *
  * Name:	MicroEMACS
  *		Terminal independent keyboard handling.
@@ -6,8 +6,11 @@
  * Modified by:	Mark Alexander (amdahl!drivax!alexande)
  *
  * $Log: kbd.c,v $
- * Revision 1.1  2003-11-06 02:51:52  bloovis
- * Initial revision
+ * Revision 1.2  2005-10-18 02:18:03  bloovis
+ * Rename some things to avoid conflict with ncurses.
+ *
+ * Revision 1.1.1.1  2003/11/06 02:51:52  bloovis
+ * Imported sources
  *
  * Revision 1.4  2000/09/29 00:19:38  malexander
  * Numerous changes to eliminate warnings and add prototypes.
@@ -151,7 +154,7 @@ ungetinp (int c)
  * more. This makes adding keys easier.
  */
 void
-keyname (char *cp, int k)
+ekeyname (char *cp, int k)
 {
   register char *np = "???";
   char nbuf[3];
@@ -238,7 +241,7 @@ exitprofile ()
     return;			/* do nothing           */
   ffpclose ();			/* close profile        */
   inprof = FALSE;		/* turn off profile flag */
-  noecho = FALSE;		/* enable echo line     */
+  enoecho = FALSE;		/* enable echo line     */
 }
 
 
@@ -599,7 +602,7 @@ readprofile (f, n, k)
       return (FALSE);
     }
   inprof = TRUE;
-  noecho = TRUE;		/* disable echo line    */
+  enoecho = TRUE;		/* disable echo line    */
   pindex = plength = 0;		/* force a getptoken()  */
   return (TRUE);
 }

@@ -107,7 +107,7 @@ lfree (lp)
      register LINE *lp;
 {
   register BUFFER *bp;
-  register WINDOW *wp;
+  register EWINDOW *wp;
 
   ALLWIND (wp)
   {
@@ -161,7 +161,7 @@ lfree (lp)
 void
 lchange (int flag)
 {
-  register WINDOW *wp;
+  register EWINDOW *wp;
 
   if ((curbp->b_flag & BFCHG) == 0)
     {				/* First change, so     */
@@ -212,7 +212,7 @@ adjustforinsert (const POS *oldpos, LINE *newlp, int nchars, POS *pos)
 int
 linsert (int n, int c, char *s)
 {
-  register WINDOW *wp;
+  register EWINDOW *wp;
   register LINE *lp2;
   register LINE *lp3;
   POS dot;
@@ -314,7 +314,7 @@ lnewline (void)
   register LINE *lp1;
   register LINE *lp2;
   register int doto;
-  register WINDOW *wp;
+  register EWINDOW *wp;
 
   if (checkreadonly () == FALSE)
     return FALSE;
@@ -380,7 +380,7 @@ ldelete (int n, int kflag)
   register char *cp2;
   POS dot;
   register int chunk;
-  register WINDOW *wp;
+  register EWINDOW *wp;
 
   if (n < 0)
     {
@@ -457,7 +457,7 @@ ldelnewline (void)
   register LINE *lp1;
   register LINE *lp2;
   register LINE *lp3;
-  register WINDOW *wp;
+  register EWINDOW *wp;
 
   lp1 = curwp->w_dot.p;
   lp2 = lp1->l_fp;

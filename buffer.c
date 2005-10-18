@@ -1,4 +1,4 @@
-/* $Header: /home/bloovis/cvsroot/pe/buffer.c,v 1.1 2003-11-06 02:51:52 bloovis Exp $
+/* $Header: /home/bloovis/cvsroot/pe/buffer.c,v 1.2 2005-10-18 02:18:07 bloovis Exp $
  *
  * Name:	MicroEMACS
  *		Buffer handling.
@@ -9,8 +9,11 @@
  *		drivax!alexande
  *
  * $Log: buffer.c,v $
- * Revision 1.1  2003-11-06 02:51:52  bloovis
- * Initial revision
+ * Revision 1.2  2005-10-18 02:18:07  bloovis
+ * Rename some things to avoid conflict with ncurses.
+ *
+ * Revision 1.1.1.1  2003/11/06 02:51:52  bloovis
+ * Imported sources
  *
  * Revision 1.7  2002/06/01 01:36:36  malexander
  * (makelist): Temp buffer wasn't big enough for ASCII
@@ -139,7 +142,7 @@ prevbuffer (f, n, k)
 static int
 usebuf (BUFFER *bp)
 {
-  register WINDOW *wp;
+  register EWINDOW *wp;
 
   addwind (curwp, -1);
   strcpy (oldbufn, curbp->b_bname);	/* save current name    */
@@ -260,7 +263,7 @@ listbuffers (f, n, k)
 int
 popblist (void)
 {
-  register WINDOW *wp;
+  register EWINDOW *wp;
 
   if (blistp->b_nwnd == 0)
     {				/* Not on screen yet.   */
@@ -521,7 +524,7 @@ int
 bclear (BUFFER *bp)
 {
   register LINE *lp, *nextlp;
-  register WINDOW *wp;
+  register EWINDOW *wp;
   register int s;
 
   if ((bp->b_flag & BFCHG) != 0	/* Changed.             */
@@ -564,7 +567,7 @@ bclear (BUFFER *bp)
  */
 
 void
-addwind (WINDOW *wp, int n /* either +1 or -1 */)
+addwind (EWINDOW *wp, int n /* either +1 or -1 */)
 {
   register BUFFER *bp;
 

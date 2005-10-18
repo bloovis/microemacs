@@ -1,4 +1,4 @@
-/* $Header: /home/bloovis/cvsroot/pe/main.c,v 1.2 2005-05-31 18:18:22 bloovis Exp $
+/* $Header: /home/bloovis/cvsroot/pe/main.c,v 1.3 2005-10-18 02:18:05 bloovis Exp $
  *
  * Name:	MicroEMACS
  *		Mainline, macro commands.
@@ -7,7 +7,10 @@
  *		decvax!decwrl!dec-rhea!dec-rex!conroy
  *
  * $Log: main.c,v $
- * Revision 1.2  2005-05-31 18:18:22  bloovis
+ * Revision 1.3  2005-10-18 02:18:05  bloovis
+ * Rename some things to avoid conflict with ncurses.
+ *
+ * Revision 1.2  2005/05/31 18:18:22  bloovis
  * (bufinit): w_savep was uninitialized; clear it.
  *
  * Revision 1.1.1.1  2003/11/06 02:51:52  bloovis
@@ -52,9 +55,9 @@ int thisflag;			/* Flags, this command          */
 int lastflag;			/* Flags, last command          */
 int curgoal;			/* Goal column                  */
 BUFFER *curbp = 0;		/* Current buffer               */
-WINDOW *curwp = 0;		/* Current window               */
+EWINDOW *curwp = 0;		/* Current window               */
 BUFFER *bheadp;			/* BUFFER listhead              */
-WINDOW *wheadp;			/* WINDOW listhead              */
+EWINDOW *wheadp;			/* EWINDOW listhead              */
 BUFFER *blistp;			/* Buffer list BUFFER           */
 short kbdm[NKBDM] = { KCTLX | ')' };	/* Macro                        */
 short *kbdmip;			/* Input  for above             */
@@ -187,7 +190,7 @@ main (int argc, char *argv[])
     }
   lastflag = 0;			/* Fake last flags.     */
 
-  inprof = noecho = (ffpopen (proptr) == FIOSUC);
+  inprof = enoecho = (ffpopen (proptr) == FIOSUC);
   /* open default profile */
   if (!inprof && proptr != NULLPTR)	/* -p option failed?    */
     eprintf ("Unable to open profile %s", proptr);
@@ -290,7 +293,7 @@ bufinit (const char *fname)
   char bname[NBUFN];		/* Buffer name          */
   char *mod;			/* Ptr to name modifier */
   register BUFFER *bp;
-  register WINDOW *wp;
+  register EWINDOW *wp;
 
   makename (bname, fname);	/* Get buffer name      */
   if (bfind (bname, FALSE))	/* if names conflict    */
@@ -305,7 +308,7 @@ bufinit (const char *fname)
   curbp = bp;			/* Current buffer       */
   if (++nbuf <= 2)		/* If 2 or less buffers */
     {				/* Get a new window     */
-      if ((wp = (WINDOW *) malloc (sizeof (WINDOW))) == NULL)
+      if ((wp = (EWINDOW *) malloc (sizeof (EWINDOW))) == NULL)
 	abort ();		/* Out of memory        */
       curwp = wp;		/* Current window       */
       if (nbuf == 1)		/* First window?        */

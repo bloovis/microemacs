@@ -1,4 +1,4 @@
-/* $Header: /home/bloovis/cvsroot/pe/search.c,v 1.1 2003-11-06 02:51:52 bloovis Exp $
+/* $Header: /home/bloovis/cvsroot/pe/search.c,v 1.2 2005-10-18 02:18:06 bloovis Exp $
  *
  * Name:	MicroEMACS
  * 		Search commands.
@@ -17,8 +17,11 @@
  * and the query-replace code, is by Rich Ellison.
  *
  * $Log: search.c,v $
- * Revision 1.1  2003-11-06 02:51:52  bloovis
- * Initial revision
+ * Revision 1.2  2005-10-18 02:18:06  bloovis
+ * Rename some things to avoid conflict with ncurses.
+ *
+ * Revision 1.1.1.1  2003/11/06 02:51:52  bloovis
+ * Imported sources
  *
  * Revision 1.4  2001/02/28 21:07:40  malexander
  * * def.h (POS): New structure for holding line position, which replaces
@@ -841,7 +844,7 @@ queryrepl (int f, int n, int k)
    * pain when trying to return to the non-existant line.
    *
    * possible fixes:
-   * 1) put a single, relocated marker in the WINDOW structure, handled
+   * 1) put a single, relocated marker in the EWINDOW structure, handled
    *    like mark.  The problem now becomes a what if two are needed...
    * 2) link markers into a list that gets updated (auto structures for
    *    the nodes)

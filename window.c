@@ -44,9 +44,9 @@ reposition (int f, int n, int k)
  * everything will get fixed!
  */
 int
-refresh (int f, int n, int k)
+erefresh (int f, int n, int k)
 {
-  register WINDOW *wp;
+  register EWINDOW *wp;
   register int oldnrow;
   register int oldncol;
 
@@ -84,7 +84,7 @@ refresh (int f, int n, int k)
 int
 nextwind (int f, int n, int k)
 {
-  register WINDOW *wp;
+  register EWINDOW *wp;
 
   if ((wp = curwp->w_wndp) == NULL)
     wp = wheadp;
@@ -103,8 +103,8 @@ nextwind (int f, int n, int k)
 int
 prevwind (int f, int n, int k)
 {
-  register WINDOW *wp1;
-  register WINDOW *wp2;
+  register EWINDOW *wp1;
+  register EWINDOW *wp2;
 
   wp1 = wheadp;
   wp2 = curwp;
@@ -191,7 +191,7 @@ mvupwind (int f, int n, int k)
 int
 onlywind (int f, int n, int k)
 {
-  register WINDOW *wp;
+  register EWINDOW *wp;
   register LINE *lp;
   register int i;
 
@@ -233,22 +233,22 @@ onlywind (int f, int n, int k)
 int
 splitwind (int f, int n, int k)
 {
-  register WINDOW *wp;
+  register EWINDOW *wp;
   register LINE *lp;
   register int ntru;
   register int ntrl;
   register int ntrd;
-  register WINDOW *wp1;
-  register WINDOW *wp2;
+  register EWINDOW *wp1;
+  register EWINDOW *wp2;
 
   if (curwp->w_ntrows < 3)
     {
       eprintf ("Cannot split a %d line window", curwp->w_ntrows);
       return (FALSE);
     }
-  if ((wp = (WINDOW *) malloc (sizeof (WINDOW))) == NULL)
+  if ((wp = (EWINDOW *) malloc (sizeof (EWINDOW))) == NULL)
     {
-      eprintf ("Cannot allocate WINDOW block");
+      eprintf ("Cannot allocate EWINDOW block");
       return (FALSE);
     }
   ++curbp->b_nwnd;		/* Displayed twice.     */
@@ -320,7 +320,7 @@ splitwind (int f, int n, int k)
 int
 enlargewind (int f, int n, int k)
 {
-  register WINDOW *adjwp;
+  register EWINDOW *adjwp;
   register LINE *lp;
   register int i;
 
@@ -374,7 +374,7 @@ enlargewind (int f, int n, int k)
 int
 shrinkwind (int f, int n, int k)
 {
-  register WINDOW *adjwp;
+  register EWINDOW *adjwp;
   register LINE *lp;
   register int i;
 
@@ -427,10 +427,10 @@ shrinkwind (int f, int n, int k)
  * might be better. Return a pointer, or
  * NULL on error.
  */
-WINDOW *
+EWINDOW *
 wpopup (void)
 {
-  register WINDOW *wp;
+  register EWINDOW *wp;
 
   if (wheadp->w_wndp == NULL && splitwind (FALSE, 0, KRANDOM) == FALSE)
     return (NULL);

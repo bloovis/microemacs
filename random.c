@@ -1,4 +1,4 @@
-/* $Header: /home/bloovis/cvsroot/pe/random.c,v 1.2 2003-12-03 22:14:34 bloovis Exp $
+/* $Header: /home/bloovis/cvsroot/pe/random.c,v 1.3 2005-10-18 02:17:58 bloovis Exp $
  * Name:	MicroEMACS
  *		Assorted commands.
  * Version:	29
@@ -11,7 +11,10 @@
  * that they are all command processors.
  *
  * $Log: random.c,v $
- * Revision 1.2  2003-12-03 22:14:34  bloovis
+ * Revision 1.3  2005-10-18 02:17:58  bloovis
+ * Rename some things to avoid conflict with ncurses.
+ *
+ * Revision 1.2  2003/12/03 22:14:34  bloovis
  * (vmwareindent): New function to do VMware-style indenting.
  *
  * Revision 1.1.1.1  2003/11/06 02:51:52  bloovis
@@ -794,7 +797,7 @@ yank (f, n, k)
 int
 settabsize (f, n, k)
 {
-  register WINDOW *wp;
+  register EWINDOW *wp;
 
   if (!f)			/* no argument?         */
     n = 8;			/* reset to default     */

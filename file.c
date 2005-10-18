@@ -1,4 +1,4 @@
-/* $Header: /home/bloovis/cvsroot/pe/file.c,v 1.2 2005-05-31 18:18:20 bloovis Exp $
+/* $Header: /home/bloovis/cvsroot/pe/file.c,v 1.3 2005-10-18 02:18:12 bloovis Exp $
  *
  * Name:	MicroEMACS
  * 		File commands.
@@ -7,7 +7,10 @@
  *		decvax!decwrl!dec-rhea!dec-rex!conroy
  *
  * $Log: file.c,v $
- * Revision 1.2  2005-05-31 18:18:20  bloovis
+ * Revision 1.3  2005-10-18 02:18:12  bloovis
+ * Rename some things to avoid conflict with ncurses.
+ *
+ * Revision 1.2  2005/05/31 18:18:20  bloovis
  * (filesave): Add debug output to try to catch weird bug
  * where casefold gets zapped sometimes.
  *
@@ -83,7 +86,7 @@ fileread (f, n, k)
 static int
 insertf (const char *fname)
 {
-  register WINDOW *wp;
+  register EWINDOW *wp;
   register BUFFER *bp;
   register LINE *lp1, *lp2;
   register int doto;
@@ -190,7 +193,7 @@ int
 visit_file (char *fname)
 {
   register BUFFER *bp;
-  register WINDOW *wp;
+  register EWINDOW *wp;
   register LINE *lp;
   register int i;
   register int s;
@@ -330,7 +333,7 @@ checkreadonly (void)
 int
 readin (const char *fname)
 {
-  register WINDOW *wp;
+  register EWINDOW *wp;
   register BUFFER *bp;
   register LINE *lp1;
   register LINE *lp2;
@@ -486,7 +489,7 @@ makename (char *bname, const char *fname)
 static void
 updatemode (void)
 {
-  register WINDOW *wp;
+  register EWINDOW *wp;
 
   ALLWIND (wp)			/* Update mode lines.   */
     if (wp->w_bufp == curbp)

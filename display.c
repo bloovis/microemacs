@@ -1,4 +1,4 @@
-/* $Header: /home/bloovis/cvsroot/pe/display.c,v 1.1 2003-11-06 02:51:52 bloovis Exp $
+/* $Header: /home/bloovis/cvsroot/pe/display.c,v 1.2 2005-10-18 02:18:08 bloovis Exp $
  *
  * Name:	MicroEMACS
  *		Gosling style redisplay.
@@ -18,8 +18,11 @@
  * both off, the terminal is a VT52.
  *
  * $Log: display.c,v $
- * Revision 1.1  2003-11-06 02:51:52  bloovis
- * Initial revision
+ * Revision 1.2  2005-10-18 02:18:08  bloovis
+ * Rename some things to avoid conflict with ncurses.
+ *
+ * Revision 1.1.1.1  2003/11/06 02:51:52  bloovis
+ * Imported sources
  *
  * Revision 1.6  2003/05/14 23:09:20  malexander
  * (mouse_event): Rename to mouseevent to avoid conflict with
@@ -150,10 +153,12 @@ SCORE score[NROW * NROW];
 static void vtputs (uchar *s, int n);
 static void ucopy (VIDEO *vvp, VIDEO *pvp);
 static void uline (int row, VIDEO *vvp, VIDEO *pvp);
-static void modeline (WINDOW *wp);
+static void modeline (EWINDOW *wp);
+#if GOSLING
 static void hash (VIDEO *vp);
 static void setscores (int offs, int size);
 static void traceback (int offs, int size, int i, int j);
+#endif
 
 /*
  * Initialize the data structures used
@@ -340,7 +345,7 @@ void
 update (void)
 {
   register LINE *lp;
-  register WINDOW *wp;
+  register EWINDOW *wp;
   register VIDEO *vp1;
   register VIDEO *vp2;
   register int i;
@@ -348,8 +353,10 @@ update (void)
   register int curcol;
   register int currow;
   register int hflag;
+#if GOSLING
   register int offs;
   register int size;
+#endif
 
   if (curmsgf != FALSE || newmsgf != FALSE)
     {
@@ -665,7 +672,7 @@ uline (int row, VIDEO *vvp, VIDEO *pvp)
  * there is a dirty window.
  */
 static void
-modeline (WINDOW *wp)
+modeline (EWINDOW *wp)
 {
   register BUFFER *bp;
   register int n;
@@ -924,7 +931,7 @@ traceback (int offs, int size, int i, int j)
   k = offs + j - 1;
   uline (k, vscreen[k], pscreen[offs + i - 1]);
 }
-#endif
+#endif	/* GOSLING */
 
 /*
  * Handle mouse button event.

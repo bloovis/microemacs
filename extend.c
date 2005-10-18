@@ -43,7 +43,7 @@ bindtokey (f, n, k)
       eputc (' ');
       ttflush ();
       c = getkey ();		/* Read key.            */
-      keyname (xname, c);	/* Display keyname.     */
+      ekeyname (xname, c);	/* Display ekeyname.     */
       eputs (xname);
       ttflush ();
     }
@@ -113,7 +113,7 @@ help (f, n, k)
   char b[20];
 
   c = getkey ();
-  keyname (b, c);
+  ekeyname (b, c);
   if ((sp = binding[c]) == NULL)
     eprintf ("[%s is unbound]", b);
   else
@@ -147,7 +147,7 @@ wallchart (f, n, k)
       sp = binding[key];
       if (sp != NULL && (f != FALSE || strcmp (sp->s_name, "ins-self") != 0))
 	{
-	  keyname (buf, key);
+	  ekeyname (buf, key);
 	  cp1 = &buf[0];	/* Find end.            */
 	  while (*cp1 != 0)
 	    ++cp1;
@@ -340,7 +340,7 @@ insertmacro (f, n, k)
     {
       if (k > 0x00 && k <= 0x1F)	/* Relocate control.    */
 	k = KCTRL | (k + '@');
-      keyname (xname, k);	/* Get key name.        */
+      ekeyname (xname, k);	/* Get key name.        */
       if ((k >= 0x20 && k <= 0x7e) || (strlen (xname) <= 1))
 	{			/* Simple ASCII?        */
 	  if (outstrchr (k) == FALSE)

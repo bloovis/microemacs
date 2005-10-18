@@ -34,7 +34,7 @@ printesc (p)
       printf ("%c", c);
 }
 
-void
+int
 main (argc, argv)
      int argc;
      char *argv[];
@@ -69,4 +69,5 @@ main (argc, argv)
 	}
       printf ("%s (numeric): %d\n", argv[i], tgetnum (argv[i]));
     }
+  return;
 }

@@ -1,4 +1,4 @@
-/* $Header: /home/bloovis/cvsroot/pe/symbol.c,v 1.3 2004-04-20 15:18:18 bloovis Exp $
+/* $Header: /home/bloovis/cvsroot/pe/symbol.c,v 1.4 2005-10-18 02:18:10 bloovis Exp $
  *
  * Name:	MicroEMACS
  *		Symbol table stuff.
@@ -10,7 +10,10 @@
  * keymap has been moved to a better place.
  *
  * $Log: symbol.c,v $
- * Revision 1.3  2004-04-20 15:18:18  bloovis
+ * Revision 1.4  2005-10-18 02:18:10  bloovis
+ * Rename some things to avoid conflict with ncurses.
+ *
+ * Revision 1.3  2004/04/20 15:18:18  bloovis
  * (namemacro):  Use ereadv instead of passing NULL arg list
  * pointer to eread.
  *
@@ -135,7 +138,7 @@ KEY key[] = {
   {KCTRL | 'J',		indent,		"ins-nl-and-indent"},
 #endif
   {KCTRL | 'K',		killline,	"kill-line"},
-  {KCTRL | 'L',		refresh,	"refresh"},
+  {KCTRL | 'L',		erefresh,	"refresh"},
   {KCTRL | 'M',		newline,	"ins-nl"},
   {KCTRL | 'N',		forwline,	"forw-line"},
   {KCTRL | 'O',		openline,	"ins-nl-and-backup"},
