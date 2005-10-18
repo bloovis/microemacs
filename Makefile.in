@@ -3,22 +3,23 @@
 # The top-level source directory.
 
 srcdir	= @srcdir@
-VPATH	= @srcdir@
 
 # Directories containing system- and tty-specific source.
 
-SYS	= @sysdir@
-TTY	= @ttydir@
+SYS	= @srcdir@/@sysdir@
+TTY	= @srcdir@/@ttydir@
+
+VPATH	= $(srcdir):$(SYS):$(TTY)
 
 # Compilers, linkers, and their flags.
 
 CC	= @CC@
 LD	= @CC@
 DEBUG	= -g
-CFLAGS	= @CFLAGS@ @DEFS@ @DEFINES@ -I. -I@srcdir@ -Wall
+CFLAGS	= @CFLAGS@ @DEFS@ @DEFINES@ -I. -I$(srcdir) -I$(SYS) -I$(TTY) -Wall
 LDFLAGS = @LDFLAGS@
 # $(DEBUG) -v
-LIBS	= -ltermcap
+LIBS	= @LIBS@
 
 # Objects comprising MicroEMACS.
 
@@ -54,7 +55,7 @@ OBJ :=	@EXTRA_OBJS@ \
 # How to compile a module.
 
 .c.o:
-	$(CC) -c $(CFLAGS) $<
+	$(CC) -c $(CFLAGS) -MMD $<
 
 # How to link MicroEMACS.
 
@@ -74,7 +75,7 @@ install:
 	strip /usr/local/bin/pe
 
 clean:
-	-rm *.o pe
+	-rm *.[od] pe
 
 tar:
 	cd $(srcdir); \
@@ -99,5 +100,6 @@ Makefile: Makefile.in config.status
 config.status: configure
 	./config.status --recheck
 
-# Source dependencies will be automatically appended here by configure.
+# Include compiler-generated dependency files
 
+-include *.d
