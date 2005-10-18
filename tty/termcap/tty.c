@@ -156,9 +156,9 @@ ttinit (void)
   strcpy (lname, "lx");
   for (i = 0; i < 10; i++)
     {
-      kname[1] = i + '0';
+      kname[1] = i + '1';
       K[i] = tgetstr (kname, &p);
-      lname[1] = i + '0';
+      lname[1] = i + '1';
       L[i] = tgetstr (lname, &p);
     }
   /* Hack to get another bunch */
@@ -166,9 +166,9 @@ ttinit (void)
   strcpy (lname, "Lx");
   for (i = 0; i < 10; i++)
     {
-      kname[1] = i + '0';
+      kname[1] = i + '1';
       K[10 + i] = tgetstr (kname, &p);
-      lname[1] = i + '0';
+      lname[1] = i + '1';
       L[10 + i] = tgetstr (lname, &p);
     }
 
