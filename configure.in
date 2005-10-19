@@ -7,6 +7,9 @@ AC_CANONICAL_SYSTEM
 AC_CONFIG_HEADER(config.h)
 AC_CHECK_HEADERS(unistd.h)
 
+CFLAGS_DEBUG=-g
+CFLAGS_OPTIMIZE=-O
+
 EXTRA_OBJS=""
 case "${host}" in
 *hpux*)		DEFINES="$DEFINES -DHPUX"; ;;
@@ -24,19 +27,29 @@ dnl we might have different ones depending on target platform.
 AC_ARG_WITH(linux,
 [  --with-linux            Use Linux-specific instead of generic UNIX I/O],
 [sysdir=sys/linux],
-[sysdir=sys/unix])dnl
+[sysdir=sys/unix])
 
 AC_ARG_WITH(termcap,
 [  --with-termcap          Use termcap instead of ncurses for screen I/O],
 [ttydir=tty/termcap
 LIBS="-ltermcap"],
 [ttydir=tty/ncurses
-LIBS="-lncurses"])dnl
+LIBS="-lncurses"])
+
+# Set the default compiler switches based on the --enable-debug option
+
+AC_ARG_ENABLE(debug,
+[  --enable-debug          Build with debugging symbols],
+[CFLAGS_DEFAULT=CFLAGS_DEBUG],
+[CFLAGS_DEFAULT=CFLAGS_OPTIMIZE])
 
 AC_SUBST(sysdir)
 AC_SUBST(ttydir)
 AC_SUBST(DEFINES)
 AC_SUBST(EXTRA_OBJS)
 AC_SUBST(LIBS)
+AC_SUBST(CFLAGS_DEBUG)
+AC_SUBST(CFLAGS_DEFAULT)
+AC_SUBST(CFLAGS_OPTIMIZE)
 
 AC_OUTPUT(Makefile)

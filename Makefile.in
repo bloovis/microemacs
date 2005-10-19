@@ -2,24 +2,25 @@
 
 # The top-level source directory.
 
-srcdir	= @srcdir@
+srcdir		= @srcdir@
 
 # Directories containing system- and tty-specific source.
 
-SYS	= @srcdir@/@sysdir@
-TTY	= @srcdir@/@ttydir@
-
-VPATH	= $(srcdir):$(SYS):$(TTY)
+SYS		= @srcdir@/@sysdir@
+TTY		= @srcdir@/@ttydir@
+VPATH		= $(srcdir):$(SYS):$(TTY)
+INC		= -I$(srcdir) -I$(SYS) -I$(TTY)
 
 # Compilers, linkers, and their flags.
 
-CC	= @CC@
-LD	= @CC@
-DEBUG	= -g
-CFLAGS	= @CFLAGS@ @DEFS@ @DEFINES@ -I. -I$(srcdir) -I$(SYS) -I$(TTY) -Wall
-LDFLAGS = @LDFLAGS@
-# $(DEBUG) -v
-LIBS	= @LIBS@
+CC		= @CC@
+CFLAGS_DEBUG	= @CFLAGS_DEBUG@
+CFLAGS_OPTIMIZE	= @CFLAGS_OPTIMIZE@
+CFLAGS		= $(@CFLAGS_DEFAULT@) @DEFS@ @DEFINES@ $(INC) -Wall
+
+LD		= @CC@
+LDFLAGS		= @LDFLAGS@
+LIBS		= @LIBS@
 
 # Objects comprising MicroEMACS.
 
