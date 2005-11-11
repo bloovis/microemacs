@@ -1,4 +1,4 @@
-/* $Header: /home/bloovis/cvsroot/pe/def.h,v 1.4 2005-10-18 02:18:14 bloovis Exp $
+/* $Header: /home/bloovis/cvsroot/pe/def.h,v 1.5 2005-11-11 17:30:27 bloovis Exp $
  *
  * Name:	MicroEMACS
  *		Common header file.
@@ -15,7 +15,11 @@
  * the definition of CVMVAS or BACKUP.
  *
  * $Log: def.h,v $
- * Revision 1.4  2005-10-18 02:18:14  bloovis
+ * Revision 1.5  2005-11-11 17:30:27  bloovis
+ * (LINEHDR_SIZE): New macro to get the size of a line header.
+ * (LINEHDR): Eliminate in favor of LINEHDR_SIZE.
+ *
+ * Revision 1.4  2005/10/18 02:18:14  bloovis
  * Rename some things to avoid conflict with ncurses.
  *
  * Revision 1.3  2004/04/20 15:18:22  bloovis
@@ -101,6 +105,7 @@
 #include	<stdlib.h>
 #include	<string.h>
 #include	<stdarg.h>
+#include	<stddef.h>
 
 #define uchar	unsigned char
 
@@ -371,7 +376,7 @@ EWINDOW;
  * of a region around a little bit easier.
  * There have been some complaints that the short in this
  * structure is wrong; that a long would be more appropriate.
- * I'll awat more comments from the folks with the little
+ * I'll await more comments from the folks with the little
  * machines; I have a VAX, and everything fits.
  */
 typedef struct
@@ -408,19 +413,9 @@ typedef struct LINE
 LINE;
 
 /*
- * The following structure is identical to a LINE except that
- * the l_text is missing.  This allows the lalloc() routine
- * to get the size of the header without the l_text adding
- * extra precious bytes.
+ * Size of the line header with the l_text.
  */
-typedef struct LINEHDR
-{
-  struct LINEHDR *l_fp;		/* Link to the next line        */
-  struct LINEHDR *l_bp;		/* Link to the previous line    */
-  int l_size;			/* Allocated size               */
-  int l_used;			/* Used size                    */
-}
-LINEHDR;
+#define LINEHDR_SIZE (offsetof(LINE, l_text))
 
 /*
  * The rationale behind these macros is that you
