@@ -61,7 +61,7 @@ lalloc (int used)
   size = (used + NBLOCK - 1) & ~(NBLOCK - 1);
   if (size == 0)		/* Assume that an empty */
     size = NBLOCK;		/* line is for type-in. */
-  if ((lp = (LINE *) malloc (sizeof (LINEHDR) + size)) == NULL)
+  if ((lp = (LINE *) malloc (LINEHDR_SIZE + size)) == NULL)
     {
       eprintf ("Cannot allocate %d bytes", size);
       return (NULL);
@@ -82,7 +82,7 @@ lallocx (int used)
 {
   register LINE *lp;
 
-  if ((lp = (LINE *) malloc (sizeof (LINEHDR) + used)) == NULL)
+  if ((lp = (LINE *) malloc (LINEHDR_SIZE + used)) == NULL)
     {
       eprintf ("Cannot allocate %d bytes", used);
       return (NULL);
