@@ -1,0 +1,10 @@
+*.[oadi]
+RCS
+obj32
+obj32-termcap
+obj64-ncurses
+obj64-termcap
+objrevf
+cscope.out
+cscope.files
+macos

@@ -1,0 +1,315 @@
+/*
+ * Name:	MicroEMACS
+ *		Region based commands.
+ * Version:	29
+ * Last edit:	15-Jul-86
+ * By:		rex::conroy
+ *		decvax!decwrl!dec-rhea!dec-rex!conroy
+ * Modified by:	Mark Alexander
+ *		drivax!alexande
+ * What:	Region operations.
+ *
+ * The routines in this file
+ * deal with the region, that magic space
+ * between "." and mark. Some functions are
+ * commands. Some functions are just for
+ * internal use.
+ */
+#include	"def.h"
+
+
+/*
+ * Set size, and check for overflow.
+ */
+static int
+setsize (REGION *rp, long size)
+{
+  rp->r_size = size;
+  if (rp->r_size != size)
+    {
+      eprintf ("Region is too large");
+      return (FALSE);
+    }
+  return (TRUE);
+}
+
+/*
+ * This routine figures out the bound of the region
+ * in the current window, and stores the results into the fields
+ * of the REGION structure. Dot and mark are usually close together,
+ * but I don't know the order, so I scan outward from dot, in both
+ * directions, looking for mark. The size is kept in a long. At the
+ * end, after the size is figured out, it is assigned to the size
+ * field of the region structure. If this assignment loses any bits,
+ * then we print an error. This is "type independent" overflow
+ * checking. All of the callers of this routine should be ready to
+ * get an ABORT status, because I might add a "if regions is big,
+ * ask before clobberring" flag.
+ */
+static int
+getregion (REGION *rp)
+{
+  register LINE *flp;
+  register LINE *blp;
+  register long fsize;		/* Long now.            */
+  register long bsize;
+
+  if (curwp->w_mark.p == NULL)
+    {
+      eprintf ("No mark in this window");
+      return (FALSE);
+    }
+  if (curwp->w_dot.p == curwp->w_mark.p)
+    {				/* "r_size" always ok.  */
+      rp->r_pos.p = curwp->w_dot.p;
+      if (curwp->w_dot.o < curwp->w_mark.o)
+	{
+	  rp->r_pos.o = curwp->w_dot.o;
+	  rp->r_size = curwp->w_mark.o - curwp->w_dot.o;
+	}
+      else
+	{
+	  rp->r_pos.o = curwp->w_mark.o;
+	  rp->r_size = curwp->w_dot.o - curwp->w_mark.o;
+	}
+      return (TRUE);
+    }
+  blp = curwp->w_dot.p;		/* Get region size.     */
+  flp = curwp->w_dot.p;
+  bsize = curwp->w_dot.o;
+  fsize = llength (flp) - curwp->w_dot.o + 1;
+  while (flp != curbp->b_linep || lback (blp) != curbp->b_linep)
+    {
+      if (flp != curbp->b_linep)
+	{
+	  flp = lforw (flp);
+	  if (flp == curwp->w_mark.p)
+	    {
+	      rp->r_pos.p = curwp->w_dot.p;
+	      rp->r_pos.o = curwp->w_dot.o;
+	      return (setsize (rp, fsize + curwp->w_mark.o));
+	    }
+	  fsize += llength (flp) + 1;
+	}
+      if (lback (blp) != curbp->b_linep)
+	{
+	  blp = lback (blp);
+	  bsize += llength (blp) + 1;
+	  if (blp == curwp->w_mark.p)
+	    {
+	      rp->r_pos.p = blp;
+	      rp->r_pos.o = curwp->w_mark.o;
+	      return (setsize (rp, bsize - curwp->w_mark.o));
+	    }
+	}
+    }
+  eprintf ("Bug: lost mark");	/* Gak!                 */
+  return (FALSE);
+}
+
+/*
+ * Kill the region. Ask "getregion"
+ * to figure out the bounds of the region.
+ * Move "." to the start, and kill the characters.
+ * If an argument is provided, don't put the
+ * characters in the kill buffer (useful if
+ * you run out of memory while editing).
+ */
+int
+killregion (int f, int n, int k)
+{
+  register int s;
+  REGION region;
+
+  if ((s = getregion (&region)) != TRUE)
+    return (s);
+  kdelete ();			/* Purge kill buffer    */
+  curwp->w_dot = region.r_pos;
+  return (ldelete (region.r_size, !f));
+}
+
+/*
+ * Copy all of the characters in the
+ * region to the kill buffer. Don't move dot
+ * at all. This is a bit like a kill region followed
+ * by a yank.
+ */
+int
+copyregion (int f, int n, int k)
+{
+  register LINE *linep;
+  register int loffs;
+  register int chunk;
+  REGION region;
+
+  if (getregion (&region) != TRUE)
+    return (FALSE);
+  kdelete ();			/* Purge kill buffer    */
+  linep = region.r_pos.p;	/* Current line.        */
+  loffs = region.r_pos.o;	/* Current offset.      */
+  while (region.r_size > 0)
+    {
+      if (loffs == llength (linep))
+	{			/* End of line.         */
+	  if (kinsert ("\n", 1) != TRUE)
+	    return (FALSE);
+	  linep = lforw (linep);
+	  loffs = 0;
+	  region.r_size--;
+	}
+      else
+	{			/* Middle of line.      */
+	  chunk = llength (linep) - loffs;
+	  if (chunk > region.r_size)
+	    chunk = region.r_size;
+	  if (kinsert (lgets (linep) + loffs, chunk) != TRUE)
+	    return (FALSE);
+	  loffs += chunk;
+	  region.r_size -= chunk;
+	}
+    }
+  return (TRUE);
+}
+
+/*
+ * Lower case region. Zap all of the upper
+ * case characters in the region to lower case. Use
+ * the region code to set the limits. Scan the buffer,
+ * doing the changes. Call "lchange" to ensure that
+ * redisplay is done in all buffers. 
+ */
+int
+lowerregion (int f, int n, int k)
+{
+  register LINE *linep;
+  register int loffs;
+  register int c;
+  register int s;
+  REGION region;
+
+  if ((s = getregion (&region)) != TRUE)
+    return (s);
+  if (checkreadonly () == FALSE)
+    return FALSE;
+  lchange (WFHARD);
+  linep = region.r_pos.p;
+  loffs = region.r_pos.o;
+  while (region.r_size--)
+    {
+      if (loffs == llength (linep))
+	{
+	  linep = lforw (linep);
+	  loffs = 0;
+	}
+      else
+	{
+	  c = lgetc (linep, loffs);
+	  if (ISUPPER (c) != FALSE)
+	    lputc (linep, loffs, TOLOWER (c));
+	  ++loffs;
+	}
+    }
+  return (TRUE);
+}
+
+/*
+ * Upper case region. Zap all of the lower
+ * case characters in the region to upper case. Use
+ * the region code to set the limits. Scan the buffer,
+ * doing the changes. Call "lchange" to ensure that
+ * redisplay is done in all buffers. 
+ */
+int
+upperregion (int f, int n, int k)
+{
+  register LINE *linep;
+  register int loffs;
+  register int c;
+  register int s;
+  REGION region;
+
+  if ((s = getregion (&region)) != TRUE)
+    return (s);
+  if (checkreadonly () == FALSE)
+    return FALSE;
+  lchange (WFHARD);
+  linep = region.r_pos.p;
+  loffs = region.r_pos.o;
+  while (region.r_size--)
+    {
+      if (loffs == llength (linep))
+	{
+	  linep = lforw (linep);
+	  loffs = 0;
+	}
+      else
+	{
+	  c = lgetc (linep, loffs);
+	  if (ISLOWER (c) != FALSE)
+	    lputc (linep, loffs, TOUPPER (c));
+	  ++loffs;
+	}
+    }
+  return (TRUE);
+}
+
+/*
+ * Indent region. Adjust the indentation of the lines
+ * in the region by the number of spaces in the argument.
+ * Call "lchange" to ensure that
+ * redisplay is done in all buffers. 
+ */
+int
+indentregion (int f, int n, int k)
+{
+  register int nicol;
+  register int i;
+  register int c;
+  register int s;
+  REGION region;
+  int llen;
+
+  if ((s = getregion (&region)) != TRUE)
+    return (s);
+  if (checkreadonly () == FALSE)
+    return FALSE;
+  lchange (WFHARD);
+  curwp->w_dot.p = region.r_pos.p;
+  curwp->w_dot.o = 0;
+  region.r_size += region.r_pos.o;
+  while (region.r_size > 0)
+    {
+      llen = llength (curwp->w_dot.p);
+      region.r_size -= llen + 1;
+      nicol = 0;
+
+      /* Find the indentation level of this line.
+       */
+      for (i = 0; i < llen; ++i)
+	{
+	  c = lgetc (curwp->w_dot.p, i);
+	  if (c != ' ' && c != '\t')
+	    break;
+	  if (c == '\t')
+	    nicol += (tabsize - nicol % tabsize) - 1;
+	  ++nicol;
+	}
+
+      /* Delete the leading white space in this line, and replace
+       * it with enough tabs and spaces to add the specified
+       * indentation.  */
+      if (llen != 0 && (nicol += n) >= 0)
+	{
+	  ldelete (i, FALSE);
+	  if ((i = nicol / tabsize) != 0
+	      && linsert (i, '\t', NULLPTR) == FALSE)
+	    return (FALSE);
+	  if ((i = nicol % tabsize) != 0
+	      && linsert (i, ' ', NULLPTR) == FALSE)
+	    return (FALSE);
+	}
+      curwp->w_dot.p = lforw (curwp->w_dot.p);
+      curwp->w_dot.o = 0;
+    }
+  return (TRUE);
+}
