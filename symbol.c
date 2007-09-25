@@ -1,4 +1,4 @@
-/* $Header: /home/bloovis/cvsroot/pe/symbol.c,v 1.4 2005-10-18 02:18:10 bloovis Exp $
+/* $Header: /exit14/home/marka/tools/pe/RCS/symbol.c,v 1.1 2006/09/15 16:29:46 marka Exp marka $
  *
  * Name:	MicroEMACS
  *		Symbol table stuff.
@@ -77,6 +77,12 @@
 #define USE_VMWAREINDENT	/* Define to use VMware indent	*/
 /* #define USE_GNUINDENT */	/* Define to use gnu indent	*/
 /* #define USE_BORLANDINDENT */	/* Define to use Borland indent	*/
+
+#if defined(__linux__) || defined(__APPLE__)
+  #define HAS_CSCOPE 1
+#else
+  #define HAS_CSCOPE 0
+#endif
 
 #define	DIRLIST	0		/* Disarmed!                    */
 
@@ -198,7 +204,7 @@ KEY key[] = {
   {KMETA | KCTRL | 'S', forwregsearch,	"forw-regexp-search"},
   {KMETA | KCTRL | 'V', showversion,	"display-version"},
   {KMETA | '.',		findtag,	"find-tag"},
-#ifdef __linux__
+#if HAS_CSCOPE
   {KMETA | ',',		findcscope,	"find-cscope"},
 #endif
   {KMETA | '!',		reposition,	"reposition-window"},
@@ -211,7 +217,7 @@ KEY key[] = {
   {KMETA | 'C',		capword,	"cap-word"},
   {KMETA | 'D',		delfword,	"forw-del-word"},
   {KMETA | 'F',		forwword,	"forw-word"},
-#ifdef __linux__
+#if HAS_CSCOPE
   {KMETA | 'G',		findgrep,	"find-grep"},
 #endif
   {KMETA | 'H',		searchagain,	"search-again"},
@@ -238,7 +244,7 @@ KEY key[] = {
   {-1,			insertmacro,	"ins-macro"},
   {-1,			setoverstrike,	"set-overstrike"},
   {-1,			freetags,	"free-tags"},
-#ifdef __linux__
+#if HAS_CSCOPE
   {-1,			nextcscope,	"next-cscope"},
 #endif
   {-1,			mouseevent,	"mouse-event"},

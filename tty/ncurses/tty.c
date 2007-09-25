@@ -124,6 +124,7 @@ void
 ttresize (void)
 {
   setttysize ();		/* found in "ttyio.c",  */
+  wrefresh (curscr);
 }
 
 /*
