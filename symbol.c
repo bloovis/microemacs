@@ -78,7 +78,7 @@
 /* #define USE_GNUINDENT */	/* Define to use gnu indent	*/
 /* #define USE_BORLANDINDENT */	/* Define to use Borland indent	*/
 
-#if defined(__linux__) || defined(__APPLE__)
+#if defined(__linux__) || defined(__APPLE__) || defined(__CYGWIN__)
   #define HAS_CSCOPE 1
 #else
   #define HAS_CSCOPE 0

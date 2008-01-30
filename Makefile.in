@@ -60,9 +60,9 @@ OBJ :=	@EXTRA_OBJS@ \
 
 # How to link MicroEMACS.
 
-pe:		$(OBJ)
+pe@EXEEXT@:		$(OBJ)
 	$(LD) -o pe $(LDFLAGS) $(OBJ) $(LIBS)
-#	strip pe
+#	strip pe@EXEEXT@
 
 # Test programs
 
@@ -72,11 +72,11 @@ cstest:	cscope.o
 # Miscellaneous rules.
 
 install:
-	cp -p pe /usr/local/bin
-	strip /usr/local/bin/pe
+	cp -p pe@EXEEXT@ /usr/local/bin
+	strip /usr/local/bin/pe@EXEEXT@
 
 clean:
-	-rm *.[od] pe
+	-rm *.[od] pe@EXEEXT@
 
 tar:
 	cd $(srcdir); \

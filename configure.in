@@ -18,6 +18,7 @@ x86_64*linux*)	DEFINES="$DEFINES -DLINUX";
 *linux*)	DEFINES="$DEFINES -DLINUX" ;;
 *solaris*)	DEFINES="$DEFINES -DSOLARIS"; EXTRA_OBJS=bcopy.o;
                 bcopy=bcopy.s ;;
+*cygwin)	DEFINES="$DEFINES -DCYGWIN" ;;
 *)		DEFINES="$DEFINES -DUNKNOWN" ;;
 esac
 echo host is ${host}
@@ -35,6 +36,10 @@ AC_ARG_WITH(termcap,
 LIBS="-ltermcap"],
 [ttydir=tty/ncurses
 LIBS="-lncurses"])
+
+AC_ARG_WITH(ntconsole,
+[  --with-ntconsole        Use NT-specific console I/O instead of generic UNIX I/O],
+[ttydir=tty/nt])
 
 # Set the default compiler switches based on the --enable-debug option
 
