@@ -83,10 +83,10 @@ void ttinit()
     size.Y = 1;
     coord.X = 0;
     coord.Y = 0;
-    region.Left = 0;
-    region.Top = nrow-1;
-    region.Right = 0;
-    region.Bottom = nrow-1;
+    region.Left = windowcol;
+    region.Top = nrow - 1 + windowrow;
+    region.Right = region.Left;
+    region.Bottom = region.Top;
     if (ReadConsoleOutput(hout, &buf, size, coord, &region) == TRUE)
     {
         attnorm = buf.Attributes;   /* current attributes   */

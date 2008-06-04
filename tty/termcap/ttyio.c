@@ -39,10 +39,10 @@
 
 #define	NOBUF	512		/* Output buffer size.          */
 
-char obuf[NOBUF];		/* Output buffer.               */
-int nobuf;
-struct termios oldtty;
-struct termios newtty;
+static char obuf[NOBUF];	/* Output buffer.               */
+static int nobuf;
+static struct termios oldtty;	/* Old tty state		*/
+static struct termios newtty;	/* New tty state		*/
 
 int nrow;			/* Terminal size, rows.         */
 int ncol;			/* Terminal size, columns.      */
@@ -125,6 +125,31 @@ ttopen (void)
 
   setttysize ();
 }
+
+
+/*
+ * Set the tty to the "old" state, i.e., the state
+ * it had before we changed it.  Return TRUE if successful,
+ * FALSE otherwise.
+ */
+
+int ttold (void)
+{
+  return tcsetattr (0, TCSANOW, &oldtty) >= 0;
+}
+
+
+/*
+ * Set the tty to the "new" state, i.e., the state
+ * it had after we changed it.  Return TRUE if successful,
+ * FALSE otherwise.
+ */
+
+int ttnew (void)
+{
+  return tcsetattr (0, TCSANOW, &newtty) >= 0;
+}
+
 
 /*
  * set the tty size. Functionized for 43BSD.

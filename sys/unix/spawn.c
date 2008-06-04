@@ -94,9 +94,9 @@ spawn (char *program, char *args[])
 	}
     }
   ttflush ();
-  if (tcsetattr (0, TCSANOW, &oldtty) < 0)
+  if (ttold () == FALSE)
     {
-      eprintf ("IOCTL #1 to terminal failed");
+      eprintf ("Unable to restore terminal state");
       return (FALSE);
     }
   if (cshell)			/* C shell.             */
@@ -126,9 +126,9 @@ spawn (char *program, char *args[])
       signal (SIGINT, oisig);
     }
   sgarbf = TRUE;		/* Force repaint.       */
-  if (tcsetattr (0, TCSANOW, &newtty) < 0)
+  if (ttnew () == FALSE)
     {
-      eprintf ("IOCTL #2 to terminal failed");
+      eprintf ("Unable to reinitialize terminal state");
       return (FALSE);
     }
   return (TRUE);

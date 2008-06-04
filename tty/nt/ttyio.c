@@ -18,9 +18,6 @@
 #ifdef __BORLANDC__
 #include <excpt.h>
 #include <conio.h>
-#else
-#include	<termios.h>
-#include	<sys/ioctl.h>
 #endif
 
 #if 0
@@ -33,11 +30,6 @@
 #endif
 
 #include "def.h"
-
-/* Required by spawn.c.
- */
-struct termios oldtty;
-struct termios newtty;
 
 /* Variables that MicroEMACS uses for screen size.  Initialized by
  * ttopen().
@@ -60,10 +52,6 @@ void ttopen()
 {
     CONSOLE_SCREEN_BUFFER_INFO binfo;
     CONSOLE_CURSOR_INFO cinfo;
-
-    /* Get Cygwin "before" tty structure.
-     */
-    tcgetattr (0, &oldtty);
 
     /* Get handles for console output and input
      */
@@ -90,10 +78,30 @@ void ttopen()
     cinfo.dwSize = 100;     /* make it 100% visible */
     cinfo.bVisible = TRUE;
     SetConsoleCursorInfo(hout, &cinfo);
+}
 
-    /* Get Cygwin "after" tty structure.
-     */
-    tcgetattr (0, &newtty);
+
+/*
+ * Set the tty to the "old" state, i.e., the state
+ * it had before we changed it.  Return TRUE if successful,
+ * FALSE otherwise.
+ */
+
+int ttold (void)
+{
+  return SetConsoleMode(hin, conmode) != 0;
+}
+
+
+/*
+ * Set the tty to the "new" state, i.e., the state
+ * it had after we changed it.  Return TRUE if successful,
+ * FALSE otherwise.
+ */
+
+int ttnew (void)
+{
+  return SetConsoleMode(hin, 0) != 0;         /* disable line mode */
 }
 
 

@@ -20,8 +20,8 @@
 #include	<sys/ioctl.h>
 #include	<ncurses.h>
 
-struct termios oldtty;
-struct termios newtty;
+static struct termios oldtty;	/* Old tty state		*/
+static struct termios newtty;	/* New tty state		*/
 
 int nrow;			/* Terminal size, rows.         */
 int ncol;			/* Terminal size, columns.      */
@@ -58,6 +58,31 @@ ttopen (void)
   setttysize ();
   tcgetattr (0, &newtty);
 }
+
+
+/*
+ * Set the tty to the "old" state, i.e., the state
+ * it had before we changed it.  Return TRUE if successful,
+ * FALSE otherwise.
+ */
+
+int ttold (void)
+{
+  return tcsetattr (0, TCSANOW, &oldtty) >= 0;
+}
+
+
+/*
+ * Set the tty to the "new" state, i.e., the state
+ * it had after we changed it.  Return TRUE if successful,
+ * FALSE otherwise.
+ */
+
+int ttnew (void)
+{
+  return tcsetattr (0, TCSANOW, &newtty) >= 0;
+}
+
 
 /*
  * This function gets called just

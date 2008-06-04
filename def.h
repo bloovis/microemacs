@@ -823,6 +823,8 @@ void putpad (const char *str);
  * Defined by "ttyio.c".
  */
 void ttopen (void);
+int ttold (void);
+int ttnew (void);
 void setttysize (void);
 void ttclose (void);
 int ttstat (void);
