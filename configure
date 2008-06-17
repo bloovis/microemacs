@@ -852,6 +852,7 @@ Optional Packages:
   --without-PACKAGE       do not use PACKAGE (same as --with-PACKAGE=no)
   --with-linux            Use Linux-specific instead of generic UNIX I/O
   --with-termcap          Use termcap instead of ncurses for screen I/O
+  --with-ntconsole        Use NT-specific console I/O instead of generic UNIX I/O
 
 Some influential environment variables:
   CC          C compiler command
@@ -2990,6 +2991,7 @@ x86_64*linux*)	DEFINES="$DEFINES -DLINUX";
 *linux*)	DEFINES="$DEFINES -DLINUX" ;;
 *solaris*)	DEFINES="$DEFINES -DSOLARIS"; EXTRA_OBJS=bcopy.o;
                 bcopy=bcopy.s ;;
+*cygwin)	DEFINES="$DEFINES -DCYGWIN" ;;
 *)		DEFINES="$DEFINES -DUNKNOWN" ;;
 esac
 echo host is ${host}
@@ -3014,7 +3016,14 @@ else
 LIBS="-lncurses"
 fi;
 
-# Set the default compiler switches based on the --enable-symbols option
+
+# Check whether --with-ntconsole or --without-ntconsole was given.
+if test "${with_ntconsole+set}" = set; then
+  withval="$with_ntconsole"
+  ttydir=tty/nt
+fi;
+
+# Set the default compiler switches based on the --enable-debug option
 
 # Check whether --enable-debug or --disable-debug was given.
 if test "${enable_debug+set}" = set; then

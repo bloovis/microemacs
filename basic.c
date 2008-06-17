@@ -238,7 +238,7 @@ checkdot ()
   total = curwp->w_ntrows;	/* size of window       */
   half = total / 2;		/* half of window size  */
   lp = curwp->w_linep;		/* top of window        */
-  dotp = curwp->w_dot.p;		/* current value of dot */
+  dotp = curwp->w_dot.p;	/* current value of dot */
   newdotp = NULL;
 
   while (total-- && lp != curbp->b_linep)

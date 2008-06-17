@@ -8,7 +8,7 @@
 #define XKEYS			/* Use termcap to handle function keys  */
 #define IGNORE_TERMCAP		/* Ignore termcap defs. of func. keys   */
 
-#define	NROW	66		/* Rows.                        */
+#define	NROW	132		/* Rows.                        */
 #define	NCOL	132		/* Columns.                     */
 /* #define	MOVE_STANDOUT	*//* don't move in standout mode  */
 #define	STANDOUT_GLITCH		/* possible standout glitch     */

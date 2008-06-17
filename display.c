@@ -399,6 +399,7 @@ update (void)
 	{			/* Need update.         */
 	  if ((wp->w_flag & WFFORCE) == 0)
 	    {
+	      /* See if the dot is visible.		*/
 	      lp = wp->w_linep;
 	      for (i = 0; i < wp->w_ntrows; ++i)
 		{
