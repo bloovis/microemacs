@@ -25,6 +25,7 @@ static struct termios newtty;	/* New tty state		*/
 
 int nrow;			/* Terminal size, rows.         */
 int ncol;			/* Terminal size, columns.      */
+int npages = 1;			/* Number of pages on terminal. */
 int waiting;
 int interrupted;
 

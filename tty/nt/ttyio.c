@@ -36,6 +36,7 @@
  */
 int nrow = 25;          /* Terminal size, rows.     		*/
 int ncol = 80;          /* Terminal size, columns.  		*/
+int npages = 1;		/* Number of pages on terminal.		*/
 int windowrow;		/* Row in buffer of top window line.	*/
 int windowcol;		/* Column in buffer of top window line.	*/
 

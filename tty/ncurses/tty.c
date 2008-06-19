@@ -32,19 +32,81 @@ int     tcinsl  =       11;
 int     tcdell  =       11;
 #endif
 
+int actual_nrow;
+int actual_ncol;
+
+/*
+ * Draw vertical borders between pages when npages is greater than zero.
+ */
+static void drawborders(void)
+{
+  int row, col;
+
+  for (row = 0; row < actual_nrow; row++)
+    {
+      for (col = ncol; col < actual_ncol; col += ncol + 1)
+	{
+	  mvaddch (row, col, ACS_VLINE);
+	}
+    }
+}
+
 /*
  * Initialize the terminal.  Get the handles for console input and output.
  * Take a peek at the video buffer to see what video attributes are being used.
+ *
+ * The tricky code deals with splitting the window into side-by-side
+ * pages (when npages is greater than one).  It tricks the rest of the
+ * editor into thinking the screen is longer and narrower than it really is,
+ * and leaves room for a vertical border between pages.
  */
-void ttinit()
+void ttinit (void)
 {
+  int new_nrow, new_ncol;
+
+  actual_nrow = nrow;
+  actual_ncol = ncol;
+
+  if (npages < 1)
+    {
+      npages = 1;
+    }
+  
+  new_nrow = nrow * npages;
+  new_ncol = (ncol - npages + 1) / npages;
+
+  if (new_nrow > NROW || new_ncol > NCOL)
+    {
+      npages = 1;
+    }
+  else
+    {
+      nrow = new_nrow;
+      ncol = new_ncol;
+      drawborders ();
+    }
 }
 
 /*
  * The PC needs no tidy up.
  */
-void tttidy()
+void tttidy (void)
 {
+}
+
+void get_actual_pos (int row, int col, int *actual_row, int *actual_col)
+{
+  if (npages > 1)
+    {
+      int page = row / actual_nrow;
+      *actual_row = row % actual_nrow;
+      *actual_col = (page * (ncol + 1)) + col;
+    }
+  else
+    {
+      *actual_row = row;
+      *actual_col = col;
+    }
 }
 
 /*
@@ -54,9 +116,12 @@ void tttidy()
  * have left the cursor in the right
  * location last time!
  */
-void ttmove(row, col)
+void ttmove (int row, int col)
 {
-  move(row, col);
+  int actual_row, actual_col;
+
+  get_actual_pos (row, col, &actual_row, &actual_col);
+  move (actual_row, actual_col);
   ttrow = row;
   ttcol = col;
 }
@@ -66,22 +131,33 @@ void ttmove(row, col)
  */
 void tteeol()
 {
-  clrtoeol ();
+  if (npages > 1)
+    {
+      int actual_row, actual_col, i;
+
+      get_actual_pos (ttrow, ttcol, &actual_row, &actual_col);
+      for (i = ttcol; i < ncol; i++)
+	addch(' ');
+      move (actual_row, actual_col);
+    }
+  else
+    clrtoeol ();
 }
 
 /*
  * Erase to end of page.
  */
-void tteeop()
+void tteeop(void)
 {
   clrtobot ();
+  drawborders ();
 }
 
 /*
  * Make a noise.
  */
 
-void ttbeep()
+void ttbeep(void)
 {
     write(1,"\007",1);
 }
@@ -89,14 +165,14 @@ void ttbeep()
 /*
  * No-op.
  */
-void ttwindow(top, bot)
+void ttwindow(int top, int bot)
 {
 }
 
 /*
  * No-op.
  */
-void ttnowindow()
+void ttnowindow(void)
 {
 }
 
@@ -104,8 +180,7 @@ void ttnowindow()
  * Set display color on IBM PC.  Just convert MicroEMACS
  * color to ncurses background attribute.
  */
-void ttcolor(color)
-int     color;
+void ttcolor(int color)
 {
   tthue = color;
   bkgdset(' ' | (color == CMODE ? A_REVERSE : A_NORMAL));
@@ -124,6 +199,7 @@ void
 ttresize (void)
 {
   setttysize ();		/* found in "ttyio.c",  */
+  ttinit();
   wrefresh (curscr);
 }
 
@@ -133,5 +209,8 @@ ttresize (void)
 void
 putline(int row, int col, const char *buf)
 {
-  mvaddnstr(row - 1, col - 1, buf, ncol - col + 1);
+  int actual_row, actual_col;
+
+  get_actual_pos (row - 1, col - 1, &actual_row, &actual_col);
+  mvaddnstr(actual_row, actual_col, buf, ncol - col + 1);
 }

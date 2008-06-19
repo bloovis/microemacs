@@ -346,8 +346,8 @@ typedef struct EWINDOW
   struct POS w_mark;		/* The "mark" position		*/
   struct MARKRING w_ring;	/* Mark ring			*/
   struct LINE *w_savep;		/* save line pointer for search */
-  char w_toprow;		/* Origin 0 top row of window   */
-  char w_ntrows;		/* # of rows of text in window  */
+  short w_toprow;		/* Origin 0 top row of window   */
+  short w_ntrows;		/* # of rows of text in window  */
   char w_force;			/* If NZ, forcing row.          */
   char w_flag;			/* Flags.                       */
   int w_leftcol;		/* left column of window        */
@@ -462,6 +462,7 @@ extern int zflag;
 
 extern int nrow;
 extern int ncol;
+extern int npages;
 extern char *version[];
 extern int ttrow;
 extern int ttcol;

@@ -52,6 +52,8 @@ erefresh (int f, int n, int k)
 
   oldnrow = nrow;
   oldncol = ncol;
+  if (f)
+    npages = n;
   ttresize ();
   sgarbf = TRUE;		/* screen is garbage    */
   if (nrow != oldnrow || ncol != oldncol)

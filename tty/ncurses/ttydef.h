@@ -7,8 +7,8 @@
 #define XKEYS			/* Use termcap to handle function keys  */
 #define IGNORE_TERMCAP		/* Ignore termcap defs. of func. keys   */
 
-#define	NROW	66		/* Rows.                        */
-#define	NCOL	132		/* Columns.                     */
+#define	NROW	256		/* Rows.                        */
+#define	NCOL	256		/* Columns.                     */
 
 /*
  * Termcap function keys.  The last 10 keys correspond to the
