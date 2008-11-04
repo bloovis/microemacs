@@ -218,6 +218,8 @@ main (int argc, char *argv[])
   /* open default profile */
   if (!inprof && proptr != NULLPTR)	/* -p option failed?    */
     eprintf ("Unable to open profile %s", proptr);
+  else
+    eprintf ("This is free software; use Esc Ctrl-V to see license information");
 
 loop:
   if (!inprof && !ttstat ())	/* If not in a profile, */
