@@ -343,7 +343,9 @@ lnewline (void)
   if ((lp2 = lalloc (doto)) == NULL)	/* New first half line  */
     return (FALSE);
   bcopy (&lp1->l_text[0], &lp2->l_text[0], doto);	/* shuffle text */
-  bcopy (&lp1->l_text[doto], &lp1->l_text[0], lp1->l_used - doto);
+  if (doto != 0) {
+    memmove (&lp1->l_text[0], &lp1->l_text[doto], lp1->l_used - doto);
+  }
   lp1->l_used -= doto;
   lp2->l_bp = lp1->l_bp;
   lp1->l_bp = lp2;
@@ -431,7 +433,7 @@ ldelete (int n, int kflag)
       if (kflag != FALSE)	/* Kill?                */
 	if (kinsert (cp1, chunk) == FALSE)
 	  return (FALSE);
-      bcopy (cp2, cp1, dot.p->l_used - (dot.o + chunk));
+      memmove (cp1, cp2, dot.p->l_used - (dot.o + chunk));
       dot.p->l_used -= chunk;
       ALLWIND (wp)
       {				/* Fix windows          */
