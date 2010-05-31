@@ -202,7 +202,11 @@ void ttnowindow(void)
 void ttcolor(int color)
 {
   tthue = color;
+#if 1
   bkgdset(' ' | (color == CMODE ? A_REVERSE : A_NORMAL));
+#else
+  attron (color == CMODE ? A_REVERSE : A_NORMAL);
+#endif
 }
 
 /*
