@@ -126,7 +126,7 @@
 #include	<stdarg.h>
 #include	<stddef.h>
 
-#define uchar	unsigned char
+typedef unsigned char uchar;
 
 #define NLMOVE	0		/* C-M moves to next line if at */
 					/* eol and next line is blank   */
