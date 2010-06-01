@@ -508,15 +508,6 @@ extern int savetabs;
 
 
 /*
- * BSD-compatible string functions
- */
-#if 0 /* ndef __sun__ */
-#define bcopy(s,d,n)  memcpy(d,s,n)
-#define bcopyr(s,d,n) memmove(d,s,n)
-#define bfill(c,s,n)  memset(s,c,n)
-#endif
-
-/*
  * Useful macros for running down the buffer and window lists.
  */
 
