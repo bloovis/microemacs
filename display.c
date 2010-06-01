@@ -211,7 +211,7 @@ vtinit (void)
 #endif
     }
   blanks.v_color = CTEXT;
-  bfill (' ', blanks.v_text, NCOL);
+  memset (blanks.v_text, ' ', NCOL);
 }
 
 /*
@@ -347,7 +347,7 @@ vteeol ()
     vtcol = leftcol;
   if ((count = ncol + leftcol - vtcol) <= 0)
     return;
-  bfill (' ', &vttext[vtcol - leftcol], count);
+  memset (&vttext[vtcol - leftcol], ' ', count);
   vtcol += count;
 }
 
@@ -601,7 +601,7 @@ ucopy (VIDEO *vvp, VIDEO *pvp)
   pvp->v_hash = vvp->v_hash;
   pvp->v_cost = vvp->v_cost;
   pvp->v_color = vvp->v_color;
-  bcopy (vvp->v_text, pvp->v_text, ncol);
+  memcpy (pvp->v_text, vvp->v_text, ncol);
 #endif
 }
 

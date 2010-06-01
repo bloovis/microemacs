@@ -260,8 +260,8 @@ linsert (int n, int c, char *s)
     {					/* Hard: reallocate     */
       if ((lp2 = lalloc (dot.p->l_used + n)) == NULL)
 	return (FALSE);
-      bcopy (&dot.p->l_text[0], &lp2->l_text[0], dot.o);
-      bcopy (&dot.p->l_text[dot.o], &lp2->l_text[dot.o + n],
+      memcpy (&lp2->l_text[0], &dot.p->l_text[0], dot.o);
+      memcpy (&lp2->l_text[dot.o + n], &dot.p->l_text[dot.o],
       	     dot.p->l_used - dot.o);	/* make room            */
       dot.p->l_bp->l_fp = lp2;
       lp2->l_fp = dot.p->l_fp;
@@ -272,15 +272,15 @@ linsert (int n, int c, char *s)
   else
     {				/* Easy: in place       */
       lp2 = dot.p;		/* Pretend new line     */
-      bcopyr (&dot.p->l_text[dot.o], &dot.p->l_text[dot.o + n],
-	      dot.p->l_used - dot.o);	/* make room            */
+      memmove (&dot.p->l_text[dot.o + n], &dot.p->l_text[dot.o],
+	       dot.p->l_used - dot.o);	/* make room            */
       lp2->l_used += n;		/* bump length up       */
     }
 
   if (s == NULL)		/* fill or copy?        */
-    bfill (c, &lp2->l_text[dot.o], n);	/* fill the characters  */
+    memset (&lp2->l_text[dot.o], c, n);	/* fill the characters  */
   else
-    bcopy (s, &lp2->l_text[dot.o], n);	/* copy the characters  */
+    memcpy (&lp2->l_text[dot.o], s, n);	/* copy the characters  */
 
   ALLWIND (wp)
   {				/* Update windows       */
@@ -342,7 +342,7 @@ lnewline (void)
   doto = curwp->w_dot.o;		/* offset of "."        */
   if ((lp2 = lalloc (doto)) == NULL)	/* New first half line  */
     return (FALSE);
-  bcopy (&lp1->l_text[0], &lp2->l_text[0], doto);	/* shuffle text */
+  memcpy (&lp2->l_text[0], &lp1->l_text[0], doto);	/* shuffle text */
   if (doto != 0) {
     memmove (&lp1->l_text[0], &lp1->l_text[doto], lp1->l_used - doto);
   }
@@ -486,7 +486,7 @@ ldelnewline (void)
     return (TRUE);
   if (lp2->l_used <= lp1->l_size - lp1->l_used)
     {
-      bcopy (&lp2->l_text[0], &lp1->l_text[lp1->l_used], lp2->l_used);	/* copy bytes up        */
+      memcpy (&lp1->l_text[lp1->l_used], &lp2->l_text[0], lp2->l_used);	/* copy bytes up        */
       ALLWIND (wp)
       {
 	if (wp->w_linep == lp2)
@@ -512,8 +512,8 @@ ldelnewline (void)
     }
   if ((lp3 = lalloc (lp1->l_used + lp2->l_used)) == NULL)
     return (FALSE);
-  bcopy (&lp1->l_text[0], &lp3->l_text[0], lp1->l_used);
-  bcopy (&lp2->l_text[0], &lp3->l_text[lp1->l_used], lp2->l_used);
+  memcpy (&lp3->l_text[0], &lp1->l_text[0], lp1->l_used);
+  memcpy (&lp3->l_text[lp1->l_used], &lp2->l_text[0], lp2->l_used);
   lp1->l_bp->l_fp = lp3;
   lp3->l_fp = lp2->l_fp;
   lp2->l_fp->l_bp = lp3;
@@ -687,14 +687,14 @@ kinsert (char *s, int n)
 #if !REALLOC
       if (kbufp != NULL)
 	{
-	  bcopy (kbufp, nbufp, ksize);
+	  memcpy (nbufp, kbufp, ksize);
 	  free ((char *) kbufp);
 	}
 #endif
       kbufp = nbufp;
       ksize += n + KBLOCK;
     }
-  bcopy (s, &kbufp[kused], n);
+  memcpy (&kbufp[kused], s, n);
   kused += n;
   return (TRUE);
 }

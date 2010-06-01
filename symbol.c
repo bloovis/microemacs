@@ -470,7 +470,7 @@ namemacro (f, n, k)
       eprintf ("Out of memory.");
       return (FALSE);
     }
-  bcopy (kbdm, mp, msize);	/* Copy the macro       */
+  memcpy (mp, kbdm, msize);	/* Copy the macro       */
 
   /* See if the symbol already exists.  If it doesn't, create
    * a new symbol; otherwise reuse it if it isn't a function.

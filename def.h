@@ -449,7 +449,7 @@ LINE;
 #define lgetc(lp, n)	((lp)->l_text[(n)]&0xFF)
 #define lgets(lp)	((lp)->l_text)
 #define lputc(lp, n, c) ((lp)->l_text[(n)]=(c))
-#define lputs(lp, s, n) bcopy(s,(lp)->l_text,n)
+#define lputs(lp, s, n) memcpy((lp)->l_text,(s),(n))
 #define llength(lp)	((lp)->l_used)
 
 /*
@@ -510,7 +510,7 @@ extern int savetabs;
 /*
  * BSD-compatible string functions
  */
-#ifndef __sun__
+#if 0 /* ndef __sun__ */
 #define bcopy(s,d,n)  memcpy(d,s,n)
 #define bcopyr(s,d,n) memmove(d,s,n)
 #define bfill(c,s,n)  memset(s,c,n)

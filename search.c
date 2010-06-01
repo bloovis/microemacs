@@ -197,7 +197,7 @@ doregsrch (int dir)
 	    }
 	  buf = newbuf;
 	}
-      bcopy (line, buf, linelen);
+      memcpy (buf, line, linelen);
       buf[linelen] = '\0';
 
       /* Search for the pattern in the temporary buffer.
