@@ -196,7 +196,7 @@ next_match (char *filename, char *where, int *line_number)
  * read back the resulting matches, and store them in the tags list.
  */
 static int
-prepcscope (char field, const char *string)
+prepcscope (char field, const char *string, int delete)
 {
   int		n;
   char		filename[1024];
@@ -214,9 +214,10 @@ prepcscope (char field, const char *string)
 	return FALSE;
       }
 
-  /* Free up any existing tags from a previous search.
+  /* If delete flag is TRUE, free up any existing tags from a previous search.
    */
-  freetags (FALSE, 1, KRANDOM);
+  if (delete)
+    freetags (FALSE, 1, KRANDOM);
 
   /* Initiate a search to cscope, get back the number of matches.
    */
@@ -265,7 +266,7 @@ prepcscope (char field, const char *string)
 static int
 prepref (const char *string)
 {
-  return prepcscope ('0', string);
+  return prepcscope ('1', string, TRUE) && prepcscope ('0', string, FALSE);
 }
 
 /*
@@ -296,7 +297,7 @@ nextcscope (f, n, k)
 static int
 prepgrep (const char *string)
 {
-  return prepcscope ('6', string);
+  return prepcscope ('6', string, TRUE);
 }
 
 /*
