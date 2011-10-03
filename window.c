@@ -441,6 +441,50 @@ shrinkwind (int f, int n, int k)
 }
 
 /*
+ * Adjust windows so that they all have approximately
+ * the same height.
+ */
+int
+balancewindows (int f, int n, int k)
+{
+  register EWINDOW *wp;
+  register LINE *lp;
+  register int toprow, size, nwind, i;
+
+  if (wheadp->w_wndp == NULL)
+    {
+      eprintf ("Only one window");
+      return (FALSE);
+    }
+  nwind = 0;
+  ALLWIND(wp)
+    {
+      nwind++;
+    }
+  toprow = 0;
+  size = ((nrow - 1) / nwind) - 1;
+  ALLWIND(wp)
+    {
+      if (wp->w_wndp == NULL)
+	size = nrow - toprow - 2;
+      if (size < wp->w_ntrows)
+	{
+	  /* Shrink this window. */
+	  n = wp->w_ntrows - size;
+	  lp = wp->w_linep;
+	  for (i = 0; i < n && lforw (lp) != wp->w_bufp->b_linep; ++i)
+	    lp = lforw (lp);
+	  wp->w_linep = lp;
+	}
+      wp->w_toprow = toprow;
+      wp->w_ntrows = size;
+      wp->w_flag |= WFMODE | WFHARD;
+      toprow += size + 1;
+    }
+  return (TRUE);
+}
+
+/*
  * Pick a window for a pop-up.
  * Split the screen if there is only
  * one window. Pick the uppermost window that

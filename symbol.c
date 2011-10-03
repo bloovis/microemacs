@@ -197,6 +197,7 @@ KEY key[] = {
   {KCTLX | KCTRL | 'W', filewrite,	"file-write"},
   {KCTLX | KCTRL | 'X', swapmark,	"swap-dot-and-mark"},
   {KCTLX | KCTRL | 'Z', shrinkwind,	"shrink-window"},
+  {KCTLX | '+',		balancewindows,	"balance-windows"},
   {KCTLX | '=',		showcpos,	"display-position"},
   {KCTLX | '(',		ctlxlp,		"start-macro"},
   {KCTLX | ')',		ctlxrp,		"end-macro"},
