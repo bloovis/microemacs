@@ -175,6 +175,20 @@ addtagref (const char *string, tagfile *file, int line, long offset,
   int len = strlen (string) + 1;
   tagref *newref, *prev, *next;
 
+  /* Make sure there aren't any duplicates in the list.
+   */
+  for (next = tagreflist.next;
+       next != &tagreflist;
+       next = next->next)
+    {
+      if (file == next->file &&
+	  line == next->line)
+	{
+	  eprintf ("Duplicated tag %s:%d", file->fname, line);
+	  return next;
+	}
+    }
+
   /* Allocate space for the tag reference and
    * the string, and make a copy of the string.
    */
@@ -193,19 +207,6 @@ addtagref (const char *string, tagfile *file, int line, long offset,
   newref->offset = offset;
   newref->file   = file;
   newref->exact  = exact;
-
-  /* Make sure there aren't any duplicates in the list.
-   */
-  for (next = tagreflist.next;
-       next != &tagreflist;
-       next = next->next)
-    {
-      if (newref->file == next->file &&
-	  newref->line == next->line)
-	{
-	  return newref;
-	}
-    }
 
   /* If exact is true, add it to the beginning of the list after any other
    * exact matches; otherwise append to the tail of the list.
