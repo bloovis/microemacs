@@ -737,6 +737,7 @@ int indent (int f, int n, int k);	/* Insert CR-LF, then indent    */
 int gnuindent (int f, int n, int k);	/* Indent by GNU coding rules   */
 int borlandindent (int f, int n, int k);/* Indent by Borland rules	*/
 int vmwareindent (int f, int n, int k);	/* Indent by VMware rules	*/
+int rubyindent (int f, int n, int k);	/* Indent by Ruby conventions	*/
 int forwdel (int f, int n, int k);	/* Forward delete               */
 int backdel (int f, int n, int k);	/* Backward delete              */
 int killline (int f, int n, int k);	/* Kill forward                 */
