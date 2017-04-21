@@ -169,7 +169,7 @@ SCORE score[NROW * NROW];
 /*
  * Forward declarations.
  */
-static void vtputs (uchar *s, int n);
+static void vtputs (const uchar *s, int n);
 static void ucopy (VIDEO *vvp, VIDEO *pvp);
 static void uline (int row, VIDEO *vvp, VIDEO *pvp);
 static void modeline (EWINDOW *wp);
@@ -240,8 +240,8 @@ vttidy (void)
  * of the current line, which makes "vtputc" a little bit
  * more efficient. No checking for errors.
  */
-void
-vtmove (row, col)
+static void
+vtmove (int row, int col)
 {
   vtrow = row;
   vtcol = col;
@@ -260,9 +260,8 @@ vtmove (row, col)
  * makes the tab code loop if you are not careful.
  * Three guesses how we found this.
  */
-void
-vtputc (c)
-     register int c;
+static void
+vtputc (int c)
 {
   if (vtcol >= leftcol + ncol)
     vttext[ncol - 1] = '$';
@@ -289,7 +288,7 @@ vtputc (c)
  */
 
 static void
-vtputs (uchar *s, int n)
+vtputs (const uchar *s, int n)
 {
   register int c;
 
@@ -322,11 +321,10 @@ vtputs (uchar *s, int n)
 /*
  * Put a null-terminated string out to the virtual screen.
  */
-void
-vtstring (s)
-     uchar *s;
+static void
+vtstring (const uchar *s)
 {
-  vtputs (s, strlen (s));
+  vtputs (s, strlen ((const char *)s));
 }
 
 
@@ -338,8 +336,8 @@ vtstring (s)
  * if a hardware erase to end of line command
  * should be used to display this.
  */
-void
-vteeol ()
+static void
+vteeol (void)
 {
   register int count;
 
@@ -957,7 +955,7 @@ traceback (int offs, int size, int i, int j)
  * Handle mouse button event.
  */
 int
-mouseevent (f, n, k)
+mouseevent (int f, int n, int k)
 {
   eprintf ("[Mouse button %d, row %d, column %d]",
 	   mouse_button, mouse_row, mouse_column);

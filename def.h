@@ -423,11 +423,7 @@ typedef struct LINE
   struct LINE *l_bp;		/* Link to the previous line    */
   int l_size;			/* Allocated size               */
   int l_used;			/* Used size                    */
-#if	PCC
-  char l_text[1];		/* A bunch of characters.       */
-#else
   uchar l_text[];		/* A bunch of characters.       */
-#endif
 }
 LINE;
 

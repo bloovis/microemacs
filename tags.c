@@ -315,9 +315,10 @@ readtagfile (char *fname)
 	  lineno = strtol (eol, &eol, 10);
 	  if (lineno == 0 || *eol != ',')
 	    {
-	      eprintf ("Badly formed line number");
-	      s = FIOERR;
-	      break;
+	      eprintf ("Badly formed line number for %s", line);
+	      /* s = FIOERR; */
+	      /* break; */
+	      continue;
 	    }
 	  eol++;		/* skip over comma */
 	  offset = strtol (eol, NULL, 10);
