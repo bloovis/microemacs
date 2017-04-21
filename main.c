@@ -289,6 +289,7 @@ execute (int c, int f, int n)
 {
   register SYMBOL *sp;
   register int status;
+  int oldcasefold = casefold;
 
   if ((sp = binding[c]) != NULL)
     {
@@ -298,6 +299,8 @@ execute (int c, int f, int n)
       else
 	status = (*sp->s_funcp) (f, n, c);
       lastflag = thisflag;
+      if (casefold != oldcasefold)
+	eprintf ("casefold corrupted!");
       return (status);
     }
   eprintf ("Unknown command");
