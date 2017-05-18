@@ -215,18 +215,24 @@ KEY key[] = {
   {KCTLX | '1',		onlywind,	"only-window"},
   {KCTLX | '2',		splitwind,	"split-window"},
   {KCTLX | 'B',		usebuffer,	"use-buffer"},
-  {KCTLX | 'C',		jeffexit,	"jeff-exit"},
+  {KCTLX | 'C',		railscontroller,"rails-controller"},
   {KCTLX | 'E',		ctlxe,		"execute-macro"},
   {KCTLX | 'F',		readprofile,	"read-profile"},
   {KCTLX | 'G',		gotoline,	"goto-line"},
   {KCTLX | 'H',		checkheap,	"check-heap"},
   {KCTLX | 'I',		spellcheck,	"spell-check"},
   {KCTLX | 'K',		killbuffer,	"kill-buffer"},
+  {KCTLX | 'M',		railsmodel,	"rails-model"},
   {KCTLX | 'N',		nextwind,	"forw-window"},
   {KCTLX | 'P',		prevwind,	"back-window"},
   {KCTLX | 'R',		backisearch,	"back-i-search"},
   {KCTLX | 'S',		forwisearch,	"forw-i-search"},
+#if 0
   {KCTLX | 'V',		filevisitreadonly, "file-visit-readonly"},
+#else
+  {-1,			filevisitreadonly, "file-visit-readonly"},
+  {KCTLX | 'V',		railsview,	"rails-view"},
+#endif
   {KCTLX | 'Z',		enlargewind,	"enlarge-window"},
   {KMETA | KCTRL | 'F',	foldcase,	"fold-case"},
   {KMETA | KCTRL | 'H', delbword,	"back-del-word"},
@@ -279,6 +285,7 @@ KEY key[] = {
   {-1,			nextcscope,	"next-cscope"},
 #endif
   {-1,			mouseevent,	"mouse-event"},
+  {-1,			jeffexit,	"jeff-exit"},
 };
 
 #define	NKEY	(sizeof(key) / sizeof(key[0]))

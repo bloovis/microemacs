@@ -803,6 +803,9 @@ SYMBOL *symlookup (const char *cp);	/* Symbol table lookup		*/
  */
 int findtag (int f, int n, int k);	/* Search for a tag             */
 int freetags (int f, int n, int k);	/* Free up tag list		*/
+int railscontroller (int f, int n, int k); /* Find Rails controller	*/
+int railsview (int f, int n, int k);	/* Find Rails view		*/
+int railsmodel (int f, int n, int k);	/* Find Rails model		*/
 
 tagfile * findtagfile (const char *name);
 tagref * addtagref (const char *string, tagfile *file, int line, long offset,
