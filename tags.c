@@ -639,7 +639,7 @@ railsview(int f, int n, int k)
     {
       method[0] = '\0';
       s = ereply("view method: ", method, NPAT);
-      if (s == FALSE || method[0] == '\0')
+      if (s == FALSE || s == ABORT || method[0] == '\0')
 	return FALSE;
       snprintf(filename, NFILEN, "app/views/%s/%s.html.erb", classname, method);
       if (visit_file (filename) == FALSE)
@@ -655,7 +655,7 @@ int
 railsmodel(int f, int n, int k)
 {
   char filename[NFILEN];
-  const char *uname = getrailsname("model for class (lower case)");
+  const char *uname = getrailsname("model for class (singular, lower case)");
 
   if (uname == NULL)
     return FALSE;
