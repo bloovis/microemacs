@@ -134,7 +134,7 @@ void ttykeymapinit()
   keydup(KF2,		"file-save");
   keydup(KF3,		"file-visit");
   keydup(KF4,		"quit");
-  keydup(KF5,		"display-bindings");
+  keydup(KF5,		"undo");
   keydup(KF6,		"display-buffers");
   keydup(KF7,		"forw-window");
   keydup(KF8,		"forw-buffer");
