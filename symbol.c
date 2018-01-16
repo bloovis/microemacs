@@ -227,6 +227,7 @@ KEY key[] = {
   {KCTLX | 'P',		prevwind,	"back-window"},
   {KCTLX | 'R',		backisearch,	"back-i-search"},
   {KCTLX | 'S',		forwisearch,	"forw-i-search"},
+  {KCTLX | 'U',		undo,		"undo"},
 #if 0
   {KCTLX | 'V',		filevisitreadonly, "file-visit-readonly"},
 #else

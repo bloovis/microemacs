@@ -215,7 +215,7 @@ adjustforinsert (const POS *oldpos, LINE *newlp, int nchars, POS *pos)
 
 /*
  * If the string pointer "s" is NULL,
- * Insert "n" copies of the character "c"
+ * insert "n" copies of the character "c"
  * at the current location of dot.  Otherwise,
  * insert "n" bytes from the string "s" at the current
  * location of dot.  In the easy case,

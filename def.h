@@ -449,6 +449,49 @@ LINE;
 #define llength(lp)	((lp)->l_used)
 
 /*
+ * Undo information is saved in a circular FIFO.
+ * There are several types of information, so
+ * each record is a union of several structs.
+ */
+typedef enum UKIND
+{
+  UUNUSED = 0,			/* Entry is unused		*/
+  USTART,			/* Start of multi-step undo	*/
+  UEND,				/* End of multi-step undo	*/
+  UMOVE,			/* Move to (line #, offset)	*/
+  UCH,				/* Insert character		*/
+  USTR,				/* Insert string		*/
+  UDEL,				/* Delete N characters		*/
+} UKIND;
+
+typedef struct UNDO
+{
+  UKIND kind;			/* Kind of information		*/
+  union
+  {
+    struct
+    {
+      int l;			/* Line number			*/
+      int o;			/* Offset into line		*/
+    } move;
+    struct
+    {
+      int n;			/* # of characters to insert	*/
+      uchar c;			/* Character			*/
+    } ch;
+    struct
+    {
+      uchar *s;			/* String.			*/
+    } str;
+    struct
+    {
+      int n;			/* # of characters to delete	*/
+    } del;
+  } u;
+}
+UNDO;
+
+/*
  * Externals.
  */
 extern int thisflag;
@@ -879,4 +922,10 @@ int delfword (int f, int n, int k);	/* Delete forward word.         */
 int delbword (int f, int n, int k);	/* Delete backward word.        */
 
 int inword (void);			/* Is dot in a word?		*/
-EWINDOW * wpopup (void);			/* Pick window for a pop-up	*/
+EWINDOW * wpopup (void);		/* Pick window for a pop-up	*/
+
+/*
+ * Defined by "undo.c".
+ */
+int saveundo(UKIND kind, ...);		/* Save undo information.	*/
+int undo (int f, int n, int k);		/* Undo most recent operation.  */

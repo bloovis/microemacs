@@ -273,7 +273,7 @@ quote (f, n, k)
  * world look reasonable if a control character is bound to this
  * this routine by hand. Any META or CTLX flags on the character
  * are discarded. This is the only routine that actually looks
- * the the "k" argument.
+ * at the "k" argument.
  */
 int
 selfinsert (f, n, k)
@@ -287,8 +287,15 @@ selfinsert (f, n, k)
   c = k & KCHAR;
   if ((k & KCTRL) != 0 && c >= '@' && c <= '_')	/* ASCII-ify.           */
     c -= '@';
+  saveundo (USTART);
+  saveundo (UMOVE, curwp->w_dot.p, curwp->w_dot.o);
   if (overstrike && curwp->w_dot.o != llength (curwp->w_dot.p))
-    ldelete (1, FALSE);
+    {
+      saveundo (UCH, 1, lgetc(curwp->w_dot.p, curwp->w_dot.o));
+      ldelete (1, FALSE);
+    }
+  saveundo (UDEL, n);
+  saveundo (UEND);
   return (linsert (n, c, NULLPTR));
 }
 

@@ -51,7 +51,8 @@ OBJ :=	@EXTRA_OBJS@ \
 	tags.o \
 	ttyio.o \
 	tty.o \
-	ttykbd.o
+	ttykbd.o \
+	undo.o
 
 # How to compile a module.
 
