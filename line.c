@@ -410,6 +410,11 @@ ldelete (int n, int kflag)
     }
   if (checkreadonly () == FALSE)
     return FALSE;
+  if (kflag != FALSE)
+    {
+      saveundo(USTART);
+      saveundo(UMOVE, curwp->w_dot.p, curwp->w_dot.o);
+    }
   while (n != 0)
     {
       dot = curwp->w_dot;
@@ -442,6 +447,8 @@ ldelete (int n, int kflag)
       }
       n -= chunk;
     }
+  if (kflag != FALSE)
+    saveundo(UEND);
   return (TRUE);
 }
 
@@ -668,6 +675,7 @@ kinsert (char *s, int n)
 {
   register char *nbufp;
 
+  saveundo(USTR, n, s);
   if (kused + n > ksize)
     {
 #if REALLOC

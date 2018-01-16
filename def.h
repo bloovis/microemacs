@@ -481,7 +481,8 @@ typedef struct UNDO
     } ch;
     struct
     {
-      uchar *s;			/* String.			*/
+      int n;			/* Length of string		*/
+      uchar *s;			/* String			*/
     } str;
     struct
     {

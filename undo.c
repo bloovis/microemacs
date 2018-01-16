@@ -80,13 +80,17 @@ saveundo (UKIND kind, ...)
 
     case USTR:			/* Insert string		*/
       {
+	int n = va_arg(ap, int);
 	const uchar *s = va_arg(ap, const uchar *);
-	up->u.str.s = (uchar *)strdup((const char *)s);
+
+	up->u.str.s = (uchar *)malloc(n);
 	if (up->u.str.s == NULL)
 	  {
 	  eprintf("Out of memory in undo!");
 	  return FALSE;
 	  }
+	memcpy(up->u.str.s, s, n);
+	up->u.str.n = n;
 	break;
       }
     case UDEL:			/* Delete N characters		*/
@@ -162,11 +166,16 @@ undo (int f, int n, int k)
 	}
       unext = nx;
       if (up->kind == UEND)
-	/* End of a multi-step undo: keep moving back until USTART is reached */
-	multi = TRUE;
+	{
+	  /* End of a multi-step undo: keep moving back until USTART is reached */
+	  multi = TRUE;
+	}
       else if (up->kind == USTART)
-	/* Reached start of multi-step undo: we can stop now and replay the steps. */
-	break;
+	{
+	  /* Reached start of multi-step undo: we can stop now and replay the steps. */
+	  freeundo(up);
+	  break;
+	}
       else if (!multi)
         /* Execute a single undo step. */
 	return undostep(up);
@@ -181,5 +190,6 @@ undo (int f, int n, int k)
       if (status != TRUE)
 	return status;
     }
+  freeundo(up);
   return TRUE;
 }
