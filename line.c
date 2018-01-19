@@ -340,6 +340,13 @@ lnewline (void)
   lchange (WFHARD);
   lp1 = curwp->w_dot.p;			/* Get the address and  */
   doto = curwp->w_dot.o;		/* offset of "."        */
+
+  /* Save undo information. */
+  saveundo (USTART);
+  saveundo (UMOVE, lp1, doto);
+  saveundo (UDEL, 1);
+  saveundo (UEND);
+
   if ((lp2 = lalloc (doto)) == NULL)	/* New first half line  */
     return (FALSE);
   memcpy (&lp2->l_text[0], &lp1->l_text[0], doto);	/* shuffle text */
@@ -410,11 +417,8 @@ ldelete (int n, int kflag)
     }
   if (checkreadonly () == FALSE)
     return FALSE;
-  if (kflag != FALSE)
-    {
-      saveundo(USTART);
-      saveundo(UMOVE, curwp->w_dot.p, curwp->w_dot.o);
-    }
+  saveundo(USTART);
+  saveundo(UMOVE, curwp->w_dot.p, curwp->w_dot.o);
   while (n != 0)
     {
       dot = curwp->w_dot;
@@ -429,6 +433,7 @@ ldelete (int n, int kflag)
 	  if (ldelnewline () == FALSE
 	      || (kflag != FALSE && kinsert ("\n", 1) == FALSE))
 	    return (FALSE);
+          saveundo(UCH, 1, '\n');
 	  --n;
 	  continue;
 	}
@@ -438,6 +443,7 @@ ldelete (int n, int kflag)
       if (kflag != FALSE)	/* Kill?                */
 	if (kinsert (cp1, chunk) == FALSE)
 	  return (FALSE);
+      saveundo(USTR, chunk, cp1);
       memmove (cp1, cp2, dot.p->l_used - (dot.o + chunk));
       dot.p->l_used -= chunk;
       ALLWIND (wp)
@@ -447,8 +453,7 @@ ldelete (int n, int kflag)
       }
       n -= chunk;
     }
-  if (kflag != FALSE)
-    saveundo(UEND);
+  saveundo(UEND);
   return (TRUE);
 }
 
@@ -675,7 +680,6 @@ kinsert (char *s, int n)
 {
   register char *nbufp;
 
-  saveundo(USTR, n, s);
   if (kused + n > ksize)
     {
 #if REALLOC

@@ -21,8 +21,9 @@
 
 #define N_UNDO 100
 
-static UNDO ustack[N_UNDO];	/* undo records			*/
-static int unext = 0;		/* next unused entry in u	 */
+static UNDO ustack[N_UNDO];	/* undo records				*/
+static int unext = 0;		/* next unused entry in u		*/
+static int undoing = FALSE;	/* currently undoing an operation? 	*/
 
 static void
 freeundo(UNDO *up)
@@ -45,6 +46,7 @@ lineno (const LINE *lp)
     {
       if (clp == curbp->b_linep || clp == lp)
 	break;
+      clp = lforw (clp);
       ++nline;
     }
   return nline;
@@ -57,6 +59,8 @@ saveundo (UKIND kind, ...)
   va_list ap;
   UNDO *up;
 
+  if (undoing)
+    return TRUE;
   va_start(ap, kind);
   up = &ustack[unext];
   freeundo(up);
@@ -68,33 +72,33 @@ saveundo (UKIND kind, ...)
     case UMOVE:			/* Move to (line #, offset)	*/
       {
 	const LINE *lp = va_arg (ap, const LINE *);
-	up->u.move.l = lineno (lp);	/* Line number		*/
-        up->u.move.o = va_arg(ap, int);	/* Offset		*/
+	up->u.move.l = lineno (lp);		/* Line number		*/
+        up->u.move.o = va_arg (ap, int);	/* Offset		*/
         break;
       }
 
     case UCH:				/* Insert character	*/
-      up->u.ch.n = va_arg(ap, int);	/* Count		*/
-      up->u.ch.c = va_arg(ap, int);	/* Character		*/
+      up->u.ch.n = va_arg (ap, int);	/* Count		*/
+      up->u.ch.c = va_arg (ap, int);	/* Character		*/
       break;
 
     case USTR:			/* Insert string		*/
       {
 	int n = va_arg(ap, int);
-	const uchar *s = va_arg(ap, const uchar *);
+	const uchar *s = va_arg (ap, const uchar *);
 
-	up->u.str.s = (uchar *)malloc(n);
+	up->u.str.s = (uchar *) malloc (n);
 	if (up->u.str.s == NULL)
 	  {
 	  eprintf("Out of memory in undo!");
 	  return FALSE;
 	  }
-	memcpy(up->u.str.s, s, n);
+	memcpy (up->u.str.s, s, n);
 	up->u.str.n = n;
 	break;
       }
     case UDEL:			/* Delete N characters		*/
-      up->u.del.n = va_arg(ap, int);
+      up->u.del.n = va_arg (ap, int);
       break;
 
     case USTART:
@@ -102,7 +106,7 @@ saveundo (UKIND kind, ...)
       break;
 
     default:
-      eprintf("Unimplemented undo type %d", kind);
+      eprintf ("Unimplemented undo type %d", kind);
       break;
     }
 
@@ -118,21 +122,53 @@ undostep(UNDO *up)
   switch (up->kind)
     {
     case UMOVE:
-      status = gotoline(TRUE, up->u.move.l + 1, 0);
+      status = gotoline (TRUE, up->u.move.l + 1, KRANDOM);
       curwp->w_dot.o = up->u.move.o;
       curwp->w_flag |= WFMOVE;
       break;
+
     case UCH:
-      status = linsert(up->u.ch.n, up->u.ch.c, NULL);
+      if (up->u.ch.c == '\n')
+	status = newline (FALSE, up->u.ch.n, KRANDOM);
+      else
+	status = linsert (up->u.ch.n, up->u.ch.c, NULL);
       break;
+
     case USTR:
-      status = linsert(up->u.ch.n, 0, (char *)up->u.str.s);
-      break;
+      {
+	const uchar *s = up->u.str.s;
+	const uchar *end = s + up->u.str.n;
+	status = TRUE;
+
+	while (status == TRUE && s < end)
+	  {
+	    const uchar *nl = memchr(s, '\n', end - s);
+	    if (nl == NULL)
+	      {
+		status = linsert (end - s, 0, (char *) s);
+		s = end;
+	      }
+	    else
+	      {
+		if (nl != s)
+		  {
+		    status = linsert (nl - s, 0, (char *) s);
+		    if (status != TRUE)
+		      break;
+		  }
+		status = lnewline ();
+		s = nl + 1;
+	      }
+	  }
+	break;
+      }
+
     case UDEL:
-      status = ldelete(up->u.del.n, FALSE);
+      status = ldelete (up->u.del.n, FALSE);
       break;
+
     default:
-      eprintf("Unknown undo kind %d", up->kind);
+      eprintf ("Unknown undo kind %d", up->kind);
       status = FALSE;
       break;
     }
@@ -152,6 +188,7 @@ undo (int f, int n, int k)
    * if it is a single step; or if it is a multi-step, find
    * the beginning of the multi-step sequence.
    */
+  undoing = TRUE;
   while (TRUE)
     {
       if (unext == 0)
@@ -161,7 +198,8 @@ undo (int f, int n, int k)
       up = &ustack[nx];
       if (up->kind == UUNUSED)
 	{
-          eprintf("Undo stack is empty.");
+          eprintf ("Undo stack is empty.");
+	  undoing = FALSE;
           return FALSE;
 	}
       unext = nx;
@@ -173,12 +211,16 @@ undo (int f, int n, int k)
       else if (up->kind == USTART)
 	{
 	  /* Reached start of multi-step undo: we can stop now and replay the steps. */
-	  freeundo(up);
+	  freeundo (up);
 	  break;
 	}
       else if (!multi)
-        /* Execute a single undo step. */
-	return undostep(up);
+	{
+	  /* Execute a single undo step. */
+	  status = undostep (up);
+	  undoing = FALSE;
+	  return status;
+	}
     }
 
   /* Replay each step of a multi-step undo in the order
@@ -186,10 +228,85 @@ undo (int f, int n, int k)
    */
   for (++up; up->kind != UEND; ++up)
     {
-      status = undostep(up);
+      status = undostep (up);
       if (status != TRUE)
-	return status;
+	{
+	  undoing = FALSE;
+	  return status;
+	}
     }
-  freeundo(up);
+  freeundo (up);
+  undoing = FALSE;
   return TRUE;
+}
+
+static void
+printone (UNDO *up)
+{
+  switch (up->kind)
+    {
+    case UCH:
+      if (up->u.ch.c == '\n')
+	printf ("  Char: NEWLINE");
+      else
+	printf ("  Char: '%c'", up->u.ch.c);
+      printf (", n = %d\r\n", up->u.ch.n);
+      break;
+
+    case USTR:
+      {
+	const uchar *s;
+	int n;
+
+	printf ("  String: '");
+	for (s = up->u.str.s, n = up->u.str.n; n > 0; --n, ++s)
+	  {
+	    uchar c = *s;
+	    if (c == '\n')
+	      printf ("\\n");
+	    else
+	      printf ("%c", c);
+	  }
+	printf ("'\r\n");
+        break;
+      }
+
+    case UMOVE:
+      printf ("  Move: line %d, offset %d\r\n", up->u.move.l, up->u.move.o);
+      break;
+
+    case UDEL:
+      printf ("  Delete: %d characters\r\n", up->u.del.n);
+      break;
+
+    default:
+      printf ("  Unexpected kind %d\r\n", up->kind);
+      break;
+    }
+}
+
+void
+printundo(void)
+{
+  int level;
+  UNDO *up;
+
+  up = unext == 0 ? &ustack[N_UNDO] : &ustack[unext - 1];
+  level = 1;
+  while (up->kind != UUNUSED)
+    {
+      printf("%d:\r\n", level);
+      if (up->kind == UEND)
+	{
+	  UNDO *up1;
+	  for (--up; up->kind != USTART; --up)
+	    ;
+	  for (up1 = up + 1; up1->kind != UEND; ++up1)
+	    printone(up1);
+	}
+      else
+	printone (up);
+      --up;
+      ++level;
+    }
 }
