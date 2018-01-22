@@ -287,7 +287,7 @@ selfinsert (f, n, k)
   c = k & KCHAR;
   if ((k & KCTRL) != 0 && c >= '@' && c <= '_')	/* ASCII-ify.           */
     c -= '@';
-  saveundo (USTART);
+  startundo ();
   saveundo (UMOVE, curwp->w_dot.p, curwp->w_dot.o);
   if (overstrike && curwp->w_dot.o != llength (curwp->w_dot.p))
     {
@@ -295,7 +295,7 @@ selfinsert (f, n, k)
       ldelete (1, FALSE);
     }
   saveundo (UDEL, n);
-  saveundo (UEND);
+  endundo ();
   return (linsert (n, c, NULLPTR));
 }
 

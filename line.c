@@ -342,10 +342,10 @@ lnewline (void)
   doto = curwp->w_dot.o;		/* offset of "."        */
 
   /* Save undo information. */
-  saveundo (USTART);
+  startundo ();
   saveundo (UMOVE, lp1, doto);
   saveundo (UDEL, 1);
-  saveundo (UEND);
+  endundo ();
 
   if ((lp2 = lalloc (doto)) == NULL)	/* New first half line  */
     return (FALSE);
@@ -417,8 +417,8 @@ ldelete (int n, int kflag)
     }
   if (checkreadonly () == FALSE)
     return FALSE;
-  saveundo(USTART);
-  saveundo(UMOVE, curwp->w_dot.p, curwp->w_dot.o);
+  startundo ();
+  saveundo (UMOVE, curwp->w_dot.p, curwp->w_dot.o);
   while (n != 0)
     {
       dot = curwp->w_dot;
@@ -453,7 +453,7 @@ ldelete (int n, int kflag)
       }
       n -= chunk;
     }
-  saveundo(UEND);
+  endundo ();
   return (TRUE);
 }
 

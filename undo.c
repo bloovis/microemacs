@@ -21,14 +21,22 @@
 
 #define N_UNDO 100
 
+/* Flags to add to undo kind to indicate start and end of sequence.	*/
+#define USTART	0x100
+#define UEND	0x200
+#define ukind(up)  (up->kind & 0xff)
+#define ustart(up) ((up->kind & USTART) != 0)
+#define uend(up)   ((up->kind & UEND) != 0)
+
 static UNDO ustack[N_UNDO];	/* undo records				*/
-static int unext = 0;		/* next unused entry in u		*/
+static UNDO *uptr = ustack;	/* ptr to next unused entry in ustack	*/
 static int undoing = FALSE;	/* currently undoing an operation? 	*/
+static int starting = FALSE;	/* next saveundo is start of sequence?	*/
 
 static void
 freeundo(UNDO *up)
 {
-  if (up->kind == USTR)
+  if (ukind (up) == USTR)
     free(up->u.str.s);
   up->kind = UUNUSED;
 }
@@ -53,6 +61,40 @@ lineno (const LINE *lp)
 }
 
 
+static UNDO *
+unext (UNDO *up)
+{
+  if (up == &ustack[N_UNDO - 1])
+    return &ustack[0];
+  else
+    return up + 1;
+}
+
+static UNDO *
+uprev (UNDO *up)
+{
+  if (up == &ustack[0])
+    return &ustack[N_UNDO - 1];
+  else
+    return up - 1;
+}
+
+void
+startundo (void)
+{
+  starting = TRUE;
+}
+
+
+void
+endundo (void)
+{
+  UNDO *up = uprev (uptr);
+
+  up->kind |= UEND;
+}
+
+
 int
 saveundo (UKIND kind, ...)
 {
@@ -62,11 +104,16 @@ saveundo (UKIND kind, ...)
   if (undoing)
     return TRUE;
   va_start(ap, kind);
-  up = &ustack[unext];
+  up = uptr;
   freeundo(up);
-  unext = (unext + 1) % N_UNDO;
+  uptr = unext (uptr);
 
   up->kind = kind;
+  if (starting == TRUE)
+    {
+      up->kind |= USTART;
+      starting = FALSE;
+    }
   switch (kind)
     {
     case UMOVE:			/* Move to (line #, offset)	*/
@@ -101,10 +148,6 @@ saveundo (UKIND kind, ...)
       up->u.del.n = va_arg (ap, int);
       break;
 
-    case USTART:
-    case UEND:
-      break;
-
     default:
       eprintf ("Unimplemented undo type %d", kind);
       break;
@@ -119,7 +162,7 @@ undostep(UNDO *up)
 {
   int status;
 
-  switch (up->kind)
+  switch (ukind (up))
     {
     case UMOVE:
       status = gotoline (TRUE, up->u.move.l + 1, KRANDOM);
@@ -168,7 +211,7 @@ undostep(UNDO *up)
       break;
 
     default:
-      eprintf ("Unknown undo kind %d", up->kind);
+      eprintf ("Unknown undo kind 0x%x", up->kind);
       status = FALSE;
       break;
     }
@@ -180,70 +223,48 @@ int
 undo (int f, int n, int k)
 {
   UNDO *up;
-  int nx;
-  int status;
-  int multi = FALSE;
+  int status = TRUE;
 
-  /* Pop the last undo record from the stack.  Execute it
-   * if it is a single step; or if it is a multi-step, find
-   * the beginning of the multi-step sequence.
+  /* Step back in the undo stack until we find the start
+   * a sequence.
    */
   undoing = TRUE;
-  while (TRUE)
+  up = uprev (uptr);
+  while (ustart (up) != TRUE)
     {
-      if (unext == 0)
-	nx = N_UNDO;
-      else
-	nx = unext - 1;
-      up = &ustack[nx];
       if (up->kind == UUNUSED)
 	{
           eprintf ("Undo stack is empty.");
 	  undoing = FALSE;
           return FALSE;
 	}
-      unext = nx;
-      if (up->kind == UEND)
-	{
-	  /* End of a multi-step undo: keep moving back until USTART is reached */
-	  multi = TRUE;
-	}
-      else if (up->kind == USTART)
-	{
-	  /* Reached start of multi-step undo: we can stop now and replay the steps. */
-	  freeundo (up);
-	  break;
-	}
-      else if (!multi)
-	{
-	  /* Execute a single undo step. */
-	  status = undostep (up);
-	  undoing = FALSE;
-	  return status;
-	}
+      up = uprev (up);
     }
+  uptr = up;
 
   /* Replay each step of a multi-step undo in the order
    * in which they were pushed on the stack.
    */
-  for (++up; up->kind != UEND; ++up)
+  while (TRUE)
     {
-      status = undostep (up);
-      if (status != TRUE)
-	{
-	  undoing = FALSE;
-	  return status;
-	}
+      int end = uend (up);	/* grab end flag before it's zapped */
+      int st = undostep (up);
+
+      if (st != TRUE)
+	status = st;
+      if (end == TRUE)
+	break;
+      up = unext (up);
     }
-  freeundo (up);
+
   undoing = FALSE;
-  return TRUE;
+  return status;
 }
 
 static void
 printone (UNDO *up)
 {
-  switch (up->kind)
+  switch (ukind (up))
     {
     case UCH:
       if (up->u.ch.c == '\n')
@@ -280,7 +301,7 @@ printone (UNDO *up)
       break;
 
     default:
-      printf ("  Unexpected kind %d\r\n", up->kind);
+      printf ("  Unexpected kind 0x%x\r\n", up->kind);
       break;
     }
 }
@@ -290,23 +311,31 @@ printundo(void)
 {
   int level;
   UNDO *up;
+  UNDO *up1;
 
-  up = unext == 0 ? &ustack[N_UNDO] : &ustack[unext - 1];
+  up = uprev (uptr);
   level = 1;
-  while (up->kind != UUNUSED)
+  while (up->kind != UUNUSED && up != uptr)
     {
-      printf("%d:\r\n", level);
-      if (up->kind == UEND)
+      while (ustart (up) != TRUE)
 	{
-	  UNDO *up1;
-	  for (--up; up->kind != USTART; --up)
-	    ;
-	  for (up1 = up + 1; up1->kind != UEND; ++up1)
-	    printone(up1);
+	  up = uprev (up);
+	  if (up->kind == UUNUSED)
+	    {
+	      eprintf("Error finding start of undo sequence!");
+	      return;
+	    }
 	}
-      else
-	printone (up);
-      --up;
+      printf("%d:\r\n", level);
+      up1 = up;
+      while (TRUE)
+	{
+	  printone (up1);
+	  if (uend (up1) == TRUE)
+	    break;
+	  up1 = unext (up1);
+	}
       ++level;
+      up = uprev (up);
     }
 }

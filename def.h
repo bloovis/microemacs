@@ -456,8 +456,6 @@ LINE;
 typedef enum UKIND
 {
   UUNUSED = 0,			/* Entry is unused		*/
-  USTART,			/* Start of multi-step undo	*/
-  UEND,				/* End of multi-step undo	*/
   UMOVE,			/* Move to (line #, offset)	*/
   UCH,				/* Insert character		*/
   USTR,				/* Insert string		*/
@@ -928,5 +926,7 @@ EWINDOW * wpopup (void);		/* Pick window for a pop-up	*/
 /*
  * Defined by "undo.c".
  */
-int saveundo(UKIND kind, ...);		/* Save undo information.	*/
+void startundo (void);			/* Start of undo sequence.	*/
+int saveundo (UKIND kind, ...);		/* Save undo information.	*/
+void endundo (void);			/* End of undo sequence.	*/
 int undo (int f, int n, int k);		/* Undo most recent operation.  */
