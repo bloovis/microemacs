@@ -223,6 +223,7 @@ int
 undo (int f, int n, int k)
 {
   UNDO *up;
+  UNDO *end;
   int status = TRUE;
 
   /* Step back in the undo stack until we find the start
@@ -230,6 +231,7 @@ undo (int f, int n, int k)
    */
   undoing = TRUE;
   up = uprev (uptr);
+  end = up;
   while (ustart (up) != TRUE)
     {
       if (up->kind == UUNUSED)
@@ -242,17 +244,16 @@ undo (int f, int n, int k)
     }
   uptr = up;
 
-  /* Replay each step of a multi-step undo in the order
+  /* Replay all steps of a multi-step undo in the order
    * in which they were pushed on the stack.
    */
   while (TRUE)
     {
-      int end = uend (up);	/* grab end flag before it's zapped */
       int st = undostep (up);
 
       if (st != TRUE)
 	status = st;
-      if (end == TRUE)
+      if (up == end)
 	break;
       up = unext (up);
     }

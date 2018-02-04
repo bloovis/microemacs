@@ -289,12 +289,12 @@ selfinsert (f, n, k)
     c -= '@';
   startundo ();
   saveundo (UMOVE, curwp->w_dot.p, curwp->w_dot.o);
+  saveundo (UDEL, n);
   if (overstrike && curwp->w_dot.o != llength (curwp->w_dot.p))
     {
-      saveundo (UCH, 1, lgetc(curwp->w_dot.p, curwp->w_dot.o));
       ldelete (1, FALSE);
+      saveundo (UCH, 1, lgetc(curwp->w_dot.p, curwp->w_dot.o));
     }
-  saveundo (UDEL, n);
   endundo ();
   return (linsert (n, c, NULLPTR));
 }
