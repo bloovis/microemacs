@@ -33,8 +33,8 @@
 
 static UNDO ustack[N_UNDO];	/* undo records				*/
 static UNDO *uptr = ustack;	/* ptr to next unused entry in ustack	*/
+static UNDO *startup;		/* ptr saved by startundo		*/
 static int undoing = FALSE;	/* currently undoing an operation? 	*/
-static int starting = FALSE;	/* next saveundo is start of sequence?	*/
 
 static void
 freeundo(UNDO *up)
@@ -85,16 +85,21 @@ uprev (UNDO *up)
 void
 startundo (void)
 {
-  starting = TRUE;
+  startup = uptr;
 }
 
 
 void
 endundo (void)
 {
-  UNDO *up = uprev (uptr);
+  UNDO *up;
 
-  up->kind |= UEND;
+  if (uptr != startup)
+    {
+      up = uprev (uptr);
+      up->kind |= UEND;
+    }
+  startup = NULL;
 }
 
 
@@ -122,10 +127,10 @@ saveundo (UKIND kind, POS *pos, ...)
       up->l = NOLINE;
     }
 
-  if (starting == TRUE)
+  if (up == startup)
     {
       up->kind |= USTART;
-      starting = FALSE;
+      startup = FALSE;
     }
   switch (kind)
     {
