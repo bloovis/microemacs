@@ -24,9 +24,12 @@
 /* Flags to add to undo kind to indicate start and end of sequence.	*/
 #define USTART	0x100
 #define UEND	0x200
+
 #define ukind(up)  (up->kind & 0xff)
 #define ustart(up) ((up->kind & USTART) != 0)
 #define uend(up)   ((up->kind & UEND) != 0)
+
+#define NOLINE  -1		/* UNDO.{l,o} value meaing not used	*/
 
 static UNDO ustack[N_UNDO];	/* undo records				*/
 static UNDO *uptr = ustack;	/* ptr to next unused entry in ustack	*/
@@ -96,19 +99,29 @@ endundo (void)
 
 
 int
-saveundo (UKIND kind, ...)
+saveundo (UKIND kind, POS *pos, ...)
 {
   va_list ap;
   UNDO *up;
 
   if (undoing)
     return TRUE;
-  va_start(ap, kind);
+  va_start(ap, pos);
   up = uptr;
   freeundo(up);
   uptr = unext (uptr);
 
   up->kind = kind;
+  if (pos != NULL)
+    {
+      up->l = lineno (pos->p);	/* Line number		*/
+      up->o = pos->o;		/* Offset		*/
+    }
+  else
+    {
+      up->l = NOLINE;
+    }
+
   if (starting == TRUE)
     {
       up->kind |= USTART;
@@ -117,12 +130,7 @@ saveundo (UKIND kind, ...)
   switch (kind)
     {
     case UMOVE:			/* Move to (line #, offset)	*/
-      {
-	const LINE *lp = va_arg (ap, const LINE *);
-	up->u.move.l = lineno (lp);		/* Line number		*/
-        up->u.move.o = va_arg (ap, int);	/* Offset		*/
-        break;
-      }
+      break;
 
     case UCH:				/* Insert character	*/
       up->u.ch.n = va_arg (ap, int);	/* Count		*/
@@ -137,7 +145,7 @@ saveundo (UKIND kind, ...)
 	up->u.str.s = (uchar *) malloc (n);
 	if (up->u.str.s == NULL)
 	  {
-	  eprintf("Out of memory in undo!");
+	  eprintf ("Out of memory in undo!");
 	  return FALSE;
 	  }
 	memcpy (up->u.str.s, s, n);
@@ -145,9 +153,22 @@ saveundo (UKIND kind, ...)
 	break;
       }
     case UDEL:			/* Delete N characters		*/
-      up->u.del.n = va_arg (ap, int);
-      break;
-
+      {
+	int n = va_arg (ap, int);
+	UNDO *prev = uprev (up);
+        if (ukind (prev) == UDEL &&
+	    prev->l == up->l &&
+	    prev->o + prev->u.del.n == up->o)
+	  {
+	    prev->u.del.n += n;
+	    uptr = up;
+	  }
+	else
+	  {
+	    up->u.del.n = n;
+	    break;
+	  }
+      }
     default:
       eprintf ("Unimplemented undo type %d", kind);
       break;
@@ -160,61 +181,69 @@ saveundo (UKIND kind, ...)
 static int
 undostep(UNDO *up)
 {
-  int status;
+  int status = TRUE;
 
-  switch (ukind (up))
+  if (up->l != NOLINE)
     {
-    case UMOVE:
-      status = gotoline (TRUE, up->u.move.l + 1, KRANDOM);
-      curwp->w_dot.o = up->u.move.o;
+      status = gotoline (TRUE, up->l + 1, KRANDOM);
+      curwp->w_dot.o = up->o;
       curwp->w_flag |= WFMOVE;
-      break;
-
-    case UCH:
-      if (up->u.ch.c == '\n')
-	status = newline (FALSE, up->u.ch.n, KRANDOM);
-      else
-	status = linsert (up->u.ch.n, up->u.ch.c, NULL);
-      break;
-
-    case USTR:
-      {
-	const uchar *s = up->u.str.s;
-	const uchar *end = s + up->u.str.n;
-	status = TRUE;
-
-	while (status == TRUE && s < end)
-	  {
-	    const uchar *nl = memchr(s, '\n', end - s);
-	    if (nl == NULL)
-	      {
-		status = linsert (end - s, 0, (char *) s);
-		s = end;
-	      }
-	    else
-	      {
-		if (nl != s)
-		  {
-		    status = linsert (nl - s, 0, (char *) s);
-		    if (status != TRUE)
-		      break;
-		  }
-		status = lnewline ();
-		s = nl + 1;
-	      }
-	  }
-	break;
-      }
-
-    case UDEL:
-      status = ldelete (up->u.del.n, FALSE);
-      break;
-
-    default:
-      eprintf ("Unknown undo kind 0x%x", up->kind);
-      status = FALSE;
-      break;
     }
+
+  if (status == TRUE)
+    {
+      switch (ukind (up))
+	{
+	case UMOVE:
+	  break;
+
+	case UCH:
+	  if (up->u.ch.c == '\n')
+	    status = newline (FALSE, up->u.ch.n, KRANDOM);
+	  else
+	    status = linsert (up->u.ch.n, up->u.ch.c, NULL);
+	  break;
+
+	case USTR:
+	  {
+	    const uchar *s = up->u.str.s;
+	    const uchar *end = s + up->u.str.n;
+	    status = TRUE;
+
+	    while (status == TRUE && s < end)
+	      {
+		const uchar *nl = memchr(s, '\n', end - s);
+		if (nl == NULL)
+		  {
+		    status = linsert (end - s, 0, (char *) s);
+		    s = end;
+		  }
+		else
+		  {
+		    if (nl != s)
+		      {
+			status = linsert (nl - s, 0, (char *) s);
+			if (status != TRUE)
+			  break;
+		      }
+		    status = lnewline ();
+		    s = nl + 1;
+		  }
+	      }
+	    break;
+	  }
+
+	case UDEL:
+	  status = ldelete (up->u.del.n, FALSE);
+	  break;
+
+	default:
+	  eprintf ("Unknown undo kind 0x%x", up->kind);
+	  status = FALSE;
+	  break;
+	}
+    }
+
   freeundo(up);
   return status;
 }
@@ -294,11 +323,12 @@ printone (UNDO *up)
       }
 
     case UMOVE:
-      printf ("  Move: line %d, offset %d\r\n", up->u.move.l, up->u.move.o);
+      printf ("  Move: line %d, offset %d\r\n", up->l, up->o);
       break;
 
     case UDEL:
-      printf ("  Delete: %d characters\r\n", up->u.del.n);
+      printf ("  Delete: %d characters at line %d, offset %d\r\n",
+              up->u.del.n, up->l, up->o);
       break;
 
     default:

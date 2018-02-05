@@ -465,13 +465,10 @@ typedef enum UKIND
 typedef struct UNDO
 {
   UKIND kind;			/* Kind of information		*/
+  int l;			/* Line number			*/
+  int o;			/* Offset into line		*/
   union
   {
-    struct
-    {
-      int l;			/* Line number			*/
-      int o;			/* Offset into line		*/
-    } move;
     struct
     {
       int n;			/* # of characters to insert	*/
@@ -927,6 +924,6 @@ EWINDOW * wpopup (void);		/* Pick window for a pop-up	*/
  * Defined by "undo.c".
  */
 void startundo (void);			/* Start of undo sequence.	*/
-int saveundo (UKIND kind, ...);		/* Save undo information.	*/
+int saveundo (UKIND kind, POS *pos, ...); /* Save undo information.	*/
 void endundo (void);			/* End of undo sequence.	*/
 int undo (int f, int n, int k);		/* Undo most recent operation.  */

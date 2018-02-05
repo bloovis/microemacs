@@ -343,8 +343,7 @@ lnewline (void)
 
   /* Save undo information. */
   startundo ();
-  saveundo (UMOVE, lp1, doto);
-  saveundo (UDEL, 1);
+  saveundo (UDEL, &curwp->w_dot, 1);
   endundo ();
 
   if ((lp2 = lalloc (doto)) == NULL)	/* New first half line  */
@@ -418,7 +417,7 @@ ldelete (int n, int kflag)
   if (checkreadonly () == FALSE)
     return FALSE;
   startundo ();
-  saveundo (UMOVE, curwp->w_dot.p, curwp->w_dot.o);
+  saveundo (UMOVE, &curwp->w_dot);
   while (n != 0)
     {
       dot = curwp->w_dot;
@@ -433,7 +432,7 @@ ldelete (int n, int kflag)
 	  if (ldelnewline () == FALSE
 	      || (kflag != FALSE && kinsert ("\n", 1) == FALSE))
 	    return (FALSE);
-          saveundo(UCH, 1, '\n');
+          saveundo(UCH, NULL, 1, '\n');
 	  --n;
 	  continue;
 	}
@@ -443,7 +442,7 @@ ldelete (int n, int kflag)
       if (kflag != FALSE)	/* Kill?                */
 	if (kinsert (cp1, chunk) == FALSE)
 	  return (FALSE);
-      saveundo(USTR, chunk, cp1);
+      saveundo(USTR, NULL, chunk, cp1);
       memmove (cp1, cp2, dot.p->l_used - (dot.o + chunk));
       dot.p->l_used -= chunk;
       ALLWIND (wp)
