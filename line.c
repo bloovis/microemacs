@@ -240,6 +240,7 @@ linsert (int n, int c, char *s)
     return FALSE;
   lchange (WFEDIT);
   dot = curwp->w_dot;		/* Save current line.	*/
+  saveundo (UDEL, NULL, n);
 
   if (dot.p == curbp->b_linep)
     {				/* At the end: special  */
@@ -342,7 +343,7 @@ lnewline (void)
   doto = curwp->w_dot.o;		/* offset of "."        */
 
   /* Save undo information. */
-  saveundo (UDEL, &curwp->w_dot, 1);
+  saveundo (UDEL, NULL, 1);
 
   if ((lp2 = lalloc (doto)) == NULL)	/* New first half line  */
     return (FALSE);
@@ -414,7 +415,6 @@ ldelete (int n, int kflag)
     }
   if (checkreadonly () == FALSE)
     return FALSE;
-  saveundo (UMOVE, &curwp->w_dot);
   while (n != 0)
     {
       dot = curwp->w_dot;

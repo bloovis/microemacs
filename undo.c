@@ -19,7 +19,7 @@
 
 #include	"def.h"
 
-#define N_UNDO 100
+#define N_UNDO 10000
 
 /* Flags to add to undo kind to indicate start and end of sequence.	*/
 #define USTART	0x100
@@ -34,6 +34,8 @@
 static UNDO ustack[N_UNDO];	/* undo records				*/
 static UNDO *uptr = ustack;	/* ptr to next unused entry in ustack	*/
 static UNDO *startup;		/* ptr saved by startundo		*/
+static int startl = NOLINE;	/* lineno saved by startundo		*/
+static int starto;		/* offset saved by startundo		*/
 static int undoing = FALSE;	/* currently undoing an operation? 	*/
 
 static void
@@ -86,6 +88,8 @@ void
 startundo (void)
 {
   startup = uptr;
+  startl = lineno (curwp->w_dot.p);
+  starto = curwp->w_dot.o;
 }
 
 
@@ -121,11 +125,16 @@ saveundo (UKIND kind, POS *pos, ...)
     {
       up->l = lineno (pos->p);	/* Line number		*/
       up->o = pos->o;		/* Offset		*/
+      startl = NOLINE;
+    }
+  else if (startl != NOLINE)
+    {
+      up->l = startl;
+      up->o = starto;
+      startl = NOLINE;
     }
   else
-    {
-      up->l = NOLINE;
-    }
+    up->l = NOLINE;
 
   if (up == startup)
     {

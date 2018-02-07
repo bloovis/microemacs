@@ -184,6 +184,7 @@ fillpara (int f, int n, int k)
       break;
   clength = getcolpos () - 1;
   wordlen = 0;
+  saveundo (UMOVE, &curwp->w_dot);
 
   /* scan through lines, filling words
    */
@@ -225,7 +226,7 @@ fillpara (int f, int n, int k)
 	}
       else if (wordlen)
 	{
-	  /* calculate tenatitive new length with word added
+	  /* calculate tentative new length with word added
 	   */
 	  newlength = clength + 1 + wordlen;
 
