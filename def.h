@@ -278,6 +278,20 @@ typedef unsigned char uchar;
 #define	EQ(c1,c2)	(upmap[(c1)&0xff]==upmap[(c2)&0xff])
 
 /*
+ * Kinds of undo information.
+ */
+typedef enum UKIND
+{
+  UUNUSED = 0,			/* Entry is unused		*/
+  UMOVE,			/* Move to (line #, offset)	*/
+  UCH,				/* Insert character		*/
+  USTR,				/* Insert string		*/
+  UDEL,				/* Delete N characters		*/
+} UKIND;
+
+typedef struct UNDOSTACK UNDOSTACK;
+
+/*
  * The symbol table links editing functions
  * to names. Entries in the key map point at the symbol
  * table entry. A reference count is kept, but it is
@@ -334,6 +348,7 @@ typedef struct BUFFER
   struct POS b_mark;		/* The "mark" position		*/
   struct MARKRING b_ring;	/* Mark ring			*/
   struct LINE *b_linep;		/* Link to the header LINE      */
+  struct UNDOSTACK *b_undo;	/* Pointer to undo stack	*/
   char b_nwnd;			/* Count of windows on buffer   */
   char b_flag;			/* Flags                        */
   int b_leftcol;		/* Left column of windows       */
@@ -447,45 +462,6 @@ LINE;
 #define lputc(lp, n, c) ((lp)->l_text[(n)]=(c))
 #define lputs(lp, s, n) memcpy((lp)->l_text,(s),(n))
 #define llength(lp)	((lp)->l_used)
-
-/*
- * Undo information is saved in a circular FIFO.
- * There are several types of information, so
- * each record is a union of several structs.
- */
-typedef enum UKIND
-{
-  UUNUSED = 0,			/* Entry is unused		*/
-  UMOVE,			/* Move to (line #, offset)	*/
-  UCH,				/* Insert character		*/
-  USTR,				/* Insert string		*/
-  UDEL,				/* Delete N characters		*/
-} UKIND;
-
-typedef struct UNDO
-{
-  UKIND kind;			/* Kind of information		*/
-  int l;			/* Line number			*/
-  int o;			/* Offset into line		*/
-  union
-  {
-    struct
-    {
-      int n;			/* # of characters to insert	*/
-      uchar c;			/* Character			*/
-    } ch;
-    struct
-    {
-      int n;			/* Length of string		*/
-      uchar *s;			/* String			*/
-    } str;
-    struct
-    {
-      int n;			/* # of characters to delete	*/
-    } del;
-  } u;
-}
-UNDO;
 
 /*
  * Externals.

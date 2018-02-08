@@ -526,6 +526,7 @@ bcreate (const char *bname)
   strcpy (bp->b_fname, "");
   strcpy (bp->b_bname, bname);
   lp->l_fp = lp->l_bp = lp;	/* Header line  */
+  bp->b_undo = NULL;
   return (bp);
 }
 

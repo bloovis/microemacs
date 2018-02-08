@@ -19,11 +19,59 @@
 
 #include	"def.h"
 
-#define N_UNDO 10000
+/* Maximum number of undo operations saved. */
+#define N_UNDO 100
 
-/* Flags to add to undo kind to indicate start and end of sequence.	*/
-#define USTART	0x100
-#define UEND	0x200
+/* A single undo step, as part of a larger group. */
+typedef struct UNDO
+{
+  UKIND kind;			/* Kind of information		*/
+  int l;			/* Line number			*/
+  int o;			/* Offset into line		*/
+  union
+  {
+    struct
+    {
+      int n;			/* # of characters to insert	*/
+      uchar c;			/* Character			*/
+    } ch;
+    struct
+    {
+      int n;			/* Length of string		*/
+      uchar *s;			/* String			*/
+    } str;
+    struct
+    {
+      int n;			/* # of characters to delete	*/
+    } del;
+  } u;
+}
+UNDO;
+
+typedef struct LINKS
+{
+  struct LINKS *next;
+  struct LINKS *prev;
+}
+LINKS;
+
+/* Group of UNDO steps, treated as one undo operation. */
+typedef struct UNDOGROUP
+{
+  LINKS links;		/* head = prev group, tail = next group */
+  UNDO *undos;		/* array of undo steps */
+  int next;		/* next free entry in group */
+  int avail;		/* size of group array */
+}
+UNDOGROUP;
+
+/* Linked list of undo groups, treated as a stack of maximum size N_UNDO */
+typedef struct UNDOSTACK
+{
+  LINKS links;		/* head and tail of group list */
+  int ngroups;		/* size of group stack */
+}
+UNDOSTACK;
 
 #define ukind(up)  (up->kind & 0xff)
 #define ustart(up) ((up->kind & USTART) != 0)
@@ -31,12 +79,46 @@
 
 #define NOLINE  -1		/* UNDO.{l,o} value meaing not used	*/
 
-static UNDO ustack[N_UNDO];	/* undo records				*/
-static UNDO *uptr = ustack;	/* ptr to next unused entry in ustack	*/
-static UNDO *startup;		/* ptr saved by startundo		*/
 static int startl = NOLINE;	/* lineno saved by startundo		*/
 static int starto;		/* offset saved by startundo		*/
 static int undoing = FALSE;	/* currently undoing an operation? 	*/
+
+
+/* Initialize group links */
+static void
+initlinks (LINKS *links)
+{
+  links->next = links->prev = links;
+}
+
+/* Remove group from list */
+static void
+unlinkgroup (LINKS *links)
+{
+  links->prev->next = links->next;
+  links->next->prev = links->prev;
+}
+
+/* Append new group into list after oldgroup */
+static void
+appendgroup (LINKS *newlinks, LINKS *oldlinks)
+{
+  newlinks->prev = oldlinks;
+  newlinks->next = oldlinks->next;
+  oldlinks->next->prev = newlinks;
+  oldlinks->next = newlinks;
+}
+
+static UNDOGROUP *
+newgroup (void)
+{
+  UNDOGROUP *g = malloc (sizeof (*g));
+  UNDO *u = malloc (sizeof (*u));
+  g->undos = u;
+  g->next = 0;
+  g->avail = 1;
+  return g;
+}
 
 static void
 freeundo(UNDO *up)
@@ -65,29 +147,26 @@ lineno (const LINE *lp)
   return nline;
 }
 
-
-static UNDO *
-unext (UNDO *up)
+static UNDOSTACK *
+newstack (void)
 {
-  if (up == &ustack[N_UNDO - 1])
-    return &ustack[0];
-  else
-    return up + 1;
-}
-
-static UNDO *
-uprev (UNDO *up)
-{
-  if (up == &ustack[0])
-    return &ustack[N_UNDO - 1];
-  else
-    return up - 1;
+  UNDOSTACK *st = malloc (sizeof(*st));
+  initlinks (&st->links);
+  st->ngroups = 0;
+  return st;
 }
 
 void
 startundo (void)
 {
-  startup = uptr;
+  UNDOSTACK *st;
+
+  st = curwp->w_bufp->b_undo;
+  if (st == NULL)
+    {
+      st = newstack ();
+      curwp->w_bufp->b_undo = st;
+    }
   startl = lineno (curwp->w_dot.p);
   starto = curwp->w_dot.o;
 }
@@ -96,14 +175,114 @@ startundo (void)
 void
 endundo (void)
 {
-  UNDO *up;
+}
 
-  if (uptr != startup)
+
+/* Remove an undo group from its list, then free up
+ * its undo stack and finally the group record itself.
+ */
+static void
+freegroup (UNDOGROUP *g)
+{
+  UNDO *up, *end;
+
+  /* Remove group from its list.
+   */
+  unlinkgroup (&g->links);
+
+  /* Free up any resources used by the undo steps in the group.
+   */
+  end = &g->undos[g->next];
+  for (up = &g->undos[0]; up != end; up++)
+    freeundo (up);
+
+  /* Free up the undo array.
+   */
+  free (g->undos);
+
+  /* Finally, free up the group record.
+   */
+  free (g);
+}
+
+/* Return a pointer to the most recently saved undo record,
+ * or NULL if there is none.
+ */
+static UNDO *
+lastundo (UNDOSTACK *st)
+{
+  UNDOGROUP *g;
+
+  g = (UNDOGROUP *) st->links.prev;
+
+  /* Is group list empty?
+   */
+  if (&g->links == &st->links)
+    return NULL;
+
+  /* Is group itself empty?
+   */
+  if (g->next == 0)
+    return NULL;
+
+  /* Return last undo record in group.
+   */
+  return &g->undos[g->next - 1];
+}
+
+
+/* Allocate a new undo record and return a pointer to it.
+ */
+static UNDO *
+newundo (UNDOSTACK *st, UKIND kind, int line, int offset)
+{
+  UNDO *up;
+  UNDOGROUP *g;
+
+  /* If startl has been set by startundo, this is the first
+   * undo record for the current command, so allocate a new
+   * undo group.
+   */
+  if (startl != NOLINE)
     {
-      up = uprev (uptr);
-      up->kind |= UEND;
+      /* This is the start of a new undo group.  Create a group
+       * and place it at the end of list of groups.
+       */
+      g = newgroup ();
+      appendgroup (&g->links, st->links.prev);
+
+      /* If we've reached the maximum number of undo groups, recycle the
+       * first one in the list.
+       */
+      if (st->ngroups >= N_UNDO)
+	freegroup ((UNDOGROUP *) st->links.next);
+      else
+	st->ngroups++;
     }
-  startup = NULL;
+  else
+    /* This is not the first undo record in a group.  Get
+     * the last group in the list
+     */
+    g = (UNDOGROUP *) st->links.prev;
+
+  /* Do we need to expand the array of undo records in this group?
+   */
+  if (g->next >= g->avail)
+    {
+      g->avail = g->avail << 1;
+      g->undos = (UNDO *) realloc (g->undos, g->avail * sizeof (UNDO));
+    }
+  up = &g->undos[g->next];
+  g->next++;
+
+  /* Initialize the undo record with its kind, and the specified
+   * line number and offset (which may be NOLINE if unknown).
+   */
+  up->kind = kind;
+  up->l = line;
+  up->o = offset;
+
+  return up;
 }
 
 
@@ -112,41 +291,45 @@ saveundo (UKIND kind, POS *pos, ...)
 {
   va_list ap;
   UNDO *up;
+  UNDOSTACK *st;
+  int line, offset;
 
   if (undoing)
     return TRUE;
   va_start(ap, pos);
-  up = uptr;
-  freeundo(up);
-  uptr = unext (uptr);
 
-  up->kind = kind;
+  /* Figure out what line number and offset to use for this undo record.
+   * If POS was passed in, calculate the corresponding line number and offset.
+   * Otherwise, if this is the first record after a startundo, use the line
+   * number and offset saved by startundo.  Otherwise don't use any line
+   * number or offset.
+   */
   if (pos != NULL)
     {
-      up->l = lineno (pos->p);	/* Line number		*/
-      up->o = pos->o;		/* Offset		*/
-      startl = NOLINE;
+      line = lineno (pos->p);	/* Line number		*/
+      offset = pos->o;		/* Offset		*/
     }
   else if (startl != NOLINE)
     {
-      up->l = startl;
-      up->o = starto;
-      startl = NOLINE;
+      line = startl;
+      offset = starto;
     }
   else
-    up->l = NOLINE;
-
-  if (up == startup)
     {
-      up->kind |= USTART;
-      startup = FALSE;
+      line = NOLINE;
+      offset = NOLINE;
     }
+
+  st = curwp->w_bufp->b_undo;
+
   switch (kind)
     {
     case UMOVE:			/* Move to (line #, offset)	*/
+      up = newundo (st, kind, line, offset);
       break;
 
     case UCH:				/* Insert character	*/
+      up = newundo (st, kind, line, offset);
       up->u.ch.n = va_arg (ap, int);	/* Count		*/
       up->u.ch.c = va_arg (ap, int);	/* Character		*/
       break;
@@ -156,6 +339,7 @@ saveundo (UKIND kind, POS *pos, ...)
 	int n = va_arg(ap, int);
 	const uchar *s = va_arg (ap, const uchar *);
 
+        up = newundo (st, kind, line, offset);
 	up->u.str.s = (uchar *) malloc (n);
 	if (up->u.str.s == NULL)
 	  {
@@ -169,16 +353,18 @@ saveundo (UKIND kind, POS *pos, ...)
     case UDEL:			/* Delete N characters		*/
       {
 	int n = va_arg (ap, int);
-	UNDO *prev = uprev (up);
-        if (ukind (prev) == UDEL &&
-	    prev->l == up->l &&
-	    prev->o + prev->u.del.n == up->o)
+	UNDO *prev = lastundo (st);
+
+	if (prev != NULL &&
+            ukind (prev) == UDEL &&
+	    prev->l == line &&
+	    prev->o + prev->u.del.n == offset)
 	  {
 	    prev->u.del.n += n;
-	    uptr = up;
 	  }
 	else
 	  {
+	    up = newundo (st, kind, line, offset);
 	    up->u.del.n = n;
 	    break;
 	  }
@@ -189,6 +375,7 @@ saveundo (UKIND kind, POS *pos, ...)
     }
 
   va_end(ap);
+  startl = NOLINE;
   return TRUE;
 }
 
@@ -258,7 +445,6 @@ undostep(UNDO *up)
 	}
     }
 
-  freeundo(up);
   return status;
 }
 
@@ -267,40 +453,37 @@ undo (int f, int n, int k)
 {
   UNDO *up;
   UNDO *end;
+  UNDOSTACK *st;
+  UNDOGROUP *g;
   int status = TRUE;
 
-  /* Step back in the undo stack until we find the start
-   * a sequence.
+  /* Get the last undo group on the list, or error out
+   * if the list is empty.
    */
   undoing = TRUE;
-  up = uprev (uptr);
-  end = up;
-  while (ustart (up) != TRUE)
+  st = curwp->w_bufp->b_undo;
+  g = (UNDOGROUP *) st->links.prev;
+  if (&g->links == &st->links)
     {
-      if (up->kind == UUNUSED)
-	{
-          eprintf ("Undo stack is empty.");
-	  undoing = FALSE;
-          return FALSE;
-	}
-      up = uprev (up);
+      eprintf ("undo stack is empty");
+      undoing = FALSE;
+      return FALSE;
     }
-  uptr = up;
 
-  /* Replay all steps of a multi-step undo in the order
-   * in which they were pushed on the stack.
+  /* Replay all steps of the most recently saved undo.
    */
-  while (TRUE)
+  end = &g->undos[g->next];
+  for (up = &g->undos[0]; up != end; up++)
     {
-      int st = undostep (up);
+      int s = undostep (up);
 
-      if (st != TRUE)
-	status = st;
-      if (up == end)
-	break;
-      up = unext (up);
+      if (s != TRUE)
+	status = s;
     }
 
+  /* Pop this undo group from the list and free it up.
+   */
+  freegroup (g);
   undoing = FALSE;
   return status;
 }
@@ -355,32 +538,21 @@ void
 printundo(void)
 {
   int level;
+  UNDOSTACK *st;
+  UNDOGROUP *g;
   UNDO *up;
-  UNDO *up1;
+  UNDO *end;
 
-  up = uprev (uptr);
   level = 1;
-  while (up->kind != UUNUSED && up != uptr)
+  st = curwp->w_bufp->b_undo;
+  for (g = (UNDOGROUP *) st->links.next;
+       &g->links != &st->links;
+       g = (UNDOGROUP *) g->links.next)
     {
-      while (ustart (up) != TRUE)
-	{
-	  up = uprev (up);
-	  if (up->kind == UUNUSED)
-	    {
-	      eprintf("Error finding start of undo sequence!");
-	      return;
-	    }
-	}
       printf("%d:\r\n", level);
-      up1 = up;
-      while (TRUE)
-	{
-	  printone (up1);
-	  if (uend (up1) == TRUE)
-	    break;
-	  up1 = unext (up1);
-	}
+      end = &g->undos[g->next];
+      for (up = &g->undos[0]; up != end; up++)
+	printone (up);
       ++level;
-      up = uprev (up);
     }
 }
