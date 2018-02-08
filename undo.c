@@ -339,15 +339,27 @@ saveundo (UKIND kind, POS *pos, ...)
 	int n = va_arg(ap, int);
 	const uchar *s = va_arg (ap, const uchar *);
 
-        up = newundo (st, kind, line, offset);
-	up->u.str.s = (uchar *) malloc (n);
-	if (up->u.str.s == NULL)
+	if (n == 1)
 	  {
-	  eprintf ("Out of memory in undo!");
-	  return FALSE;
+	    /* Treat single-character strings as a UCH
+	     * for efficiency
+	     */
+	    up = newundo (st, UCH, line, offset);
+	    up->u.ch.n = 1;
+	    up->u.ch.c = s[0];
 	  }
-	memcpy (up->u.str.s, s, n);
-	up->u.str.n = n;
+	else
+	  {
+            up = newundo (st, kind, line, offset);
+	    up->u.str.s = (uchar *) malloc (n);
+	    if (up->u.str.s == NULL)
+	      {
+	      eprintf ("Out of memory in undo!");
+	      return FALSE;
+	      }
+	    memcpy (up->u.str.s, s, n);
+	    up->u.str.n = n;
+	  }
 	break;
       }
     case UDEL:			/* Delete N characters		*/
