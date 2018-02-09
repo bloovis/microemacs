@@ -250,6 +250,7 @@ killbuffer (f, n, k)
     bp1->b_bufp = bp2;
   if (!strcmp (oldbufn, bp->b_bname))	/* same name as old?    */
     oldbufn[0] = 0;		/* clear old name       */
+  killundo (bp);		/* Free undo records	*/
   free ((char *) bp);		/* Release buffer block */
   return (TRUE);
 }

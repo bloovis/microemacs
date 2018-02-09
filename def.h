@@ -905,3 +905,4 @@ void endsaveundo (void);		/* End of undo sequence.	*/
 void disablesaveundo (void);		/* Disable subsequent saveundos	*/
 void enablesaveundo (void);		/* Enable subsequent saveundos	*/
 int undo (int f, int n, int k);		/* Undo most recent operation.  */
+void killundo (BUFFER *bp);		/* Kill undo records for buffer */

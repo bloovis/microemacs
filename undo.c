@@ -186,7 +186,7 @@ endsaveundo (void)
 
 
 /* Remove an undo group from its list, then free up
- * its undo stack and finally the group record itself.
+ * its undo records, and finally free the group record itself.
  */
 static void
 freegroup (UNDOGROUP *g)
@@ -590,4 +590,20 @@ printundo(void)
 	printone (up);
       ++level;
     }
+}
+
+
+/* Free up the undo records associated with a buffer.
+ */
+void
+killundo (BUFFER *bp)
+{
+  UNDOGROUP *g;
+  UNDOSTACK *st = bp->b_undo;
+
+  for (g = (UNDOGROUP *) st->links.next;
+       &g->links != &st->links;
+       g = (UNDOGROUP *) st->links.next)
+    freegroup (g);
+  free (st);
 }
