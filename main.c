@@ -273,9 +273,9 @@ loop:
 	}
       *kbdmip++ = c;
     }
-  startundo ();
+  startsaveundo ();
   execute (c, f, n);		/* Do it.               */
-  endundo ();
+  endsaveundo ();
   goto loop;
 }
 

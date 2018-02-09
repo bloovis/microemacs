@@ -648,8 +648,7 @@ lreplace (
    */
   if (plen < rlen)
     {
-      saveundo (UMOVE, &savedot);
-      saveundo (UDEL, NULL, rlen - plen);
+      saveundo (UDEL, &savedot, rlen - plen);
       saveundo (UMOVE, &curwp->w_dot);
     }
 

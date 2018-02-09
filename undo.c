@@ -156,8 +156,11 @@ newstack (void)
   return st;
 }
 
+/* Call this at the start of an undo save sequence,
+ * i.e. before the first saveundo.
+ */
 void
-startundo (void)
+startsaveundo (void)
 {
   UNDOSTACK *st;
 
@@ -173,8 +176,11 @@ startundo (void)
 }
 
 
+/* Call this at the end of an undo save sequence,
+ * i.e. after the last saveundo.
+ */
 void
-endundo (void)
+endsaveundo (void)
 {
 }
 
