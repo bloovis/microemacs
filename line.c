@@ -434,7 +434,7 @@ ldelete (int n, int kflag)
 	  continue;
 	}
       lchange (WFEDIT);
-      cp1 = &dot.p->l_text[dot.o];	/* Scrunch text.        */
+      cp1 = (char *) &dot.p->l_text[dot.o];	/* Scrunch text.        */
       cp2 = cp1 + chunk;
       if (kflag != FALSE)	/* Kill?                */
 	if (kinsert (cp1, chunk) == FALSE)
@@ -555,11 +555,13 @@ lreplace (
   register int rtype;		/* capitalization               */
   register int c;		/* used for random characters   */
   register int doto;		/* offset into line             */
+  POS savedot;			/* saved position 		*/
 
   if (checkreadonly () == FALSE)
     return FALSE;
   if (casefold == FALSE)	/* is case folding turned off?  */
     f = TRUE;			/* disable case hack            */
+
   /*
    * Find the capitalization of the word that was found.
    * f says use exact case of replacement string (same thing that
@@ -586,16 +588,23 @@ lreplace (
    * so that it will fit, or scrunch out the excess).
    * be careful with dot's offset.
    */
+  saveundo(UMOVE, &curwp->w_dot);
   rlen = strlen (st);
   doto = curwp->w_dot.o;
   if (plen > rlen)
     ldelete (plen - rlen, FALSE);
   else if (plen < rlen)
     {
+      /* We have to delay recording the undo of the spaces until
+       * after the replacement is done.
+       */
+      disablesaveundo ();
       if (linsert (rlen - plen, ' ', NULLPTR) == FALSE)
 	return (FALSE);
+      enablesaveundo ();
     }
   curwp->w_dot.o = doto;
+  savedot = curwp->w_dot;
 
   /*
    * do the replacement:  If was capital, then place first 
@@ -628,8 +637,22 @@ lreplace (
 	  linsert (1, c, NULLPTR);
 	}
       else
-	lputc (curwp->w_dot.p, curwp->w_dot.o++, c);
+	{
+	  saveundo (UDEL, NULL, 1);
+	  saveundo (UCH, NULL, 1, lgetc (curwp->w_dot.p, curwp->w_dot.o));
+	  lputc (curwp->w_dot.p, curwp->w_dot.o++, c);
+	}
     }
+
+  /* Undo the insert of the padding spaces.
+   */
+  if (plen < rlen)
+    {
+      saveundo (UMOVE, &savedot);
+      saveundo (UDEL, NULL, rlen - plen);
+      saveundo (UMOVE, &curwp->w_dot);
+    }
+
   lchange (WFHARD);
   return (TRUE);
 }

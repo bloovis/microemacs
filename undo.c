@@ -169,6 +169,7 @@ startundo (void)
     }
   startl = lineno (curwp->w_dot.p);
   starto = curwp->w_dot.o;
+  undoing = FALSE;
 }
 
 
@@ -285,6 +286,22 @@ newundo (UNDOSTACK *st, UKIND kind, int line, int offset)
   return up;
 }
 
+
+/* Prevent subsequent saveundo calls from storing data.
+ */
+void
+disablesaveundo (void)
+{
+  undoing = TRUE;
+}
+
+/* Allow subsequent saveundo calls to store data.
+ */
+void
+enablesaveundo (void)
+{
+  undoing = FALSE;
+}
 
 int
 saveundo (UKIND kind, POS *pos, ...)
