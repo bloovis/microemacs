@@ -144,6 +144,7 @@ killregion (int f, int n, int k)
     return (s);
   kdelete ();			/* Purge kill buffer    */
   curwp->w_dot = region.r_pos;
+  saveundo (UMOVE, &curwp->w_dot);
   return (ldelete (region.r_size, !f));
 }
 
