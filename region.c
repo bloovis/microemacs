@@ -265,7 +265,15 @@ upperregion (int f, int n, int k)
 	{
 	  c = lgetc (linep, loffs);
 	  if (ISLOWER (c) != FALSE)
-	    lputc (linep, loffs, TOUPPER (c));
+	    {
+	      POS pos;
+
+	      pos.p = linep;
+	      pos.o = loffs;
+	      saveundo (UDEL, &pos, 1);
+	      saveundo (UCH, NULL, 1, c);
+	      lputc (linep, loffs, TOUPPER (c));
+	    }
 	  ++loffs;
 	}
     }

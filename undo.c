@@ -401,9 +401,10 @@ saveundo (UKIND kind, POS *pos, ...)
 	  {
 	    up = newundo (st, kind, line, offset);
 	    up->u.del.n = n;
-	    break;
 	  }
+        break;
       }
+
     default:
       eprintf ("Unimplemented undo type %d", kind);
       break;
@@ -526,14 +527,15 @@ undo (int f, int n, int k)
 static void
 printone (UNDO *up)
 {
+  printf("  ");
   switch (ukind (up))
     {
     case UCH:
       if (up->u.ch.c == '\n')
-	printf ("  Char: NEWLINE");
+	printf ("Char: NEWLINE");
       else
-	printf ("  Char: '%c'", up->u.ch.c);
-      printf (", n = %d\r\n", up->u.ch.n);
+	printf ("Char: '%c'", up->u.ch.c);
+      printf (", n = %d", up->u.ch.n);
       break;
 
     case USTR:
@@ -541,7 +543,7 @@ printone (UNDO *up)
 	const uchar *s;
 	int n;
 
-	printf ("  String: '");
+	printf ("String: '");
 	for (s = up->u.str.s, n = up->u.str.n; n > 0; --n, ++s)
 	  {
 	    uchar c = *s;
@@ -550,23 +552,27 @@ printone (UNDO *up)
 	    else
 	      printf ("%c", c);
 	  }
-	printf ("'\r\n");
+	printf ("'");
         break;
       }
 
     case UMOVE:
-      printf ("  Move: line %d, offset %d\r\n", up->l, up->o);
+      printf ("Move");
       break;
 
     case UDEL:
-      printf ("  Delete: %d characters at line %d, offset %d\r\n",
-              up->u.del.n, up->l, up->o);
+      printf ("Delete: %d characters",
+              up->u.del.n);
       break;
 
     default:
-      printf ("  Unexpected kind 0x%x\r\n", up->kind);
+      printf ("Unexpected kind 0x%x", up->kind);
       break;
     }
+  if (up->l != NOLINE)
+    printf (", line %d, offset %d",
+            up->l, up->o);
+  printf("\r\n");
 }
 
 void
