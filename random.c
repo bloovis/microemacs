@@ -724,7 +724,10 @@ backdel (f, n, k)
   if (f != FALSE)		/* Really a kill.       */
     kdelete ();
   if ((s = backchar (f, n, KRANDOM)) == TRUE)
-    s = ldelete (n, f);
+    {
+      saveundo(UMOVE, &curwp->w_dot);
+      s = ldelete (n, f);
+    }
   return (s);
 }
 
