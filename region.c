@@ -224,7 +224,15 @@ lowerregion (int f, int n, int k)
 	{
 	  c = lgetc (linep, loffs);
 	  if (ISUPPER (c) != FALSE)
-	    lputc (linep, loffs, TOLOWER (c));
+	    {
+	      POS pos;
+
+	      pos.p = linep;
+	      pos.o = loffs;
+	      saveundo (UDEL, &pos, 1);
+	      saveundo (UCH, NULL, 1, c);
+	      lputc (linep, loffs, TOLOWER (c));
+	    }
 	  ++loffs;
 	}
     }
@@ -306,6 +314,7 @@ indentregion (int f, int n, int k)
   region.r_size += region.r_pos.o;
   while (region.r_size > 0)
     {
+      saveundo (UMOVE, &curwp->w_dot);
       llen = llength (curwp->w_dot.p);
       region.r_size -= llen + 1;
       nicol = 0;
