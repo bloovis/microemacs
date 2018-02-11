@@ -488,6 +488,7 @@ int
 undo (int f, int n, int k)
 {
   UNDO *up;
+  UNDO *start;
   UNDO *end;
   UNDOSTACK *st;
   UNDOGROUP *g;
@@ -506,15 +507,26 @@ undo (int f, int n, int k)
       return FALSE;
     }
 
-  /* Replay all steps of the most recently saved undo.
+  /* Replay all steps of the most recently saved undo.  Break up
+   * the steps into sequences that start with moves.  Play these
+   * sequences in reverse order, but play the individual steps
+   * within a sequence in forward order.
    */
   end = &g->undos[g->next];
-  for (up = &g->undos[0]; up != end; up++)
+  start = end - 1;
+  while (start >= g->undos)
     {
-      int s = undostep (up);
+      while (start > g->undos && start->l == NOLINE)
+	--start;
+      for (up = start; up != end; up++)
+	{
+	  int s = undostep (up);
 
-      if (s != TRUE)
-	status = s;
+	  if (s != TRUE)
+	    status = s;
+	}
+      end = start;
+      --start;
     }
 
   /* Pop this undo group from the list and free it up.

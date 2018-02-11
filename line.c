@@ -555,7 +555,6 @@ lreplace (
   register int rtype;		/* capitalization               */
   register int c;		/* used for random characters   */
   register int doto;		/* offset into line             */
-  POS savedot;			/* saved position 		*/
 
   if (checkreadonly () == FALSE)
     return FALSE;
@@ -595,16 +594,11 @@ lreplace (
     ldelete (plen - rlen, FALSE);
   else if (plen < rlen)
     {
-      /* We have to delay recording the undo of the spaces until
-       * after the replacement is done.
-       */
-      disablesaveundo ();
       if (linsert (rlen - plen, ' ', NULLPTR) == FALSE)
 	return (FALSE);
-      enablesaveundo ();
     }
   curwp->w_dot.o = doto;
-  savedot = curwp->w_dot;
+  saveundo (UMOVE, &curwp->w_dot);
 
   /*
    * do the replacement:  If was capital, then place first 
@@ -642,14 +636,6 @@ lreplace (
 	  saveundo (UCH, NULL, 1, lgetc (curwp->w_dot.p, curwp->w_dot.o));
 	  lputc (curwp->w_dot.p, curwp->w_dot.o++, c);
 	}
-    }
-
-  /* Undo the insert of the padding spaces.
-   */
-  if (plen < rlen)
-    {
-      saveundo (UDEL, &savedot, rlen - plen);
-      saveundo (UMOVE, &curwp->w_dot);
     }
 
   lchange (WFHARD);
