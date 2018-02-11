@@ -201,6 +201,7 @@ twiddle (f, n, k)
   register int doto;
   register int cl;
   register int cr;
+  POS dot;
 
   if (checkreadonly () == FALSE)
     return FALSE;
@@ -215,6 +216,13 @@ twiddle (f, n, k)
   lputc (dotp, doto + 0, cr);
   lputc (dotp, doto + 1, cl);
   lchange (WFEDIT);
+
+  dot.p = dotp;
+  dot.o = doto;
+  saveundo (UDEL, &dot, 2);
+  saveundo (UCH, NULL, 1, cl);
+  saveundo (UCH, NULL, 1, cr);
+
   return (TRUE);
 }
 
