@@ -62,6 +62,7 @@ typedef struct UNDOGROUP
   UNDO *undos;		/* array of undo steps */
   int next;		/* next free entry in group */
   int avail;		/* size of group array */
+  int b_flag;		/* copy of curbp->b_flag before any changes */
 }
 UNDOGROUP;
 
@@ -82,7 +83,7 @@ UNDOSTACK;
 static int startl = NOLINE;	/* lineno saved by startundo		*/
 static int starto;		/* offset saved by startundo		*/
 static int undoing = FALSE;	/* currently undoing an operation? 	*/
-
+static int b_flag;		/* copy of curbp->b_flag		*/
 
 /* Initialize group links */
 static void
@@ -117,6 +118,7 @@ newgroup (void)
   g->undos = u;
   g->next = 0;
   g->avail = 1;
+  g->b_flag = b_flag;
   return g;
 }
 
@@ -172,6 +174,7 @@ startsaveundo (void)
     }
   startl = lineno (curwp->w_dot.p);
   starto = curwp->w_dot.o;
+  b_flag = curbp->b_flag;
   undoing = FALSE;
 }
 
@@ -206,6 +209,14 @@ freegroup (UNDOGROUP *g)
   /* Free up the undo array.
    */
   free (g->undos);
+
+  /* Set the buffer change flag.
+   */
+  if (g->b_flag & BFCHG)
+    curbp->b_flag |= BFCHG;
+  else
+    curbp->b_flag &= ~BFCHG;
+  curwp->w_flag |= WFMODE;
 
   /* Finally, free up the group record.
    */
