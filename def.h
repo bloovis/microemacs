@@ -734,6 +734,7 @@ int domacro (short *macrop, int n);	/* Execute macro.	*/
 int gotobop (int f, int n, int k);	/* Goto beginning of paragraph. */
 int gotoeop (int f, int n, int k);	/* Goto end of paragraph.       */
 int fillpara (int f, int n, int k);	/* Fill current paragraph.      */
+int killpara (int f, int n, int k);	/* Delete paragraph(s).		*/
 int fillword (int f, int n, int k);	/* Insert character with fill.  */
 int setfillcol (int f, int n, int k);	/* Set fill column.             */
 

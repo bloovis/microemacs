@@ -241,6 +241,7 @@ KEY key[] = {
   {KMETA | KCTRL | 'R', backregsearch,	"back-regexp-search"},
   {KMETA | KCTRL | 'S', forwregsearch,	"forw-regexp-search"},
   {KMETA | KCTRL | 'V', showversion,	"display-version"},
+  {KMETA | KCTRL | 'W', killpara,	"kill-paragraph"},
   {KMETA | '.',		findtag,	"find-tag"},
 #if HAS_CSCOPE
   {KMETA | ',',		findcscope,	"find-cscope"},
