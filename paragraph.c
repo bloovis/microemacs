@@ -257,6 +257,7 @@ fillpara (int f, int n, int k)
 		  lgetc (curwp->w_dot.p, curwp->w_dot.o - 1) == ' ')
 		{
 		  curwp->w_dot.o -= 1;
+		  saveundo (UMOVE, &curwp->w_dot);
 		  ldelete (1, FALSE);
 		}
 	      /* start a new line */
