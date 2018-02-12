@@ -123,10 +123,10 @@ newgroup (void)
 }
 
 static void
-freeundo(UNDO *up)
+freeundo (UNDO *up)
 {
   if (ukind (up) == USTR)
-    free(up->u.str.s);
+    free (up->u.str.s);
   up->kind = UUNUSED;
 }
 
@@ -152,7 +152,7 @@ lineno (const LINE *lp)
 static UNDOSTACK *
 newstack (void)
 {
-  UNDOSTACK *st = malloc (sizeof(*st));
+  UNDOSTACK *st = malloc (sizeof (*st));
   initlinks (&st->links);
   st->ngroups = 0;
   return st;
@@ -330,7 +330,7 @@ saveundo (UKIND kind, POS *pos, ...)
 
   if (undoing)
     return TRUE;
-  va_start(ap, pos);
+  va_start (ap, pos);
 
   /* Figure out what line number and offset to use for this undo record.
    * If POS was passed in, calculate the corresponding line number and offset.
@@ -370,7 +370,7 @@ saveundo (UKIND kind, POS *pos, ...)
 
     case USTR:			/* Insert string		*/
       {
-	int n = va_arg(ap, int);
+	int n = va_arg (ap, int);
 	const uchar *s = va_arg (ap, const uchar *);
 
 	if (n == 1)
@@ -421,13 +421,13 @@ saveundo (UKIND kind, POS *pos, ...)
       break;
     }
 
-  va_end(ap);
+  va_end (ap);
   startl = NOLINE;
   return TRUE;
 }
 
 static int
-undostep(UNDO *up)
+undostep (UNDO *up)
 {
   int status = TRUE;
 
@@ -460,7 +460,7 @@ undostep(UNDO *up)
 
 	    while (status == TRUE && s < end)
 	      {
-		const uchar *nl = memchr(s, '\n', end - s);
+		const uchar *nl = memchr (s, '\n', end - s);
 		if (nl == NULL)
 		  {
 		    status = linsert (end - s, 0, (char *) s);
@@ -543,6 +543,7 @@ undo (int f, int n, int k)
   /* Pop this undo group from the list and free it up.
    */
   freegroup (g);
+  st->ngroups--;
   undoing = FALSE;
   return status;
 }
@@ -550,7 +551,7 @@ undo (int f, int n, int k)
 static void
 printone (UNDO *up)
 {
-  printf("  ");
+  printf ("  ");
   switch (ukind (up))
     {
     case UCH:
@@ -595,11 +596,11 @@ printone (UNDO *up)
   if (up->l != NOLINE)
     printf (", line %d, offset %d",
             up->l, up->o);
-  printf("\r\n");
+  printf ("\r\n");
 }
 
 void
-printundo(void)
+printundo (void)
 {
   int level;
   UNDOSTACK *st;
@@ -613,7 +614,7 @@ printundo(void)
        &g->links != &st->links;
        g = (UNDOGROUP *) g->links.next)
     {
-      printf("%d:\r\n", level);
+      printf ("%d:\r\n", level);
       end = &g->undos[g->next];
       for (up = &g->undos[0]; up != end; up++)
 	printone (up);
