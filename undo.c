@@ -92,7 +92,9 @@ initlinks (LINKS *links)
   links->next = links->prev = links;
 }
 
-/* Remove group from list */
+/*
+ * Remove group from list.
+ */
 static void
 unlinkgroup (LINKS *links)
 {
@@ -100,7 +102,9 @@ unlinkgroup (LINKS *links)
   links->next->prev = links->prev;
 }
 
-/* Append new group into list after oldgroup */
+/*
+ * Append new group into list after oldgroup .
+ */
 static void
 appendgroup (LINKS *newlinks, LINKS *oldlinks)
 {
@@ -110,6 +114,9 @@ appendgroup (LINKS *newlinks, LINKS *oldlinks)
   oldlinks->next = newlinks;
 }
 
+/*
+ * Allocate a new undo group structure.
+ */
 static UNDOGROUP *
 newgroup (void)
 {
@@ -122,6 +129,9 @@ newgroup (void)
   return g;
 }
 
+/*
+ * Free up an undo stepand any resources associated with it.
+ */
 static void
 freeundo (UNDO *up)
 {
@@ -131,6 +141,9 @@ freeundo (UNDO *up)
 }
 
 
+/*
+ * Calculate the zero-based line number for a given line pointer.
+ */
 static int
 lineno (const LINE *lp)
 {
@@ -149,6 +162,10 @@ lineno (const LINE *lp)
   return nline;
 }
 
+/*
+ * Allocate a new undo stack structure, but don't
+ * add any undo groups to it yet.
+ */
 static UNDOSTACK *
 newstack (void)
 {
@@ -158,8 +175,11 @@ newstack (void)
   return st;
 }
 
-/* Call this at the start of an undo save sequence,
- * i.e. before the first saveundo.
+/*
+ * Call this at the start of an undo save sequence,
+ * i.e. before the first saveundo.  It saves
+ * some context about the current location: the
+ * line number and offset, and the buffer changed flag.
  */
 void
 startsaveundo (void)
@@ -179,8 +199,12 @@ startsaveundo (void)
 }
 
 
-/* Call this at the end of an undo save sequence,
- * i.e. after the last saveundo.
+/*
+ * Call this at the end of an undo save sequence,
+ * i.e. after the last saveundo.  Currently it does
+ * nothing, but conceivably it could free up any
+ * resources that might have been allocated by
+ * startsaveundo and that are not longer needed.
  */
 void
 endsaveundo (void)
@@ -188,7 +212,8 @@ endsaveundo (void)
 }
 
 
-/* Remove an undo group from its list, then free up
+/*
+ * Remove an undo group from its list, then free up
  * its undo records, and finally free the group record itself.
  */
 static void
@@ -223,7 +248,8 @@ freegroup (UNDOGROUP *g)
   free (g);
 }
 
-/* Return a pointer to the most recently saved undo record,
+/*
+ * Return a pointer to the most recently saved undo record,
  * or NULL if there is none.
  */
 static UNDO *
@@ -248,8 +274,11 @@ lastundo (UNDOSTACK *st)
   return &g->undos[g->next - 1];
 }
 
-
-/* Allocate a new undo record and return a pointer to it.
+/*
+ * Allocate a new undo record and return a pointer to it.
+ * Initialize its kind, line number, and offset from the
+ * passed-in values.  Also create a new undo group for
+ * this undostack if this its first undo record.
  */
 static UNDO *
 newundo (UNDOSTACK *st, UKIND kind, int line, int offset)
@@ -304,7 +333,10 @@ newundo (UNDOSTACK *st, UKIND kind, int line, int offset)
 }
 
 
-/* Prevent subsequent saveundo calls from storing data.
+/*
+ * Prevent subsequent saveundo calls from storing data.  Currently
+ * not used, but conceivably could be used for code sections
+ * that should not be saving undo records.
  */
 void
 disablesaveundo (void)
@@ -312,7 +344,7 @@ disablesaveundo (void)
   undoing = TRUE;
 }
 
-/* Allow subsequent saveundo calls to store data.
+/* Allow subsequent saveundo calls to store data.  See disablesaveundo.
  */
 void
 enablesaveundo (void)
@@ -320,6 +352,24 @@ enablesaveundo (void)
   undoing = FALSE;
 }
 
+/*
+ * Save a single undo record.  The first two parameters are fixed:
+ *  - the kind of undo record
+ *  - a pointer to a line/offset pair to be recorded in
+ *    the record, or NULL if no line/offset pair is to be recorded.
+ * Following these two parameters there may be other parameters,
+ * depending on the kind:
+ *  - UMOVE:
+ *    - takes no extra parameters
+ *  - UCH:
+ *    - count
+ *    - character to be inserted
+ *  - USTR:
+ *    - size of string
+ *    - pointer to string (may not be null-terminated)
+ *  - UDEL:
+ *    - count of characters to be deleted
+ */
 int
 saveundo (UKIND kind, POS *pos, ...)
 {
@@ -426,6 +476,9 @@ saveundo (UKIND kind, POS *pos, ...)
   return TRUE;
 }
 
+/*
+ * Undo a single step in a possibly larger sequence of undo records.
+ */
 static int
 undostep (UNDO *up)
 {
@@ -495,6 +548,17 @@ undostep (UNDO *up)
   return status;
 }
 
+/*
+ * Undo the topmost undo group on the undo stack.
+ * Each group consists of a linear sequence of undo steps.
+ * This sequence is split into subsequences; the
+ * start of each subsequence is any undo record that
+ * moves the dot.  These subsequences are processed
+ * in reverse order, but within each subsequence,
+ * the undo records are processed in forward order.
+ * This ordering is necessary to account for any
+ * undo sequences that move the dot.
+ */
 int
 undo (int f, int n, int k)
 {
@@ -519,9 +583,9 @@ undo (int f, int n, int k)
     }
 
   /* Replay all steps of the most recently saved undo.  Break up
-   * the steps into sequences that start with moves.  Play these
-   * sequences in reverse order, but play the individual steps
-   * within a sequence in forward order.
+   * the steps into subsequences that start with moves.  Play these
+   * subsequences in reverse order, but play the individual steps
+   * within a subsequence in forward order.
    */
   end = &g->undos[g->next];
   start = end - 1;
@@ -548,6 +612,12 @@ undo (int f, int n, int k)
   return status;
 }
 
+/*
+ * Print a single undo record.  The \r characters are necessary
+ * because this function is called from gdb, and
+ * at this point the editor has tweaked the tty so that
+ * newline doesn't generate a carriage return.
+ */
 static void
 printone (UNDO *up)
 {
@@ -599,6 +669,10 @@ printone (UNDO *up)
   printf ("\r\n");
 }
 
+/*
+ * Print the current window's undo stack.  This is intended
+ * to be called from gdb for debugging purposes only.
+ */
 void
 printundo (void)
 {
@@ -623,7 +697,8 @@ printundo (void)
 }
 
 
-/* Free up the undo records associated with a buffer.
+/*
+ * Free up the undo records associated with a buffer.
  */
 void
 killundo (BUFFER *bp)
@@ -636,4 +711,5 @@ killundo (BUFFER *bp)
        g = (UNDOGROUP *) st->links.next)
     freegroup (g);
   free (st);
+  bp->b_undo = NULL;
 }
