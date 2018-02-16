@@ -96,24 +96,37 @@ small computer these days is the MicroVAX[^2]!
 
 ## History
 
-MicroEMACS is
-loosely based on the EMACS display editor
-written by Richard Stallman at MIT.
-The MicroEMACS described by this document is Conroy's
-version 30 of February 1986, distributed to USENET mod.sources.
-Since then it has undergone a fair number of bug fixes and
-performance improvements, and a few minor enhancements.
-The program version number is now 30.DRI.7.
-This document itself was converted
-from TEX to SCRIBE to FinalWord 1.15 to Borland Sprint.
-New material was added to bring the document
-up to date with the program itself.
+MicroEMACS is loosely based on the EMACS display editor written by
+Richard Stallman at MIT.  The MicroEMACS described by this document is
+Conroy's version 30 of February 1986, distributed to USENET
+mod.sources.  Since then it has undergone a fair number of bug fixes
+and performance improvements, and a few minor enhancements.
 
 This version of MicroEMACS is not to be confused with other popular
-versions that are derived from Conroy's November 1985 release.
-These other versions of MicroEMACS have version numbers like 3.8 or 3.9,
-are considerably larger and feature-rich, are copyrighted,
-and are now being maintained by Daniel Lawrence.
+versions that are derived from Conroy's November 1985 release.  These
+other versions of MicroEMACS have version numbers like 3.8 or 3.9, are
+considerably larger and feature-rich, are copyrighted, and are now
+being maintained by Daniel Lawrence. 
+
+I (Mark Alexander) converted this document from TeX to Scribe to FinalWord
+1.15 to Borland Sprint, and finally to Pandoc/Latex, since Sprint
+is no longer available and doesn't run on Linux.  I added new material
+to bring the document up to date with the program itself.
+
+### 2018 Update
+
+The original source of Conroy's version of MicroEmacs (including the TeX version
+of this document) has been lost.  I have also lost my DOS and OS/2 source
+code, though the Windows code (in the `nt` subdirectory) still exists.
+This document contains many reference to historical machines and operating
+systems, but I have kept them for historical interest.  I maintain
+only the Linux\index{Linux} version now.
+
+In 80s MicroEmacs was small enough to run easily from a floppy disk, but the amount of text that
+could be edited was limited by the very small amount of available RAM (
+(640kb in DOS).  Now this limit is effectly non-existent, give the huge amount of memory
+in modern computers, but MicroEmacs is still small enough to be run from a floppy disk
+(if one could be found).
 
 # Some Basic Concepts
 
@@ -132,7 +145,7 @@ line on the screen, which is used to display messages and
 ask one line questions, is called the *echo line* \index{Echo line}.
 Typing in the echo line
 is like typing commands to the operating system.  More details later
-in the section **The Echo Line**.
+in the section [**The Echo Line**](#the-echo-line).
 
 The remainder of the screen is filled with text *windows* \index{Window}.
 When MicroEMACS is first started, there will be one or two text windows,
@@ -228,7 +241,6 @@ This character is not a prefix;
 it is reserved for future use as an "exit from recursive editing level"
 command.
 
-
 CONTROL characters\index{CONTROL characters}
 are very important, so there is a shorthand way
 of typing them, as follows:
@@ -248,12 +260,12 @@ either as
 As another example, **C-X C-B** is entered as `Control-X` followed
 by `Control-B`.
 
-### The PC-DOS/FlexOS Keyboard
+### The PC Keyboard
 
 \index{PC-DOS}
 MicroEMACS understands all of the cursor keypad and function keys
-on the IBM PC\index{IBM PC}, and the equivalent keys on
-machines that run FlexOS\index{FlexOS} (such as
+on PC\index{PC} compatible machines, and the equivalent keys on
+other machines that run FlexOS\index{FlexOS} (such as
 the VME/10\index{VME/10}).  These keys include the function keys
 \index{Function keys}(F1-F10), shifted function keys (S-F1 to S-F10),
 cursor keys\index{Cursor keys} (Up, Down, Left,
@@ -270,11 +282,11 @@ For example, the **M-L** command
 
 * Hold down `ALT` and hit `L`.
 
-On PC-DOS\index{PC-DOS}, the `ALT` key only works with alphabetic
+On PC-DOS\index{PC-DOS} and Linux\index{Linux}, the `ALT` key only works with alphabetic
 characters (`A` through `Z`).
 Using `ALT` and `CTRL` together is also not supported.
 These limitations are inherent in the ROM BIOS keyboard routines
-on the IBM PC.
+on the PC.
 
 On FlexOS, the `ALT` key works with both alpha and non-alpha
 characters, and simultaneously with the `CTRL` key.
@@ -285,8 +297,8 @@ holding down `ALT` and `CTRL`, while pressing
 On the VME/10\index{VME/10}, some of the cursor keys are not available, due to
 the inherent physical limitations of the keyboard itself.
 
-See the **Wall Chart** section of this manual for the
-predefined bindings of some the special IBM PC\index{IBM PC} keys.
+See the [**Wall Chart**](#wall-chart) section of this manual for the
+predefined bindings of some the special PC\index{PC} keys.
 
 ### The Zenith Z-19/29 Keyboard
 
@@ -302,7 +314,7 @@ When preceded by the F6 key (BLUE on Z-19), the arrow keys
 move to the beginning
 or end of the current line or buffer.
 The 5 key is the same as **C-S** (forw-search), and shift-5 is
-search-again.  See the **Wall Chart** section of this manual
+search-again.  See the [**Wall Chart**](#wall-chart) section of this manual
 for further key bindings for the Z-19/29.
 
 Not all of the key bindings that allow the shifted arrows to work like EDT
@@ -314,7 +326,7 @@ If you want MicroEMACS
 to read these bindings when it starts up, and you don't care about
 losing the old meanings of **M-B** and **M-C**, then
 copy **edt.pro** to the default profile name, as described below
-in the **Profiles** section.
+in the [**Profiles**](#profiles) section.
 
 ### The VT-100 Keyboard
 
@@ -393,7 +405,7 @@ key.  These commands can still be entered by using
 the (**M-X**) (`ESC X`) "extended-command"\index{Extended command}
 prefix, or by binding them to a key
 with the "bind-to-key" command.
-See the section **Key Binding Commands**
+See the section [**Key Binding Commands**](#key-binding-commands)
 below for more information.
 
 In subsequent sections, the command descriptions will give not only the
@@ -426,6 +438,13 @@ entire line by typing `Control-U`.
 You can also abort\index{Abort} the command in progress by typing `Control-G`.
 Command processors are designed to ask all questions before doing nasty
 things, so that you will never do damage by aborting a command.
+
+The echo line supports autocompletion\index{autocompletion}.  If you are entering
+a command name, a filename, or a buffer name, you can use the
+`Space` or `Tab` keys to tell MicroEmacs to complete as
+much of the entry as possible, based on what you have entered so far.
+Pressing the `?` or `Control-D` keys will open a new temporary window containing
+the possible list of choices.
 
 ## Command Arguments
 
@@ -514,7 +533,7 @@ meanings:
     You can get around this problem by
     reassigning the functions that normally are invoked with these
     keys to other keys.  These key assignments could be placed in
-    your startup profile\index{Profile} (see the **Profiles** section below).
+    your startup profile\index{Profile} (see the [**Profiles**](#profiles) section below).
 
 -z
 
@@ -528,7 +547,7 @@ meanings:
 
 :   Tells MicroEMACS to read the specified
     *profile* \index{profile} at startup,
-    instead of the default profile.  See the **Profiles** section for
+    instead of the default profile.  See the [**Profiles**](#profiles) section for
     more information about profiles.
 
 The filenames\index{File name} *filename1*, *filename2*, etc., are the names
@@ -540,7 +559,7 @@ MicroEMACS will create up to two
 split-screen windows\index{Window} to view the first two files you specify.
 If you specify only one file, MicroEMACS will create one full-screen
 window.  The commands for manipulating windows are described in the
-**Window Management** section below.
+[**Window Management**](#window-management) section below.
 
 Any changes you make to a file while it is in a buffer will not affect
 the original file until you tell MicroEMACS to save the file.
@@ -550,7 +569,7 @@ with an empty buffer called "main", which has no associated filename.
 You can give this buffer a filename, or read a file into it,
 or you can read files
 into their own separate buffers.  The commands for reading and saving files
-are described in the **Files** section below.
+are described in the [**Files**](#files) section below.
 
 After MicroEMACS reads in the files you specify (if any), but before
 it accepts any keyboard entries,
@@ -791,7 +810,7 @@ always advisable.
 
 Word wrapping\index{Word wrap} can be performed by binding a key
 to the **ins-self-with-wrap**\index{ins-self-with-wrap} function.
-This function is described in the **Paragraphs** section below.
+This function is described in the [**Paragraphs**](#paragraphs) section below.
 
 C-M, Return
 
@@ -811,7 +830,7 @@ C-M, Return
     at compile-time by
     setting the "NLMOVE" definition to 1 in `def.h`.
 
-C-J
+[unbound]
 
 :   **ins-nl-and-indent**\index{C-J}\index{ins-nl-and-indent}\index{Indent}
 
@@ -820,6 +839,50 @@ C-J
     duplicate the indentation of the previous line.
     This is useful for entering heavily-indented programs in structured
     languages like PASCAL or C.
+
+[unbound]
+
+:   **borland-indent**\index{C-J}\index{borland-indent}\index{Indent}
+
+    This command is like a **ins-nl-and-indent**, but also attempts to indent
+    according to the coding standards in use at Borland in the 1990s.
+    If the previous line starts with `{`, or an argument
+    of four (i.e. a single `Control-U`) is specified, indent by four spaces. If an
+    argument of 16 (i.e. two `Control-U`s) is specified, reduce indentation by four
+    spaces.  Otherwise retain the same indentation.
+
+[unbound]
+
+:   **gnu-indent**\index{C-J}\index{gnu-indent}\index{Indent}
+
+    This command is like a **ins-nl-and-indent**, but also attempts to indent
+    according to the GNU coding standards in use at Cygnus in the 1990s.
+    If the previous line starts with `{`, `if`, `while`, `for`, `else`, `case, or an argument
+    of four (i.e. a single `Control-U`) is specified, indent by two spaces. If an
+    argument of 16 (i.e. two `Control-U`s) is specified, reduce indentation by two
+    spaces.  Otherwise retain the same indentation.
+
+[unbound]
+
+:   **vmware-indent**\index{C-J}\index{vmware-indent}\index{Indent}
+
+    This command is like a **ins-nl-and-indent**, but also attempts to indent
+    according to the coding standards in use at VMware in the 2000s.
+    If the previous line starts with `{`, or an argument
+    of four (i.e. a single `Control-U`) is specified, indent by three spaces. If an
+    argument of 16 (i.e. two `Control-U`s) is specified, reduce indentation by three
+    spaces.  Otherwise retain the same indentation.
+
+C-J
+
+:   **ruby-indent**\index{C-J}\index{ruby-indent}\index{Indent}
+
+    This command is like a **ins-nl-and-indent**, but also attempts to indent
+    according to commonly accepted Ruby conventions.
+    If the previous line starts with `{` or one of the many block-start keywords, or an argument
+    of four (i.e. a single `Control-U`) is specified, indent by two spaces. If an
+    argument of 16 (i.e. two `Control-U`s) is specified, reduce indentation by two
+    spaces.  Otherwise retain the same indentation.
 
 C-O
 
@@ -1363,7 +1426,7 @@ C-X C-S, M-T
     If you used the **-b** option when you invoked MicroEMACS, and
     this is first time a **file-save** command has been performed
     on the file, MicroEMACS will create a backup\index{Backup file} of the file.
-    See the section **Starting** for more information on backups.
+    See the section [**Starting**](#starting) for more information on backups.
 
     The **C-X C-S**\index{Control-S} form of the command is not usable if the terminal being used
     required XON/XOFF\index{XON/XOFF} support.
@@ -1746,6 +1809,367 @@ in response to the prompt `:` on the echo line.
     on the echo line the command name that is bound to that key.
     On PC-DOS and FlexOS this function is bound to **F1**.
 
+# Tags
+
+\index{tags}
+MicroEmacs can use the source-code tagging programs `cscope`\index{cscope} and `ctags`\index{ctags}
+to make it easier to find functions and variables in C programs.  The `find-` functions
+prompt for a name to find, but they also attempt to extract a name from the
+current buffer and location, to be used if you do not enter a name and simply hit
+`Enter`.
+
+M-, , F11
+
+:   **find-cscope**\index{find-cscope}
+
+    This command prompts for an identifier, then uses `cscope` to find the first
+    occurence of the identifier.  Usually, the first occurrence is the one
+    that defines the identifier.  The command then visits the corresponding
+    file and places the dot at the line containing the identifier.
+
+M-G
+
+:   **find-grep**\index{find-grep}
+
+    This command prompts for a string, then uses `cscope`'s "grep" function to find the first
+    occurence of the string.  The command then visits the corresponding
+    file and places the dot at the line containing the string.
+
+F12
+
+:   **next-cscope**\index{next-cscope}
+
+    This command uses `cscope` finds the next occurrence of an identifier that
+    was found in a previous `find-cscope` or `find-grep` command.
+
+M-.
+
+:   **find-tag**\index{find-tag}
+
+    This command prompts for an identifier, then reads the `TAGS` file (generated
+    by `ctags`) to find an occurrence of the identifier.  If no argument is present,
+    the command finds the first occurrence; if an argument is present, the command
+    finds the next occurence.  The command then visits the corresponding
+    file and places the dot at the line containing the identifier.
+
+# Ruby on Rails
+
+MicroEmacs has three functions that make it slightly easier to
+find files within a Rails\index{Rails} project.  These functions work only
+when the current directory is the top-level directory of
+your project.
+
+C-X C
+
+:   **rails-controller**\index{rails-controller}
+
+    This command prompts you to enter the name of a database table,
+    then visits the source file for the corresponding controller.
+
+C-X M
+
+:   **rails-model**\index{rails-model}
+
+    This command prompts you to enter the name of a class,
+    then visits the source file for the corresponding model.
+    The class name must be singular and lower case (MicroEmacs
+    does not understand the pluralizing conventions used by Rails).
+
+C-X V
+
+:   **rails-view**\index{rails-view}
+
+    This command prompts you to enter the name of a database table,
+    followed a view method, then visits the source file for the
+    corresponding view.
+
+# Undo
+
+MicroEmacs supports a limited undo\index{Undo} facility.  It saves
+information about the last 100 commands that modified a given buffer,
+so that these commands can be undone.  Each buffer has its own set of
+undo records.  MicroEmacs does not currently support a redo facility
+(for undoing an undo).  It treats consecutive typing of normal (non-command)
+keys as a single operation; this makes it less tedious to undo large
+amounts of typing.
+
+F5
+
+:   **undo**\index{undo}
+
+    This command undoes the most recent operation that modified the current buffer.
+
+# Profiles
+
+\index{Profiles}\index{Profile}
+A profile is a file that contain a sequence of characters that
+MicroEMACS can read as if the file were a keyboard.  Thus
+a profile is similar to a macro\index{Macro}, but because it is a file
+it doesn't go away when you leave MicroEMACS.  You can think of a profile as
+an editor command file\index{Command file}.
+
+When MicroEMACS starts\index{Starting},
+it reads and executes a startup profile, after it reads the
+file(s) you specify on the command line (if any).  You might use the
+startup profile to set up some favorite key bindings\index{Key binding},
+or define a macro\index{Macro},
+or read in more files\index{File, reading}\index{Reading a file}.
+
+You can use the **-p profile** option when you invoke MicroEMACS to specify
+the name of the startup profile.  If you don't use this option, MicroEMACS
+will use a default profile name.
+The name of the default
+profile is `XEMACS.PRO` on all systems except UNIX\index{UNIX}, where it is
+named `.xemacspro`.  MicroEMACS will look for this profile in the
+current directory.  If the profile is not found, MicroEMACS will
+look in a second directory, as follows:
+
+* On UNIX\index{UNIX} and PC-DOS\index{PC-DOS},
+the directory indicated by the environment string
+**HOME**, if defined.
+
+* On FlexOS\index{FlexOS}, the **home:** directory or device.
+
+* On CP/M-68K\index{CP/M}, user area 0 of the current drive.
+
+* On VMS\index{VMS}, the **sys$login** directory.
+
+A profile consists of a series of tokens separated by white space
+or newlines.  A token can be a literal string, key name, or command
+name.
+
+1.  **Literal string:** a series of characters surrounded by double quotes (").
+    The characters within the quotes are interpreted by MicroEMACS exactly
+    as if you had typed them on the keyboard.  Certain control characters
+    may be placed in the string using the following escape sequences:
+
+    \\n
+
+    :   linefeed
+
+    \\t
+
+    :   tab
+
+    \\b
+
+    :   backspace
+
+    \\r
+
+    :   carriage return
+
+    \\f
+
+    :   form feed
+
+    \\\\
+
+    :   backslash
+
+    \\"
+
+    :   double quote
+
+    Other control characters can be placed in the string by preceding
+    them with the Control-Q (quote)\index{Control-Q}\index{quote} character.
+
+    A quoted string must always follow a command that normally
+    prompt the user to enter a response string (for example, the search command
+    **C-S**).  The
+    last character in the response string must be a carriage return
+    (written as \\r).
+			 
+2.  **Key name:** the name of a MicroEMACS key
+    surrounded by brackets [].
+    Key names use the conventions established in this manual.  Examples:
+
+    [C-F]
+
+    :   means "Control-F"
+
+    [M-C-V]
+
+    :   means "ESC Control-F"
+
+    [M-L]
+
+    :   means "ESC L"
+
+    [C-X E]
+
+    :   means "Control-X E"
+
+    [C-X C-S]
+
+    :   means "Control-X Control-S"
+
+    You can use the **display-bindings**\index{display-bindings}
+    extended command to get a partial
+    list of key names, or see the [**Wall Chart**](#wall-chart) section above.
+
+    MicroEMACS converts the key name to the corresponding internal key code.
+    Only one key name is allowed within a single pair of brackets.
+
+3.  **Commands name:** simply the name of any MicroEMACS command, whether
+    it is bound to a key or not.  MicroEMACS prefixes the command name
+    with **ESC X**, and follows it with a **Return**, before interpreting
+    the command.  This simulates the keystrokes that you would enter at
+    the keyboard to
+    invoke an extended command\index{extended command}.
+
+4.  **Decimal number:** a series of digits, optionally preceded by a
+    minus sign ("-").  It is equivalent to typing Control-U, followed
+    by the number, on the keyboard.  Placing a number before
+    a command is a convenient method of supplying a numeric argument
+    \index{Argument} to the command.
+
+As an example, consider the following line from a profile:
+
+    bind-to-key "help\r" [m-h]
+
+This is equivalent the following key sequence typed at the keyboard:
+
+\begin{Verbatim}[commandchars=\\\{\}]
+ESC X\index{ESC X} bind-to-key\index{bind-to-key} RETURN help\index{help} RETURN ESC H
+\end{Verbatim}
+
+Note especially the '\\r' character in the quoted string: this must
+be present
+because MicroEMACS always expects you to type **Return**
+in response to the `Function:` prompt of the **bind-to-key** command.
+This is true for all commands that prompt on the echo line for a reply.
+
+Here is a profile that moves the cursor down by 10 lines, and which
+demonstrates the use of a numeric argument to a command:
+
+    10 forw-line
+
+Here is a profile that changes all occurrences
+of the string "plugh" to "xyzzy" in the current file, then saves the
+changes and quits.
+
+    replace-string\index{replace-string} "plugh\r" "xyzzy\r" file-save quit
+
+Here is a profile that causes the `Control-J` key
+to indent according to the GNU standard\index{gnu-indent}.
+
+    bind-to-key "gnu-indent\r" [C-J]
+
+\index{file-save}\index{quit}
+You can automate this kind of global change with the **-p** option
+when you invoke MicroEMACS.  If you name the above profile
+`junk.pro`, you can perform a global change on a file,
+without entering any MicroEMACS commands,
+by invoking MicroEMACS with the following:
+
+    pe -p junk.pro filename
+
+You can tell MicroEMACS to read a profile at any time, with the
+following command.
+
+**C-X F**
+
+:   **read-profile**\index{C-X F}\index{read-profile}
+
+    This command prompts you for the name of a profile.
+    MicroEMACS then reads its subsequent commands from the specified
+    profile, until the end of the file is encountered.  While
+    a profile is being processed, command
+    errors are reported, but otherwise no screen activity takes place
+    (unless the "echo" command is used in the profile).
+    You cannot nest profiles by putting a [C-X F] or read-profile command in
+    a profile.  Execution of a profile does *not* stop if an error occurs (such
+    as a failed search).
+
+You can display messages on the echo line\index{Echo line} during profile
+processing (or at any other time) with the following command.
+
+**C-X C-E**
+
+:   **echo**\index{C-X C-E}\index{echo}
+
+    This command prompts you to enter a line of text.
+    MicroEMACS then displays the text on the echo line.
+    This command might be useful for displaying progress
+    during a time-consuming profile.  Here is an example
+    of the use of the echo command in a profile:
+
+        echo "Changing all CDOS references...\r"
+        replace-string "CDOS\r" "FlexOS\r"
+
+    Note the required carriage return (\\r) at the end of the string.
+
+# Building a MicroEMACS
+
+\index{Building a MicroEMACS}
+All versions of MicroEMACS are built from the two sets of
+source files. One set is independent of operating system and terminal,
+and the other set is dependent.
+
+Compile time options for the independent modules
+are selected by setting compilation
+switches in `def.h`, and then letting conditional compilation do the
+right thing.
+
+The dependent modules are briefly described below.
+
+## Operating System
+
+\index{Operating System}
+MicroEMACS runs on several operating systems, including Linux, 
+Windows NT, PC-DOS,
+CP/M-86 and MS-DOS on the DEC Rainbow, 4.2 BSD,
+VMS on the VAX, CP/M-68K, GEMDOS, and FlexOS V60/68K/286.
+The following modules contain code dependencies on the operating system:
+
+* `ttyio.c` - low level terminal I/O; independent of terminal type.
+
+* `spawn.c` - subjob creation.
+
+* `fileio.c` - low level file handling.
+
+* `bcopy.s` or `bcopy.asm` - fast byte copy and fill functions.
+
+Adding a new operating system consists mostly of changing these
+files, and the header file `sysdef.h`.
+
+## Terminal Support
+
+\index{Terminal Support}
+MicroEMACS supports several kinds of terminals, including ANSI, VT-52,
+RAINBOW, PC, and VME/10.
+The following modules contain code dependencies on the terminal type:
+
+* `tty.c` - high-level terminal support.
+
+* `ttykbd.c` - keyboard dependencies and extensions.
+
+Changing terminal type consists
+mostly of changing these files, and the header file `ttydef.h`
+
+The Rainbow, VME/10 (under CP/M and GEMDOS)
+and PC have memory mapped displays.
+Support for these
+displays is enabled by setting the MEMMAP switch in `ttydef.h` to 1.
+This eliminates the fancy Gosling screen update code in `display.c`,
+and enables writing directly to screen memory.
+
+To
+support a new memory-mapped display, you must provide a `putline` function
+for writing lines to the display.  Typically this is written in assembly
+language, but in one case (the VME/10 under CP/M and GEMDOS) it has been
+written in C and placed in `tty.c`.
+
+## Randomness
+
+In ITS EMACS\index{EMACS}, arguments on the **C-V**
+and **M-V** commands work in lines. In
+Gosling EMACS, arguments on the **C-V**
+and **M-V** commands work in screens.
+The `CVMVAS` compilation switch in `def.h`, if `1`,
+makes the commands work like in Gosling EMACS.
+
 \newpage
 
 # Wall Chart
@@ -1754,7 +2178,7 @@ in response to the prompt `:` on the echo line.
 Here is a list of the current key
 bindings in MicroEMACS.  The
 terminal-dependent key bindings for
-the IBM PC and the Zenith terminals
+the PC and the Zenith terminals
 are presented at the end of this
 section. 
 
@@ -2135,7 +2559,33 @@ C-X C-E
 
 :   echo
 
-*IBM PC Function Keys*
+*Tags and Rails*
+
+M-,
+
+:   find-cscope
+
+M-G
+
+:   find-grep
+
+M-.
+
+:   find-tag
+
+C-X C
+
+:   rails-controller
+
+C-X M
+
+:   rails-model
+
+C-X V
+
+:   rails-view
+
+*PC Function Keys*
 
 F1
 
@@ -2155,7 +2605,7 @@ F4
 
 F5
 
-:   display-bindings
+:   undo
 
 F6
 
@@ -2176,6 +2626,14 @@ F9
 F10
 
 :   only-window
+
+F11
+
+:   find-cscope
+
+F12
+
+:   next-cscope
 
 Up
 
@@ -2341,268 +2799,3 @@ M-D
 \setlist[description]{labelwidth=1in,leftmargin=!}
 
 \newpage
-
-# Profiles
-
-\index{Profiles}\index{Profile}
-A profile is a file that contain a sequence of characters that
-MicroEMACS can read as if the file were a keyboard.  Thus
-a profile is similar to a macro\index{Macro}, but because it is a file
-it doesn't go away when you leave MicroEMACS.  You can think of a profile as
-an editor command file\index{Command file}.
-
-When MicroEMACS starts\index{Starting},
-it reads and executes a startup profile, after it reads the
-file(s) you specify on the command line (if any).  You might use the
-startup profile to set up some favorite key bindings\index{Key binding},
-or define a macro\index{Macro},
-or read in more files\index{File, reading}\index{Reading a file}.
-
-You can use the **-p profile** option when you invoke MicroEMACS to specify
-the name of the startup profile.  If you don't use this option, MicroEMACS
-will use a default profile name.
-The name of the default
-profile is `XEMACS.PRO` on all systems except UNIX\index{UNIX}, where it is
-named `.xemacspro`.  MicroEMACS will look for this profile in the
-current directory.  If the profile is not found, MicroEMACS will
-look in a second directory, as follows:
-
-* On UNIX\index{UNIX} and PC-DOS\index{PC-DOS},
-the directory indicated by the environment string
-**HOME**, if defined.
-
-* On FlexOS\index{FlexOS}, the **home:** directory or device.
-
-* On CP/M-68K\index{CP/M}, user area 0 of the current drive.
-
-* On VMS\index{VMS}, the **sys$login** directory.
-
-A profile consists of a series of tokens separated by white space
-or newlines.  A token can be a literal string, key name, or command
-name.
-
-1.  **Literal string:** a series of characters surrounded by double quotes (").
-    The characters within the quotes are interpreted by MicroEMACS exactly
-    as if you had typed them on the keyboard.  Certain control characters
-    may be placed in the string using the following escape sequences:
-
-    \\n
-
-    :   linefeed
-
-    \\t
-
-    :   tab
-
-    \\b
-
-    :   backspace
-
-    \\r
-
-    :   carriage return
-
-    \\f
-
-    :   form feed
-
-    \\\\
-
-    :   backslash
-
-    \\"
-
-    :   double quote
-
-    Other control characters can be placed in the string by preceding
-    them with the Control-Q (quote)\index{Control-Q}\index{quote} character.
-
-    A quoted string must always follow a command that normally
-    prompt the user to enter a response string (for example, the search command
-    **C-S**).  The
-    last character in the response string must be a carriage return
-    (written as \\r).
-			 
-2.  **Key name:** the name of a MicroEMACS key
-    surrounded by brackets [].
-    Key names use the conventions established in this manual.  Examples:
-
-    [C-F]
-
-    :   means "Control-F"
-
-    [M-C-V]
-
-    :   means "ESC Control-F"
-
-    [M-L]
-
-    :   means "ESC L"
-
-    [C-X E]
-
-    :   means "Control-X E"
-
-    [C-X C-S]
-
-    :   means "Control-X Control-S"
-
-    You can use the **display-bindings**\index{display-bindings}
-    extended command to get a partial
-    list of key names, or see the **Wall Chart** section above.
-
-    MicroEMACS converts the key name to the corresponding internal key code.
-    Only one key name is allowed within a single pair of brackets.
-
-3.  **Commands name:** simply the name of any MicroEMACS command, whether
-    it is bound to a key or not.  MicroEMACS prefixes the command name
-    with **ESC X**, and follows it with a **Return**, before interpreting
-    the command.  This simulates the keystrokes that you would enter at
-    the keyboard to
-    invoke an extended command\index{extended command}.
-
-4.  **Decimal number:** a series of digits, optionally preceded by a
-    minus sign ("-").  It is equivalent to typing Control-U, followed
-    by the number, on the keyboard.  Placing a number before
-    a command is a convenient method of supplying a numeric argument
-    \index{Argument} to the command.
-
-As an example, consider the following line from a profile:
-
-    bind-to-key "help\r" [m-h]
-
-This is equivalent the following key sequence typed at the keyboard:
-
-\begin{Verbatim}[commandchars=\\\{\}]
-ESC X\index{ESC X} bind-to-key\index{bind-to-key} RETURN help\index{help} RETURN ESC H
-\end{Verbatim}
-
-Note especially the '\\r' character in the quoted string: this must
-be present
-because MicroEMACS always expects you to type **Return**
-in response to the `Function:` prompt of the **bind-to-key** command.
-This is true for all commands that prompt on the echo line for a reply.
-
-Here is a profile that moves the cursor down by 10 lines, and which
-demonstrates the use of a numeric argument to a command:
-
-    10 forw-line
-
-Here is a profile that changes all occurrences
-of the string "plugh" to "xyzzy" in the current file, then saves the
-changes and quits.
-
-    replace-string\index{replace-string} "plugh\r" "xyzzy\r" file-save quit
-
-\index{file-save}\index{quit}
-You can automate this kind of global change with the **-p** option
-when you invoke MicroEMACS.  If you name the above profile
-`junk.pro`, you can perform a global change on a file,
-without entering any MicroEMACS commands,
-by invoking MicroEMACS with the following:
-
-    xemacs -p junk.pro filename
-
-You can tell MicroEMACS to read a profile at any time, with the
-following command.
-
-**C-X F**
-
-:   **read-profile**\index{C-X F}\index{read-profile}
-
-    This command prompts you for the name of a profile.
-    MicroEMACS then reads its subsequent commands from the specified
-    profile, until the end of the file is encountered.  While
-    a profile is being processed, command
-    errors are reported, but otherwise no screen activity takes place
-    (unless the "echo" command is used in the profile).
-    You cannot nest profiles by putting a [C-X F] or read-profile command in
-    a profile.  Execution of a profile does *not* stop if an error occurs (such
-    as a failed search).
-
-You can display messages on the echo line\index{Echo line} during profile
-processing (or at any other time) with the following command.
-
-**C-X C-E**
-
-:   **echo**\index{C-X C-E}\index{echo}
-
-    This command prompts you to enter a line of text.
-    MicroEMACS then displays the text on the echo line.
-    This command might be useful for displaying progress
-    during a time-consuming profile.  Here is an example
-    of the use of the echo command in a profile:
-
-	echo "Changing all CDOS references...\r"
-	replace-string "CDOS\r" "FlexOS\r"
-
-    Note the required carriage return (\r) at the end of the string.
-
-# Building a MicroEMACS
-
-\index{Building a MicroEMACS}
-All versions of MicroEMACS are built from the two sets of
-source files. One set is independent of operating system and terminal,
-and the other set is dependent.
-
-Compile time options for the independent modules
-are selected by setting compilation
-switches in `def.h`, and then letting conditional compilation do the
-right thing.
-
-The dependent modules are briefly described below.
-
-## Operating System
-
-\index{Operating System}
-MicroEMACS runs on several operating systems, including PC-DOS,
-CP/M-86 and MS-DOS on the DEC Rainbow, 4.2 BSD,
-VMS on the VAX, CP/M-68K, GEMDOS, and FlexOS V60/68K/286.
-The following modules contain code dependencies on the operating system:
-
-* `ttyio.c` - low level terminal I/O; independent of terminal type.
-
-* `spawn.c` - subjob creation.
-
-* `fileio.c` - low level file handling.
-
-* `bcopy.s` or `bcopy.asm` - fast byte copy and fill functions.
-
-Adding a new operating system consists mostly of changing these
-files, and the header file `sysdef.h`.
-
-## Terminal Support
-
-\index{Terminal Support}
-MicroEMACS supports several kinds of terminals, including ANSI, VT-52,
-RAINBOW, IBM PC, and VME/10.
-The following modules contain code dependencies on the terminal type:
-
-* `tty.c` - high-level terminal support.
-
-* `ttykbd.c` - keyboard dependencies and extensions.
-
-Changing terminal type consists
-mostly of changing these files, and the header file `ttydef.h`
-
-The Rainbow, VME/10 (under CP/M and GEMDOS)
-and IBM PC have memory mapped displays.
-Support for these
-displays is enabled by setting the MEMMAP switch in `ttydef.h` to 1.
-This eliminates the fancy Gosling screen update code in `display.c`,
-and enables writing directly to screen memory.
-
-To
-support a new memory-mapped display, you must provide a `putline` function
-for writing lines to the display.  Typically this is written in assembly
-language, but in one case (the VME/10 under CP/M and GEMDOS) it has been
-written in C and placed in `tty.c`.
-
-## Randomness
-
-In ITS EMACS\index{EMACS}, arguments on the **C-V**
-and **M-V** commands work in lines. In
-Gosling EMACS, arguments on the **C-V**
-and **M-V** commands work in screens.
-The `CVMVAS` compilation switch in `def.h`, if `1`,
-makes the commands work like in Gosling EMACS.
