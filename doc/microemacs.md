@@ -1758,7 +1758,9 @@ the IBM PC and the Zenith terminals
 are presented at the end of this
 section. 
 
-\Begin{multicols}{2}
+\Begin{multicols}{3}
+
+\Begin{footnotesize}
 
 *Insert and Delete*
 
@@ -2331,6 +2333,8 @@ M-C
 M-D
 
 :   back-word
+
+\End{footnotesize}
 
 \End{multicols}
 
