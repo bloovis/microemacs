@@ -5,7 +5,7 @@ header-includes:
     - \usepackage{imakeidx}
     - \makeindex
     - \usepackage{enumitem}
-    - \setlist[description]{leftmargin=!,labelwidth=1in}
+    - \setlist[description]{labelwidth=1in,leftmargin=!}
     - \usepackage{fancyvrb}
     - \usepackage{multicol}
     - \newcommand{\hideFromPandoc}[1]{#1}
@@ -439,7 +439,7 @@ A **C-U** preceding a command always introduces an argument.
 
 If a numeric argument is just a string of **C-U** characters, then the
 value of the argument is
-4**(number of **C-U** characters), where "**" means "to the power."
+4^(number of **C-U** characters), where "^" means "to the power."
 Therefore **C-U** is 4, **C-U C-U** is 16,
 **C-U C-U C-U** is 256, and so on.
 Some commands
@@ -1758,6 +1758,7 @@ the IBM PC and the Zenith terminals
 are presented at the end of this
 section. 
 
+\setlist[description]{labelwidth=1in,leftmargin=!,noitemsep}
 \Begin{multicols}{3}
 
 \Begin{footnotesize}
@@ -2337,7 +2338,9 @@ M-D
 \End{footnotesize}
 
 \End{multicols}
+\setlist[description]{labelwidth=1in,leftmargin=!}
 
+\newpage
 
 # Profiles
 
@@ -2505,7 +2508,7 @@ following command.
 
 **C-X F**
 
-:   read-profile**\index{C-X F}\index{read-profile}
+:   **read-profile**\index{C-X F}\index{read-profile}
 
     This command prompts you for the name of a profile.
     MicroEMACS then reads its subsequent commands from the specified
@@ -2522,7 +2525,7 @@ processing (or at any other time) with the following command.
 
 **C-X C-E**
 
-:   echo**\index{C-X C-E}\index{echo}
+:   **echo**\index{C-X C-E}\index{echo}
 
     This command prompts you to enter a line of text.
     MicroEMACS then displays the text on the echo line.
