@@ -76,7 +76,7 @@ int curgoal;			/* Goal column                  */
 BUFFER *curbp = 0;		/* Current buffer               */
 EWINDOW *curwp = 0;		/* Current window               */
 BUFFER *bheadp;			/* BUFFER listhead              */
-EWINDOW *wheadp;			/* EWINDOW listhead              */
+EWINDOW *wheadp;		/* EWINDOW listhead              */
 BUFFER *blistp;			/* Buffer list BUFFER           */
 short kbdm[NKBDM] = { KCTLX | ')' };	/* Macro                        */
 short *kbdmip;			/* Input  for above             */

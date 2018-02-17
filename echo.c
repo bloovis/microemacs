@@ -87,7 +87,7 @@ int newmsgf = FALSE;		/* New alert state.             */
 
 char msg[NMSG];			/* Random message storage.      */
 char choicebuf[NCOL + 1];	/* Line buffer for displaying   */
-					/*  autocompletion choices      */
+				/*  autocompletion choices      */
 
 /*
  * External functions.

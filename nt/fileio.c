@@ -361,13 +361,13 @@ ffpopen(char *fn)
 	static char newname[NFILEN];
 
 	if (fn == NULL) {
-		if ((pfp = open("xemacs.pro",O_RDONLY)) >= 0)
+		if ((pfp = open("pe.pro",O_RDONLY)) >= 0)
 			return (FIOSUC);
 		if ((fn = getenv("HOME")) != NULL)
 			strcpy(newname,fn);
 		else
 			newname[0] = 0;
-		strcat(newname,"\\xemacs.pro");
+		strcat(newname,"\\pe.pro");
 		fn = newname;
 	}
 	if ((pfp = open(fn,O_RDONLY)) < 0)

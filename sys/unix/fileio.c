@@ -276,12 +276,12 @@ ffpopen (char *fn)
 
   if (fn == NULL)
     {
-      if ((pfp = fopen (".xemacspro", "r")) != NULL)
+      if ((pfp = fopen (".pepro", "r")) != NULL)
 	return (FIOSUC);
       if ((fn = getenv ("HOME")) == NULL)
 	return (FIOFNF);
       strcpy (newname, fn);
-      strcat (newname, "/.xemacspro");
+      strcat (newname, "/.pepro");
       fn = newname;
     }
   if ((pfp = fopen (fn, "r")) == NULL)
@@ -326,7 +326,7 @@ ffpclose (void)
 int
 ffjopen (void)
 {
-  if ((jfp = fopen (".xemacsjou", "w")) == NULL)
+  if ((jfp = fopen (".pejou", "w")) == NULL)
     {
       eprintf ("Cannot open journal file for writing");
       return (FIOERR);
