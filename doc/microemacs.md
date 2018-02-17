@@ -496,8 +496,11 @@ and mark do not matter.
 Start editing by typing the command
 
 \begin{Verbatim}[commandchars=\\\{\}]
-xemacs [-b] [-x] [-z] [-p \emph{profile}] \emph{filename1} \emph{filename} ...
+pe [-b] [-x] [-z] [-p \emph{profile}] \emph{filename1} \emph{filename} ...
 \end{Verbatim}
+
+(The name `pe` was chosen to avoid confusion with other versions
+of MicroEmacs.  Think of it as an abbreviation of "puny emacs".)
 
 The options -b, -x, -z, and -p are optional.  They have the following
 meanings:
@@ -1588,7 +1591,7 @@ C-X B
     to the first buffer in the list.  The list of buffers can be displayed
     with **C-X C-B**.   When this command is bound to a key, it
     is useful for quickly flipping among the files being edited.
-    On PC-DOS and FlexOS this command is bound to **F8**.
+    On PC-DOS and FlexOS this command is bound to `F8`.
 
 [unbound]
 
@@ -1788,7 +1791,7 @@ in response to the prompt `:` on the echo line.
     to switch to the
     window displaying the table, then using **C-X C-W**\index{C-X C-W}
     to write the table
-    to a file.  On PC-DOS and FlexOS this function is bound to **F5**.
+    to a file.
 
 [unbound]
 
@@ -1808,7 +1811,7 @@ in response to the prompt `:` on the echo line.
 
     This command waits for the user to enter a key, then displays
     on the echo line the command name that is bound to that key.
-    On PC-DOS and FlexOS this function is bound to **F1**.
+    On PC-DOS and FlexOS this function is bound to `F1`.
 
 # Tags
 
@@ -1819,14 +1822,15 @@ prompt for a name to find, but they also attempt to extract a name from the
 current buffer and location, to be used if you do not enter a name and simply hit
 `Enter`.
 
-M-, , F11
+M-,
 
 :   **find-cscope**\index{find-cscope}
 
     This command prompts for an identifier, then uses `cscope` to find the first
     occurence of the identifier.  Usually, the first occurrence is the one
     that defines the identifier.  The command then visits the corresponding
-    file and places the dot at the line containing the identifier.
+    file and places the dot at the line containing the identifier.  On PCs,
+    this function is also bound to `F11`.
 
 M-G
 
@@ -1836,12 +1840,13 @@ M-G
     occurence of the string.  The command then visits the corresponding
     file and places the dot at the line containing the string.
 
-F12
+[unbound]
 
 :   **next-cscope**\index{next-cscope}
 
     This command uses `cscope` finds the next occurrence of an identifier that
-    was found in a previous `find-cscope` or `find-grep` command.
+    was found in a previous `find-cscope` or `find-grep` command.  On PCs, this
+    function is bound to `F12`.
 
 M-.
 
@@ -1894,11 +1899,12 @@ undo records.  MicroEmacs does not currently support a redo facility
 keys as a single operation; this makes it less tedious to undo large
 amounts of typing.
 
-F5
+C-X U
 
 :   **undo**\index{undo}
 
     This command undoes the most recent operation that modified the current buffer.
+    On PCs, this function is also bound to `F5`.
 
 # Profiles
 
@@ -1920,8 +1926,8 @@ You can use the **-p profile** option when you invoke MicroEMACS to specify
 the name of the startup profile.  If you don't use this option, MicroEMACS
 will use a default profile name.
 The name of the default
-profile is `XEMACS.PRO` on all systems except UNIX\index{UNIX}, where it is
-named `.xemacspro`.  MicroEMACS will look for this profile in the
+profile is `PE.PRO` on all systems except UNIX\index{UNIX}, where it is
+named `.pepro`.  MicroEMACS will look for this profile in the
 current directory.  If the profile is not found, MicroEMACS will
 look in a second directory, as follows:
 
