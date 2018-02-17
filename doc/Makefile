@@ -1,5 +1,5 @@
 microemacs.pdf : microemacs.md
-	pandoc -s -o microemacs.tex microemacs.md
+	pandoc -s --template=template.latex -o microemacs.tex microemacs.md
 	latex microemacs.tex
 	latex -output-format=pdf microemacs.tex
 

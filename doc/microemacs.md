@@ -1,8 +1,9 @@
 ---
 geometry: margin=.75in
 numbersections: yes
-header-includes:
+before-hyperref:
     - \usepackage{imakeidx}
+header-includes:
     - \makeindex
     - \usepackage{enumitem}
     - \setlist[description]{labelwidth=1in,leftmargin=!}
@@ -2006,7 +2007,7 @@ name.
 
     You can use the **display-bindings**\index{display-bindings}
     extended command to get a partial
-    list of key names, or see the [**Wall Chart**](#wall-chart) section above.
+    list of key names, or see the [**Wall Chart**](#wall-chart) section below.
 
     MicroEMACS converts the key name to the corresponding internal key code.
     Only one key name is allowed within a single pair of brackets.
