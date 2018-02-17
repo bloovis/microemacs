@@ -3,8 +3,8 @@ the version originally posted by Dave Conroy to USENET in 1986.  It
 predates the very popular Daniel Lawrence version of MicroEMACS, which
 is much larger.
 
-I have added a few features over the years, most recently etags and
-cscope support, and ported it to numerous operating systems.
+I have added a few features over the years, most recently etags,
+cscope, Rails, and undo support, and ported it to numerous operating systems.
 Currently this source tree supports only Unix and NT.  I seem to have
 lost the source for the DOS and OS/2 versions, but they are unlikely
 to be useful in the future.
