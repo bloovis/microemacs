@@ -554,6 +554,13 @@ meanings:
     instead of the default profile.  See the [**Profiles**](#profiles) section for
     more information about profiles.
 
+-r
+
+:   Tells MicroEmacs to mark all buffers as read-only\index{read-only} by default.  This
+    is useful in preventing unwanted changes being made when browsing files.
+    A buffer can subsequently be made read-write with the
+    **toggle-readonly**\index{toggle-readonly} command.
+
 The filenames\index{File name} *filename1*, *filename2*, etc., are the names
 of the files you want to edit.  MicroEMACS
 will load the specified files into separate buffers\index{Buffer},
@@ -1591,7 +1598,7 @@ C-X B
     to the first buffer in the list.  The list of buffers can be displayed
     with **C-X C-B**.   When this command is bound to a key, it
     is useful for quickly flipping among the files being edited.
-    On PC-DOS and FlexOS this command is bound to `F8`.
+    On PCs this command is bound to `F8`.
 
 [unbound]
 
@@ -1609,6 +1616,15 @@ C-X K
     the buffer with that name. It will ask for permission to destroy the
     buffer if the text has been changed since it was written to the associated
     file. You cannot delete a buffer that is being displayed.
+
+C-X C-Q
+
+:   **toggle-readonly**\index{C-X C-Q}\index{toggle-readonly}\index{read-only}
+
+    This command toggles the read-only flag on the current buffer:
+    if the buffer is currently read-only, it is made read-write;
+    otherwise it is made read-only.  This can be useful to counteract
+    the effect of [starting MicroEmacs](#starting) with the `-r` option.
 
 # Window Management
 
@@ -2543,6 +2559,10 @@ C-X =
 C-X C-B
 
 :   display-buffers
+
+C-X C-Q
+
+:   toggle-readonly
 
 *Macros and Profiles*
 
