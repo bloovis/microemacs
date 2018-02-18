@@ -90,7 +90,7 @@ int overstrike = 0;		/* TRUE if in overstrike mode */
  * This is normally bound to "C-X =".
  */
 int
-showcpos (f, n, k)
+showcpos (int f, int n, int k)
 {
   register LINE *clp;
   register LINE *dotp;
@@ -195,7 +195,7 @@ getcolpos (void)
  * "WFEDIT" is good enough.
  */
 int
-twiddle (f, n, k)
+twiddle (int f, int n, int k)
 {
   register LINE *dotp;
   register int doto;
@@ -235,7 +235,7 @@ twiddle (f, n, k)
  * regularity.
  */
 int
-quote (f, n, k)
+quote (int f, int n, int k)
 {
   register int s;
   register int c;
@@ -284,7 +284,7 @@ quote (f, n, k)
  * at the "k" argument.
  */
 int
-selfinsert (f, n, k)
+selfinsert (int f, int n, int k)
 {
   register int c;
 
@@ -308,7 +308,7 @@ selfinsert (f, n, k)
  * this is bound to "C-O".
  */
 int
-openline (f, n, k)
+openline (int f, int n, int k)
 {
   register int i;
   register int s;
@@ -342,7 +342,7 @@ openline (f, n, k)
  * don't see any reason to enable NLMOVE.
  */
 int
-newline (f, n, k)
+newline (int f, int n, int k)
 {
   register int s;
 
@@ -379,7 +379,7 @@ newline (f, n, k)
  * is bound to "C-X C-O". Any argument is ignored.
  */
 int
-deblank (f, n, k)
+deblank (int f, int n, int k)
 {
   register LINE *lp1;
   register LINE *lp2;
@@ -403,7 +403,7 @@ deblank (f, n, k)
  * Delete any whitespace around dot, then insert a space.
  */
 int /*ARGSUSED*/
-delwhite (f, n, k)
+delwhite (int f, int n, int k)
 {
   register int col, c, len;
 
@@ -446,7 +446,7 @@ delwhite (f, n, k)
  * to "C-J".
  */
 int
-indent (f, n, k)
+indent (int f, int n, int k)
 {
   register int nicol;
   register int c;
@@ -487,7 +487,7 @@ testline (int i, char *string)
 
   if (i + stlen > llength (curwp->w_dot.p))
     return (FALSE);
-  return (strncmp (lgets (curwp->w_dot.p) + i, string, stlen) == 0);
+  return (strncmp ((const char *) lgets (curwp->w_dot.p) + i, string, stlen) == 0);
 }
 
 /*
@@ -561,7 +561,7 @@ nlindent (int nicol, int nonwhitepos, int f)
  * indentation by two spaces.  Otherwise retain the same indentation.
  */
 int
-gnuindent (f, n, k)
+gnuindent (int f, int n, int k)
 {
   int nicol, i;
 
@@ -597,7 +597,7 @@ gnuindent (f, n, k)
  * reduce indentation by two spaces.  Otherwise retain the same indentation.
  */
 int
-rubyindent (f, n, k)
+rubyindent (int f, int n, int k)
 {
   int nicol, i;
   int len = llength (curwp->w_dot.p);
@@ -636,7 +636,7 @@ rubyindent (f, n, k)
  * spaces.  Otherwise retain the same indentation.
  */
 int
-borlandindent (f, n, k)
+borlandindent (int f, int n, int k)
 {
   int nicol, i;
 
@@ -670,7 +670,7 @@ borlandindent (f, n, k)
  * spaces.  Otherwise retain the same indentation.
  */
 int
-vmwareindent (f, n, k)
+vmwareindent (int f, int n, int k)
 {
   int nicol, i;
   int len = llength (curwp->w_dot.p);
@@ -706,7 +706,7 @@ vmwareindent (f, n, k)
  * Normally bound to "C-D".
  */
 int
-forwdel (f, n, k)
+forwdel (int f, int n, int k)
 {
   if (n < 0)
     return (backdel (f, -n, KRANDOM));
@@ -723,7 +723,7 @@ forwdel (f, n, k)
  * if presented with an argument.
  */
 int
-backdel (f, n, k)
+backdel (int f, int n, int k)
 {
   register int s;
 
@@ -751,7 +751,7 @@ backdel (f, n, k)
  * then it kills back abs(arg) lines.
  */
 int
-killline (f, n, k)
+killline (int f, int n, int k)
 {
   register int chunk;
   register LINE *nextp;
@@ -807,7 +807,7 @@ killline (f, n, k)
  * text landed off screen).
  */
 int
-yank (f, n, k)
+yank (int f, int n, int k)
 {
   register int c;
   register int i, j;
@@ -863,7 +863,7 @@ yank (f, n, k)
  * Set the tab size according to the numeric argument.
  */
 int
-settabsize (f, n, k)
+settabsize (int f, int n, int k)
 {
   register EWINDOW *wp;
 
@@ -888,7 +888,7 @@ settabsize (f, n, k)
  * otherwise, set it to the argument.
  */
 int
-setoverstrike (f, n, k)
+setoverstrike (int f, int n, int k)
 {
   overstrike = f ? n : !overstrike;
   eprintf (overstrike ? "[Overstrike mode]" : "[Insert mode]");
@@ -899,7 +899,7 @@ setoverstrike (f, n, k)
  * Check for heap corruption.
  */
 int
-checkheap (f, n, k)
+checkheap (int f, int n, int k)
 {
 #if defined(__TURBOC__) && !defined(__linux__)
   if (heapcheck () >= 0)

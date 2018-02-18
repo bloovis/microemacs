@@ -322,9 +322,9 @@ vtputs (const uchar *s, int n)
  * Put a null-terminated string out to the virtual screen.
  */
 static void
-vtstring (const uchar *s)
+vtstring (const char *s)
 {
-  vtputs (s, strlen ((const char *)s));
+  vtputs ((const uchar *) s, strlen (s));
 }
 
 
@@ -369,8 +369,8 @@ update (void)
   register int c;
   register int curcol;
   register int currow;
-  register int hflag;
 #if GOSLING
+  register int hflag;
   register int offs;
   register int size;
 #endif
@@ -409,7 +409,9 @@ update (void)
     }
   curcol -= curwp->w_leftcol;	/* adjust column        */
 
+#if GOSLING
   hflag = FALSE;		/* Not hard.            */
+#endif
   ALLWIND(wp)
     {
       if (wp->w_flag != 0)
@@ -470,7 +472,9 @@ update (void)
 	    }
 	  else if ((wp->w_flag & (WFEDIT | WFHARD)) != 0)
 	    {
+#if GOSLING
 	      hflag = TRUE;
+#endif
 	      leftcol = wp->w_leftcol;
 	      while (i < wp->w_toprow + wp->w_ntrows)
 		{
@@ -617,7 +621,7 @@ uline (int row, VIDEO *vvp, VIDEO *pvp)
 {
 #if	MEMMAP
   ttcolor (vvp->v_color);
-  putline (row + 1, 1, &vvp->v_text[0]);
+  putline (row + 1, 1, (const char *) &vvp->v_text[0]);
 #else
   register uchar *cp1;
   register uchar *cp2;

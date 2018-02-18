@@ -172,7 +172,7 @@ spawncli (int f, int n, int k)
  * Run the spell checkers.
  */
 int
-spellcheck (f, n, k)
+spellcheck (int f, int n, int k)
 {
   char *args[3];
 

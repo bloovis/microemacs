@@ -134,7 +134,7 @@ readpattern (const char *prompt)
 
   s = ereply ("%s [%s]: ", tpat, NPAT, prompt, pat);
   if (s == TRUE)		/* Specified            */
-    strcpy (pat, tpat);
+    strcpy ((char *) pat, tpat);
   else if (s == FALSE && pat[0] != 0)	/* CR, but old one      */
     s = TRUE;
   return (s);
@@ -181,7 +181,7 @@ doregsrch (int dir)
 	}
       if (linelen + 1 > buflen)
 	{
-	  char *newbuf;
+	  uchar *newbuf;
 
 	  buflen = linelen + 1;
 	  if (buf == NULL)
@@ -205,7 +205,7 @@ doregsrch (int dir)
        * of the found string in the current line,
        * and set the dot to that location.
        */
-      if (regexec (regpat, buf))
+      if (regexec (regpat, (const char *) buf))
 	{
 	  curwp->w_dot.p = clp;
 	  if (dir == SRCH_REGFORW)
@@ -260,7 +260,7 @@ regsearch (char *prompt, int dir)
    */
   if (regpat != NULL)
     free (regpat);
-  if ((regpat = regcomp (pat)) == NULL)	/* regerror shows message */
+  if ((regpat = regcomp ((const char *) pat)) == NULL)	/* regerror shows message */
     return (FALSE);
 
   /* Search the current buffer for the pattern.
@@ -465,7 +465,7 @@ searchagain (int f, int n, int k)
  * on the echo line.
  */
 void
-regerror (char *s)
+regerror (const char *s)
 {
   eprintf ("regular expression error: %s", s);
 }
@@ -571,7 +571,7 @@ is_find (int dir)
 {
   register int plen;
 
-  plen = strlen (pat);
+  plen = strlen ((const char *) pat);
   if (plen != 0)
     {
       if (dir == SRCH_FORW || dir == SRCH_NEXT)
@@ -721,7 +721,7 @@ isearch (int dir)
 	  if (is_find (SRCH_NEXT) != FALSE)
 	    {
 	      is_cpush (SRCH_NEXT);
-	      pptr = strlen (pat);
+	      pptr = strlen ((const char *) pat);
 	    }
 	  else
 	    {
@@ -747,7 +747,7 @@ isearch (int dir)
 	  if (is_find (SRCH_PREV) != FALSE)
 	    {
 	      is_cpush (SRCH_PREV);
-	      pptr = strlen (pat);
+	      pptr = strlen ((const char *) pat);
 	    }
 	  else
 	    {
@@ -851,7 +851,7 @@ queryrepl (int f, int n, int k)
   if (s == FALSE)
     news[0] = '\0';
   eprintf ("[Query Replace:  \"%s\" -> \"%s\"]", pat, news);
-  plen = strlen (pat);
+  plen = strlen ((const char *) pat);
 
   /*
    * Search forward repeatedly, checking each time whether to insert
@@ -954,7 +954,7 @@ replstring (int f, int n, int k)
     return (s);
   if (s == FALSE)
     news[0] = '\0';
-  plen = strlen (pat);
+  plen = strlen ((const char *) pat);
 
   clp = curwp->w_dot.p;		/* save the return location     */
   cbo = curwp->w_dot.o;

@@ -599,7 +599,7 @@ getinp (void)
  * the end of the file is seen.
  */
 int
-readprofile (f, n, k)
+readprofile (int f, int n, int k)
 {
   int		s;
   char		fname[NFILEN];

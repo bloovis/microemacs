@@ -182,7 +182,7 @@ copyregion (int f, int n, int k)
 	  chunk = llength (linep) - loffs;
 	  if (chunk > region.r_size)
 	    chunk = region.r_size;
-	  if (kinsert (lgets (linep) + loffs, chunk) != TRUE)
+	  if (kinsert ((char *) lgets (linep) + loffs, chunk) != TRUE)
 	    return (FALSE);
 	  loffs += chunk;
 	  region.r_size -= chunk;

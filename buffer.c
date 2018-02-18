@@ -97,7 +97,7 @@ static int makelist (void);
  * from some other window.
  */
 int
-usebuffer (f, n, k)
+usebuffer (int f, int n, int k)
 {
   register BUFFER *bp;
   register int s;
@@ -135,7 +135,7 @@ nextbuffer (int f, int n, int k)
  * if there is 1 buffer.
  */
 int
-prevbuffer (f, n, k)
+prevbuffer (int f, int n, int k)
 {
   register BUFFER *bp1;
   register BUFFER *bp2;
@@ -212,7 +212,7 @@ getbufn (char bufn[NBUFN])
  * line and the buffer header. Bound to "C-X K".
  */
 int
-killbuffer (f, n, k)
+killbuffer (int f, int n, int k)
 {
   register BUFFER *bp;
   register BUFFER *bp1;
@@ -264,7 +264,7 @@ killbuffer (f, n, k)
  * "C-X C-B".
  */
 int
-listbuffers (f, n, k)
+listbuffers (int f, int n, int k)
 {
   register int s;
 
@@ -471,10 +471,10 @@ bfind (const char *bname, int cflag)
  * if no match can be found.
  */
 char *
-bufsearch (bname, cpos, prev)
-     char *bname;		/* partial buffer name to match         */
-     int cpos;			/* number of characters in buffer name  */
-     char *prev;		/* NULL if starting from beginning      */
+bufsearch (
+     char *bname,		/* partial buffer name to match         */
+     int cpos,			/* number of characters in buffer name  */
+     char *prev)		/* NULL if starting from beginning      */
 {
   static BUFFER *bp;
   char *name;

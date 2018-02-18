@@ -110,7 +110,7 @@ gotobop (int f, int n, int k)
  * combination to delimit the begining of a paragraph.
  */
 int
-gotoeop (f, n, k)
+gotoeop (int f, int n, int k)
 {
   register int c;		/* first character in current line */
 

@@ -87,7 +87,7 @@ tagref tagreflist = {		/* list of all tags             */
   NULL				/* file pointer                 */
 };
 
-uchar tagpat[NPAT];		/* tag pattern to search        */
+char tagpat[NPAT];		/* tag pattern to search        */
 
 static int havetags;		/* true if tags file was read	*/
 
@@ -96,7 +96,7 @@ static int havetags;		/* true if tags file was read	*/
  * tag list.
  */
 int
-freetags (f, n, k)
+freetags (int f, int n, int k)
 {
   tagfile *curfile, *nextfile;
   tagref *curref, *nextref;
@@ -401,14 +401,12 @@ getcursorword (char *buffer, int size)
 {
   int		n;
   int		doto;
-  int		linelen;
   struct LINE	*linep;
 
   /* Scan back to the beginning of this word.
    */
   doto    = curwp->w_dot.o;
   linep   = curwp->w_dot.p;
-  linelen = llength (linep);
   if (!inwordpos (linep, doto))
     return;
   while (doto >= 0 && inwordpos (linep, doto-1))
@@ -540,7 +538,7 @@ searchtag (int f, int n, prepfunc prep, const char * tagtype)
  * for the previous occurrence of the tag string.
  */
 int
-findtag (f, n, k)
+findtag (int f, int n, int k)
 {
   return searchtag (f, n, preptag, "tag");
 }

@@ -378,7 +378,7 @@ bufinit (const char *fname)
  * out. Bound to "C-Z".
  */
 int
-jeffexit (f, n, k)
+jeffexit (int f, int n, int k)
 {
   if ((curbp->b_flag & BFCHG) != 0)	/* Changed.             */
     return (filesave (f, n, KRANDOM));
@@ -392,7 +392,7 @@ jeffexit (f, n, k)
  * to "C-X C-C".
  */
 int
-quit (f, n, k)
+quit (int f, int n, int k)
 {
   register int s;
 
@@ -413,7 +413,7 @@ quit (f, n, k)
  * variables and return.
  */
 int
-ctlxlp (f, n, k)
+ctlxlp (int f, int n, int k)
 {
   if (kbdmip != NULL || kbdmop != NULL)
     {
@@ -432,7 +432,7 @@ ctlxlp (f, n, k)
  * and return to the caller.
  */
 int
-ctlxrp (f, n, k)
+ctlxrp (int f, int n, int k)
 {
   if (kbdmip == NULL)
     {
@@ -454,7 +454,7 @@ ctlxrp (f, n, k)
  * FALSE.
  */
 int
-ctlxe (f, n, k)
+ctlxe (int f, int n, int k)
 {
   return domacro (&kbdm[0], n);
 }
@@ -515,7 +515,7 @@ domacro (short *macrop, int n)
  * stuff.
  */
 int
-ctrlg (f, n, k)
+ctrlg (int f, int n, int k)
 {
   ttbeep ();
   if (kbdmip != NULL)
@@ -533,7 +533,7 @@ ctrlg (f, n, k)
  * Don't call display if there is an argument.
  */
 int
-showversion (f, n, k)
+showversion (int f, int n, int k)
 {
   register char **cpp;
   register char *cp;

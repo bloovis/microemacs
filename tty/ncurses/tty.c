@@ -178,7 +178,8 @@ void tteeop(void)
 
 void ttbeep(void)
 {
-    write(1,"\007",1);
+  if (write(1,"\007",1) != 1)
+    {}	/* suppress warning about "ignoring return value of write" */
 }
 
 /*

@@ -78,7 +78,7 @@ backchar (int f, int n, int k)
  * Go to end of line.
  */
 int
-gotoeol (f, n, k)
+gotoeol (int f, int n, int k)
 {
   curwp->w_dot.o = llength (curwp->w_dot.p);
   return (TRUE);
@@ -91,8 +91,7 @@ gotoeol (f, n, k)
  * from the end of the buffer.
  */
 int
-forwchar (f, n, k)
-     register int n;
+forwchar (int f, int n, int k)
 {
   register LINE *lp;
 
@@ -122,7 +121,7 @@ forwchar (f, n, k)
  * but almost always the case.
  */
 int
-gotobob (f, n, k)
+gotobob (int f, int n, int k)
 {
   curwp->w_dot.p = lforw (curbp->b_linep);
   curwp->w_dot.o = 0;
@@ -136,7 +135,7 @@ gotobob (f, n, k)
  * almost always the case.
  */
 int
-gotoeob (f, n, k)
+gotoeob (int f, int n, int k)
 {
   curwp->w_dot.p = lback (curbp->b_linep);
   curwp->w_dot.o = llength (curwp->w_dot.p);
@@ -152,7 +151,7 @@ gotoeob (f, n, k)
  * show position.
  */
 static void
-setgoal ()
+setgoal (void)
 {
   curgoal = getcolpos () - 1;	/* Get the position.    */
 }
@@ -199,7 +198,7 @@ getgoal (LINE *dlp)
  * the goal column is set.
  */
 int
-forwline (f, n, k)
+forwline (int f, int n, int k)
 {
   register LINE *dlp;
 
@@ -225,7 +224,7 @@ forwline (f, n, k)
  * call "movedot" to perform the motion.
  */
 int
-backline (f, n, k)
+backline (int f, int n, int k)
 {
   register LINE *dlp;
 
@@ -248,7 +247,7 @@ backline (f, n, k)
  * scrolled by forw-page or back-page.
  */
 void
-checkdot ()
+checkdot (void)
 {
   register LINE *lp, *dotp;
   LINE *newdotp;
@@ -286,8 +285,7 @@ checkdot ()
  * update and get it back.
  */
 int
-forwpage (f, n, k)
-     register int n;
+forwpage (int f, int n, int k)
 {
   register LINE *lp;
   register int page;
@@ -325,8 +323,7 @@ forwpage (f, n, k)
  * the window is zapped.
  */
 int
-backpage (f, n, k)
-     register int n;
+backpage (int f, int n, int k)
 {
   register LINE *lp;
   register int page;
@@ -362,7 +359,7 @@ backpage (f, n, k)
  * macro, when it would be silly.
  */
 int
-setmark (f, n, k)
+setmark (int f, int n, int k)
 {
   if (f == FALSE)
     {
@@ -393,7 +390,7 @@ setmark (f, n, k)
  * error is "no mark".
  */
 int
-swapmark (f, n, k)
+swapmark (int f, int n, int k)
 {
   POS tmp;
 
@@ -417,8 +414,7 @@ swapmark (f, n, k)
  * to use.
  */
 int
-gotoline (f, n, k)
-     register int n;
+gotoline (int f, int n, int k)
 {
   register LINE *clp;
   register int s;

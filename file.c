@@ -90,7 +90,7 @@ extern char *fftilde (char *filename);	/* fileio.c */
  * "read a file into the current buffer" code.
  */
 int
-fileread (f, n, k)
+fileread (int f, int n, int k)
 {
   register int s;
   char fname[NFILEN];
@@ -184,7 +184,7 @@ insertf (const char *fname)
  * "read a file into the current buffer" code.
  */
 int
-fileinsert (f, n, k)
+fileinsert (int f, int n, int k)
 {
   register int s;
   char fname[NFILEN];
@@ -281,7 +281,7 @@ visit_file (char *fname)
 }
 
 int
-filevisit (f, n, k)
+filevisit (int f, int n, int k)
 {
   register int s;
   char fname[NFILEN];
@@ -587,7 +587,7 @@ writeout (const char *fn)
   register LINE *lp;
   register LINE *fp;
   register int nline;
-  register char *buf;
+  register const char *buf;
   int llen;
 
   /* Check if the file has no terminating newline.  This is the
@@ -620,10 +620,10 @@ writeout (const char *fn)
       llen = llength (lp);
       fp = lforw (lp);
       if (savetabs)		/* Preserving tabs?     */
-	buf = lgets (lp);	/* Use line as is.      */
+	buf = (const char *) lgets (lp);	/* Use line as is.      */
       else /* Else expand tabs.        */
-      if ((buf = expand (lgets (lp), &llen)) == NULL)
-	buf = lgets (lp);
+      if ((buf = expand ((const char *) lgets (lp), &llen)) == NULL)
+	buf = (const char *) lgets (lp);
 
       if (fp == curbp->b_linep)
 	{			/* Last line?           */
@@ -772,7 +772,7 @@ filename (int f, int n, int k)
  * determined by tabsize).
  */
 int
-setsavetabs (f, n, k)
+setsavetabs (int f, int n, int k)
 {
   savetabs = f ? (n != 0) : !savetabs;
   eprintf ("[Tabs will %sbe preserved when saving a file]",

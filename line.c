@@ -59,7 +59,6 @@ int ksize = 0;			/* # of bytes allocated in KB.  */
 /*
  * Forward declarations.
  */
-int kinsert (char *s, int n);
 static int ldelnewline (void);
 
 /*
@@ -679,7 +678,7 @@ kdelete (void)
 #define REALLOC	1		/* set to 0 if realloc() not available  */
 
 int
-kinsert (char *s, int n)
+kinsert (const char *s, int n)
 {
   register char *nbufp;
 

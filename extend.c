@@ -36,7 +36,7 @@
  * prompting for additional arguments.
  */
 int
-bindtokey (f, n, k)
+bindtokey (int f, int n, int k)
 {
   register int s;
   register SYMBOL *sp;
@@ -90,7 +90,7 @@ bindtokey (f, n, k)
  * Print an error if there is anything wrong.
  */
 int
-extend (f, n, k)
+extend (int f, int n, int k)
 {
   register SYMBOL *sp;
   register int s;
@@ -125,7 +125,7 @@ extend (f, n, k)
  * only kind of function there is.
  */
 int
-help (f, n, k)
+help (int f, int n, int k)
 {
   register SYMBOL *sp;
   register int c;
@@ -149,7 +149,7 @@ help (f, n, k)
  * "ins-self" are only displayed if there is an argument.
  */
 int
-wallchart (f, n, k)
+wallchart (int f, int n, int k)
 {
   register int s;
   register int key;
@@ -319,7 +319,7 @@ flushstring (void)
  * current buffer.  Return FALSE if an error occurs; otherwise TRUE.
  */
 int
-insertmacro (f, n, k)
+insertmacro (int f, int n, int k)
 {
   register short *mp;		/* Macro pointer.       */
   char xname[NXNAME + 2];	/* Symbol name.         */

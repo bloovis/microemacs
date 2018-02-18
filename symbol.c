@@ -383,9 +383,10 @@ keymapinit ()
  * are fatal.
  */
 void
-keyadd (new, funcp, name)
-     int (*funcp) ();
-     char *name;
+keyadd (
+     int new,
+     int (*funcp) (),
+     char *name)
 {
   register SYMBOL *sp;
   register int hash;
@@ -456,7 +457,7 @@ getbinding (const char *s)
  * the symbol.  Return FALSE if an error occurs; otherwise TRUE.
  */
 int
-namemacro (f, n, k)
+namemacro (int f, int n, int k)
 {
   register SYMBOL *sp;		/* Symbol name pointer. */
   register short *mp;		/* Macro pointer.       */

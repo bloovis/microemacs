@@ -178,14 +178,17 @@ static void
 next_match (char *filename, char *where, int *line_number)
 {
   char buf[1024];
+#if TEST
   int ret;
+#endif
 
   if (fgets (buf, sizeof (buf), cscope_input) == NULL)
     return;
 #if TEST
   printf ("read line: '%s'\n", buf);
+  ret =
 #endif
-  ret = sscanf (buf, "%s %s %d", filename, where, line_number);
+  sscanf (buf, "%s %s %d", filename, where, line_number);
 #if TEST
   printf ("sscanf returned %d\n", ret);
 #endif
@@ -275,7 +278,7 @@ prepref (const char *string)
  * of the tag list is done in prepref above.
  */
 int
-findcscope (f, n, k)
+findcscope (int f, int n, int k)
 {
   return searchtag (f, n, prepref, "ref");
 }
@@ -284,7 +287,7 @@ findcscope (f, n, k)
  * Search for the next cscope reference.
  */
 int
-nextcscope (f, n, k)
+nextcscope (int f, int n, int k)
 {
   return searchtag (1, n, prepref, "ref");
 }
@@ -306,7 +309,7 @@ prepgrep (const char *string)
  * of the tag list is done in prepgrep above.
  */
 int
-findgrep (f, n, k)
+findgrep (int f, int n, int k)
 {
   return searchtag (f, n, prepgrep, "grep");
 }
