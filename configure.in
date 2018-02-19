@@ -35,7 +35,7 @@ AC_ARG_WITH(termcap,
 [ttydir=tty/termcap
 LIBS="-ltermcap"],
 [ttydir=tty/ncurses
-LIBS="-lncurses"])
+LIBS="-lncursesw"])
 
 AC_ARG_WITH(ntconsole,
 [  --with-ntconsole        Use NT-specific console I/O instead of generic UNIX I/O],
