@@ -116,18 +116,23 @@ to bring the document up to date with the program itself.
 
 ### 2018 Update
 
-The original source of Conroy's version of MicroEmacs (including the TeX version
-of this document) has been lost.  I have also lost my DOS and OS/2 source
+I have lost the original source of Conroy's version of MicroEmacs (including the TeX version
+of this document), and I cannot find it on Google's USENET archive.
+I have also lost my DOS and OS/2 source
 code, though the Windows code (in the `nt` subdirectory) still exists.
 This document contains many reference to historical machines and operating
 systems, but I have kept them for historical interest.  I maintain
 only the Linux\index{Linux} version now.
 
 In 80s MicroEmacs was small enough to run easily from a floppy disk, but the amount of text that
-could be edited was limited by the very small amount of available RAM (
-(640kb in DOS).  Now this limit is effectly non-existent, give the huge amount of memory
-in modern computers, but MicroEmacs is still small enough to be run from a floppy disk
-(if one could be found).
+could be edited was limited by the very small amount of available RAM
+(640kb in DOS).  Nowadays this limit is effectly non-existent, give the huge amount of memory
+found in modern computers, but MicroEmacs is still small enough to be run from a floppy disk
+(if one could be found); its code size is 2/3 that of `/bin/ls` on a current 64-bit
+Linux distro!
+
+MicroEmacs does not support UTF-8 characters.  Fixing this will be
+my next project.
 
 # Some Basic Concepts
 
@@ -1181,6 +1186,13 @@ M-J
     right-justified.  The dot is then placed at the end of the
     last line of the paragraph.
 
+M-C-W
+
+:   **kill-paragraph**\index{M-C-W}\index{kill-paragraph}
+
+    This command deletes the current paragraph.  If an argument is
+    provided, that many paragraphs are deleted.
+
 [unbound]
 
 :   **ins-self-with-wrap**\index{ins-self-with-wrap}\index{Word wrap}
@@ -2140,7 +2152,7 @@ The dependent modules are briefly described below.
 ## Operating System
 
 \index{Operating System}
-MicroEMACS runs on several operating systems, including Linux, 
+MicroEMACS runs on several operating systems, including Linux\index{Linux},
 Windows NT, PC-DOS,
 CP/M-86 and MS-DOS on the DEC Rainbow, 4.2 BSD,
 VMS on the VAX, CP/M-68K, GEMDOS, and FlexOS V60/68K/286.
@@ -2183,6 +2195,15 @@ support a new memory-mapped display, you must provide a `putline` function
 for writing lines to the display.  Typically this is written in assembly
 language, but in one case (the VME/10 under CP/M and GEMDOS) it has been
 written in C and placed in `tty.c`.
+
+## Building on Linux
+
+To build MicroEMACs on Linux\index{Linux}, use these commands:
+
+    mkdir obj
+    cd obj
+    ../configure
+    make
 
 ## Randomness
 
@@ -2351,6 +2372,10 @@ M-]
 M-J
 
 :   fill-paragraph
+
+M-C-W
+
+:   kill-paragraph
 
 *Region Commands*
 
