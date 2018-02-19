@@ -312,6 +312,7 @@ delbword (int f, int n, int k)
     return (FALSE);
   --size;			/* Undo assumed delete. */
 out:
+  saveundo (UMOVE, &curwp->w_dot);
   return (ldelete (size, TRUE));
 }
 
