@@ -30,6 +30,8 @@
  * the display in a barely buffered fashion.
  */
 
+#define _XOPEN_SOURCE_EXTENDED
+
 #include	"def.h"
 
 #include	<errno.h>
@@ -37,7 +39,7 @@
 #include	<unistd.h>
 #include	<termios.h>
 #include	<sys/ioctl.h>
-#include	<ncurses.h>
+#include	<ncursesw/ncurses.h>
 
 static struct termios oldtty;	/* Old tty state		*/
 static struct termios newtty;	/* New tty state		*/
@@ -134,7 +136,13 @@ ttstat (void)
 int
 ttputc (int c)
 {
-  addch (c);
+  cchar_t wcval;
+  wchar_t wch[2];
+
+  wch[0] = c;
+  wch[1] = 0;
+  setcchar(&wcval, wch, 0, 0, NULL);
+  add_wch (&wcval);
   return c;
 }
 

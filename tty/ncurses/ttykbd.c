@@ -33,7 +33,7 @@
 
 #include	"def.h"
 
-#include	<ncurses.h>
+#include	<ncursesw/ncurses.h>
 
 #define CTRL(x) ((x) & 0x1f)
 

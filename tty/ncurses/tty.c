@@ -35,7 +35,7 @@
 
 #include "def.h"
 
-#include <ncurses.h>
+#include <ncursesw/ncurses.h>
 #include <unistd.h>
 
 extern  int     tttop;
