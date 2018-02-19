@@ -236,5 +236,6 @@ putline(int row, int col, const char *buf)
   int actual_row, actual_col;
 
   get_actual_pos (row - 1, col - 1, &actual_row, &actual_col);
-  mvaddnstr(actual_row, actual_col, buf, ncol - col + 1);
+  move (actual_row, actual_col);
+  ttputs (buf, ncol - col + 1);
 }

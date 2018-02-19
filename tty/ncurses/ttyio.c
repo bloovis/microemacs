@@ -154,7 +154,17 @@ ttputc (int c)
 void
 ttputs (const char *buf, int size)
 {
-  addnstr(buf, size);
+  static cchar_t wcval[NCOL + 1];
+  wchar_t wch[2];
+  int i;
+
+  for (i = 0; i < size; i++)
+    {
+      wch[0] = buf[i];
+      wch[1] = 0;
+      setcchar(&wcval[i], wch, 0, 0, NULL);
+    }
+  add_wchnstr(wcval, size);
 }
 
 /*
