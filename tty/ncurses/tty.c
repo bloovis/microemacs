@@ -231,7 +231,7 @@ ttresize (void)
  * High speed screen update.  row and col are 1-based.
  */
 void
-putline(int row, int col, const char *buf)
+putline(int row, int col, const wchar_t *buf)
 {
   int actual_row, actual_col;
 

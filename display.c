@@ -104,7 +104,7 @@ typedef struct
   short v_flag;			/* Flag word.                   */
   short v_color;		/* Color of the line.           */
   XSHORT v_cost;		/* Cost of display.             */
-  uchar v_text[NCOL];		/* The actual characters.       */
+  wchar_t v_text[NCOL];		/* The actual characters.       */
 }
 VIDEO;
 
@@ -130,7 +130,7 @@ SCORE;
 int sgarbf = TRUE;		/* TRUE if screen is garbage.   */
 int vtrow = 0;			/* Virtual cursor row.          */
 int vtcol = 0;			/* Virtual cursor column.       */
-uchar *vttext;			/* &(vscreen[vtrow]->v_text[0]) */
+wchar_t *vttext;		/* &(vscreen[vtrow]->v_text[0]) */
 int tthue = CNONE;		/* Current color.               */
 int ttrow = HUGE;		/* Physical cursor row.         */
 int ttcol = HUGE;		/* Physical cursor column.      */
@@ -147,6 +147,7 @@ VIDEO video[NROW - 1];		/* Actual screen data.          */
 VIDEO video[2 * (NROW - 1)];	/* Actual screen data.          */
 #endif
 VIDEO blanks;			/* Blank line image.            */
+static uchar spaces[NCOL];	/* ASCII spaces.		*/
 
 /*
  * These variables are set by ttykbd.c when a mouse button is pressed.
@@ -211,7 +212,8 @@ vtinit (void)
 #endif
     }
   blanks.v_color = CTEXT;
-  memset (blanks.v_text, ' ', NCOL);
+  wmemset (blanks.v_text, ' ', NCOL);
+  memset (spaces, ' ', NCOL);
 }
 
 /*
@@ -266,7 +268,7 @@ vtputc (int c)
   if (vtcol >= leftcol + ncol)
     vttext[ncol - 1] = '$';
   else if (c == '\t')
-    vtputs (blanks.v_text, tabsize - (vtcol % tabsize));
+    vtputs (spaces, tabsize - (vtcol % tabsize));
   else if (ISCTRL (c) != FALSE)
     {
       vtputc ('^');
@@ -302,7 +304,7 @@ vtputs (const uchar *s, int n)
 	  return;
 	}
       else if (c == '\t')
-	vtputs (blanks.v_text, tabsize - (vtcol % tabsize));
+	vtputs (spaces, tabsize - (vtcol % tabsize));
       else if (ISCTRL (c) != FALSE)
 	{
 	  vtputc ('^');
@@ -324,7 +326,7 @@ vtputs (const uchar *s, int n)
 static void
 vtstring (const char *s)
 {
-  vtputs ((const uchar *) s, strlen (s));
+  vtputs ((const uchar *)s, strlen (s));
 }
 
 
@@ -345,7 +347,7 @@ vteeol (void)
     vtcol = leftcol;
   if ((count = ncol + leftcol - vtcol) <= 0)
     return;
-  memset (&vttext[vtcol - leftcol], ' ', count);
+  wmemset (&vttext[vtcol - leftcol], ' ', count);
   vtcol += count;
 }
 
@@ -621,7 +623,7 @@ uline (int row, VIDEO *vvp, VIDEO *pvp)
 {
 #if	MEMMAP
   ttcolor (vvp->v_color);
-  putline (row + 1, 1, (const char *) &vvp->v_text[0]);
+  putline (row + 1, 1, (const wchar_t *) &vvp->v_text[0]);
 #else
   register uchar *cp1;
   register uchar *cp2;

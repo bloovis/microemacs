@@ -117,14 +117,15 @@
  * 
  *
  */
-#include	"sysdef.h"	/* Order is critical.           */
-#include	"ttydef.h"
-
 #include	<stdio.h>
 #include	<stdlib.h>
 #include	<string.h>
 #include	<stdarg.h>
 #include	<stddef.h>
+#include	<wchar.h>
+
+#include	"sysdef.h"	/* Order is critical.           */
+#include	"ttydef.h"
 
 typedef unsigned char uchar;
 
@@ -856,7 +857,7 @@ void setttysize (void);
 void ttclose (void);
 int ttstat (void);
 int ttputc (int c);
-void ttputs (const char *buf, int size);
+void ttputs (const wchar_t *buf, int size);
 void ttflush (void);
 int ttgetc (void);
 void panic (char *s);
@@ -907,3 +908,12 @@ void disablesaveundo (void);		/* Disable subsequent saveundos	*/
 void enablesaveundo (void);		/* Enable subsequent saveundos	*/
 int undo (int f, int n, int k);		/* Undo most recent operation.  */
 void killundo (BUFFER *bp);		/* Kill undo records for buffer */
+
+/*
+ * Defined by "utf8.c".
+ */
+int uclen (unsigned char c);		/* Length of UTF-8 character	*/
+int uoffset (unsigned char *s, int n);	/* Offset of nth UTF-8 char in s */
+int uslen (unsigned char *s);		/* # of UTF-8 chars in s	*/
+wchar_t ugetc (unsigned char *s, int n, int *len);
+					/* Convert UTF-8 to Unicode	*/

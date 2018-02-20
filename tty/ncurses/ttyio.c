@@ -152,9 +152,9 @@ ttputc (int c)
  * Here we just call ttputc.
  */
 void
-ttputs (const char *buf, int size)
+ttputs (const wchar_t *buf, int size)
 {
-  static cchar_t wcval[NCOL + 1];
+  static cchar_t wcval[NCOL];
   wchar_t wch[2];
   int i;
 

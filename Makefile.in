@@ -52,7 +52,8 @@ OBJ :=	@EXTRA_OBJS@ \
 	ttyio.o \
 	tty.o \
 	ttykbd.o \
-	undo.o
+	undo.o \
+	utf8.o
 
 # How to compile a module.
 
