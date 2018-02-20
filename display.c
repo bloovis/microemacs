@@ -292,12 +292,14 @@ vtputc (int c)
 static void
 vtputs (const uchar *s, int n)
 {
-  register int c;
+  wchar_t c;
+  int ulen;
+  const uchar *end = s + n;
 
-  while (n)
+  while (s < end)
     {
-      c = *s++;
-      n--;
+      c = ugetc (s, 0, &ulen);
+      s += ulen;
       if (vtcol >= leftcol + ncol)
 	{
 	  vttext[ncol - 1] = '$';
@@ -305,7 +307,7 @@ vtputs (const uchar *s, int n)
 	}
       else if (c == '\t')
 	vtputs (spaces, tabsize - (vtcol % tabsize));
-      else if (ISCTRL (c) != FALSE)
+      else if (c < 0x80 && ISCTRL (c) != FALSE)
 	{
 	  vtputc ('^');
 	  vtputc (c ^ 0x40);
@@ -371,6 +373,7 @@ update (void)
   register int c;
   register int curcol;
   register int currow;
+  uchar *s;
 #if GOSLING
   register int hflag;
   register int offs;
@@ -387,12 +390,21 @@ update (void)
   curcol = 0;			/* find current column  */
   i = 0;
   lp = curwp->w_dot.p;		/* Cursor location.     */
+  s = lgets (lp);
   while (i < curwp->w_dot.o)
     {
+      int ulen;
+
+#if 1
+      c = ugetc (s, 0, &ulen);
+      s += ulen;
+      ++i;
+#else
       c = lgetc (lp, i++);
+#endif
       if (c == '\t')
 	curcol += (tabsize - curcol % tabsize) - 1;
-      else if (ISCTRL (c) != FALSE)
+      else if (c < 0x80 && ISCTRL (c) != FALSE)
 	++curcol;
       ++curcol;
     }

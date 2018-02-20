@@ -913,7 +913,8 @@ void killundo (BUFFER *bp);		/* Kill undo records for buffer */
  * Defined by "utf8.c".
  */
 int uclen (unsigned char c);		/* Length of UTF-8 character	*/
-int uoffset (unsigned char *s, int n);	/* Offset of nth UTF-8 char in s */
-int uslen (unsigned char *s);		/* # of UTF-8 chars in s	*/
-wchar_t ugetc (unsigned char *s, int n, int *len);
+int uoffset (unsigned const char *s, int n);
+					/* Offset of nth UTF-8 char in s */
+int uslen (unsigned const char *s);	/* # of UTF-8 chars in s	*/
+wchar_t ugetc (unsigned const char *s, int n, int *len);
 					/* Convert UTF-8 to Unicode	*/

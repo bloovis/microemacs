@@ -40,6 +40,7 @@
 #include	<termios.h>
 #include	<sys/ioctl.h>
 #include	<ncursesw/ncurses.h>
+#include	<locale.h>
 
 static struct termios oldtty;	/* Old tty state		*/
 static struct termios newtty;	/* New tty state		*/
@@ -70,6 +71,7 @@ setttysize (void)
 void
 ttopen (void)
 {
+  setlocale(LC_ALL, "");
   tcgetattr (0, &oldtty);
   initscr ();			/* initialize the curses library */
   keypad (stdscr, TRUE);	/* enable keyboard mapping */
