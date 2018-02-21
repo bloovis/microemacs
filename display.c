@@ -373,7 +373,7 @@ update (void)
   register int c;
   register int curcol;
   register int currow;
-  uchar *s;
+  uchar *s, *end;
 #if GOSLING
   register int hflag;
   register int offs;
@@ -391,7 +391,8 @@ update (void)
   i = 0;
   lp = curwp->w_dot.p;		/* Cursor location.     */
   s = lgets (lp);
-  while (i < curwp->w_dot.o)
+  end = s + uoffset (s, curwp->w_dot.o);
+  while (s < end)
     {
       int ulen;
 

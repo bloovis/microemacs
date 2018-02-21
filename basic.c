@@ -80,7 +80,7 @@ backchar (int f, int n, int k)
 int
 gotoeol (int f, int n, int k)
 {
-  curwp->w_dot.o = llength (curwp->w_dot.p);
+  curwp->w_dot.o = wllength (curwp->w_dot.p);
   return (TRUE);
 }
 
@@ -169,23 +169,28 @@ getgoal (LINE *dlp)
   register int c;
   register int col;
   register int newcol;
-  register int dbo;
+  int dbo;
+  int ulen;
+  const uchar *s, *end;
 
   col = 0;
   dbo = 0;
-  while (dbo != llength (dlp))
+  s = lgets (dlp);
+  end = s + llength (dlp);
+  while (s < end)
     {
-      c = lgetc (dlp, dbo);
+      c = ugetc (s, 0, &ulen);
       newcol = col;
       if (c == '\t')
 	newcol += tabsize - newcol % tabsize - 1;
-      else if (ISCTRL (c) != FALSE)
+      else if (c < 0x80 && ISCTRL (c) != FALSE)
 	++newcol;
       ++newcol;
       if (newcol > curgoal)
 	break;
       col = newcol;
       ++dbo;
+      s += ulen;
     }
   return (dbo);
 }

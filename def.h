@@ -130,7 +130,7 @@
 typedef unsigned char uchar;
 
 #define NLMOVE	0		/* C-M moves to next line if at */
-					/* eol and next line is blank   */
+				/* eol and next line is blank   */
 #define CVMVAS	1		/* C-V, M-V work in pages.      */
 #define BACKUP	1		/* Make backup file.            */
 
@@ -455,14 +455,21 @@ LINE;
  * like file reading that break the rules) change the actual
  * storage representation of lines to use something fancy on
  * machines with small address spaces.
+ *
+ * The wide-character functions (wlgetc, wllength) deal
+ * with Unicode characters instead of raw bytes:
+ *  - wlgetc: get the nth Unicode character from the line
+ *  - wllength: get the number of Unicode characters in the line
  */
 #define lforw(lp)	((lp)->l_fp)
 #define lback(lp)	((lp)->l_bp)
 #define lgetc(lp, n)	((lp)->l_text[(n)]&0xFF)
+#define wlgetc(lp, n)	(ugetc((lp)->l_text,(n),NULL))
 #define lgets(lp)	((lp)->l_text)
 #define lputc(lp, n, c) ((lp)->l_text[(n)]=(c))
 #define lputs(lp, s, n) memcpy((lp)->l_text,(s),(n))
 #define llength(lp)	((lp)->l_used)
+#define wllength(lp)	(unslen((lp)->l_text,(lp)->l_used))
 
 /*
  * Externals.
@@ -912,9 +919,12 @@ void killundo (BUFFER *bp);		/* Kill undo records for buffer */
 /*
  * Defined by "utf8.c".
  */
-int uclen (unsigned char c);		/* Length of UTF-8 character	*/
-int uoffset (unsigned const char *s, int n);
-					/* Offset of nth UTF-8 char in s */
-int uslen (unsigned const char *s);	/* # of UTF-8 chars in s	*/
-wchar_t ugetc (unsigned const char *s, int n, int *len);
-					/* Convert UTF-8 to Unicode	*/
+int uclen (const uchar *s);		/* Length of UTF-8 character	*/
+int uoffset (const uchar *s, int n);	/* Offset of nth UTF-8 char in s */
+int uslen (const uchar *s);		/* # of UTF-8 chars in		*/
+					/*  null-terminated string s	*/
+int unslen (const uchar *s, int n);	/* # of UTF-8 chars in string s	*/
+					/*  of length n			*/
+wchar_t ugetc (const uchar *s, int n, int *len);
+					/* Convert one UTF-8 character	*/
+					/*  to 32-bit Unicode		*/
