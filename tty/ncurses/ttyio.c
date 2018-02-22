@@ -149,6 +149,21 @@ ttputc (int c)
 }
 
 /*
+ * Return true if c is a combining character,
+ * i.e. is a non-spacing character that combines
+ * with a subsequent one.
+ */
+static int
+iscombining (wchar_t c)
+{
+  return ((c >= 0x300  && c <= 0x36f) ||
+	  (c >= 0x1ab0 && c <= 0x1aff) ||
+	  (c >= 0x1dc0 && c <= 0x1dff) ||
+	  (c >= 0x20d0 && c <= 0x20ff) ||
+	  (c >= 0xfe20 && c <= 0xfe2f));
+}
+
+/*
  * Write multiple characters to the display.
  * Use this entry point to optimization on some systems.
  * Here we just call ttputc.
@@ -157,16 +172,33 @@ void
 ttputs (const wchar_t *buf, int size)
 {
   static cchar_t wcval[NCOL];
-  wchar_t wch[2];
+  wchar_t wch[3];
+  wchar_t modifier = 0;
   int i;
+  int wsize = 0;
 
   for (i = 0; i < size; i++)
     {
       wch[0] = buf[i];
-      wch[1] = 0;
-      setcchar(&wcval[i], wch, 0, 0, NULL);
+      if (modifier != 0)
+	{
+	  wch[1] = modifier;
+	  modifier = 0;
+	  wch[2] = 0;
+	}
+      else
+	{
+	  if (iscombining (wch[0]))
+	    {
+	      modifier = wch[0];
+	      continue;
+	    }
+	  wch[1] = 0;
+	}
+      setcchar(&wcval[wsize], wch, 0, 0, NULL);
+      ++wsize;
     }
-  add_wchnstr(wcval, size);
+  add_wchnstr(wcval, wsize);
 }
 
 /*
