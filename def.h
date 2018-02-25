@@ -258,25 +258,21 @@ typedef unsigned char uchar;
 #define K1F	0x009F
 
 /*
- * These flags, and the macros below them,
- * make up a do-it-yourself set of "ctype" macros that
- * understand the DEC multinational set, and let me ask
- * a slightly different set of questions.
+ * These macros make up a do-it-yourself set of "ctype" macros that
+ * understand the Unicode character set, and let me ask
+ * a slightly different set of questions.  The macros used
+ * to access the cinfo table directly, but now they are implemented
+ * as function calls that do the right thing for Unicode.
  */
-#define _W	0x01		/* Word.                        */
-#define _U	0x02		/* Upper case letter.           */
-#define _L	0x04		/* Lower case letter.           */
-#define _C	0x08		/* Control.                     */
-#define _P	0x10		/* End of sentence punctuation. */
 
-#define ISWORD(c)	(cinfo[((c)&0xff)]&_W)
-#define ISCTRL(c)	(cinfo[((c)&0xff)]&_C)
-#define ISUPPER(c)	(cinfo[((c)&0xff)]&_U)
-#define ISLOWER(c)	(cinfo[((c)&0xff)]&_L)
-#define ISEOSP(c)	(cinfo[((c)&0xff)]&_P)
-#define TOUPPER(c)	((c)-0x20)
-#define TOLOWER(c)	((c)+0x20)
-#define	EQ(c1,c2)	(upmap[(c1)&0xff]==upmap[(c2)&0xff])
+#define ISWORD(c)	(cisword((c)))
+#define ISCTRL(c)	(cisctrl((c)))
+#define ISUPPER(c)	(cisupper((c)))
+#define ISLOWER(c)	(cislower((c)))
+#define ISEOSP(c)	(ciseosp((c)))
+#define TOUPPER(c)	(ctoupper((c)))
+#define TOLOWER(c)	(ctolower((c)))
+#define	EQ(c1,c2)	(ceq((c1),(c2)))
 
 /*
  * Kinds of undo information.
@@ -314,7 +310,14 @@ SYMBOL;
 
 /*
  * A text position consists of a line pointer and an offset
- * into that line.
+ * into that line.  Formerly, the offset was a byte offset
+ * because it was assumed that a line was an array of ASCII characters.
+ * But now, with UTF-8 support, a line is now treated
+ * as a virtual array of 32-bit Unicode characters, and
+ * the offset 'o' is an index into that virtual array.
+ * In other words, an offset n indicates the nth Unicode character.
+ * Use the ugetcptr function to convert this index into the
+ * the address of the corresponding UTF-8 character in the line.
  */
 typedef struct POS
 {
@@ -455,21 +458,27 @@ LINE;
  * like file reading that break the rules) change the actual
  * storage representation of lines to use something fancy on
  * machines with small address spaces.
- *
- * The wide-character functions (wlgetc, wllength) deal
- * with Unicode characters instead of raw bytes:
- *  - wlgetc: get the nth Unicode character from the line
- *  - wllength: get the number of Unicode characters in the line
  */
 #define lforw(lp)	((lp)->l_fp)
 #define lback(lp)	((lp)->l_bp)
 #define lgetc(lp, n)	((lp)->l_text[(n)]&0xFF)
-#define wlgetc(lp, n)	(ugetc((lp)->l_text,(n),NULL))
 #define lgets(lp)	((lp)->l_text)
 #define lputc(lp, n, c) ((lp)->l_text[(n)]=(c))
 #define lputs(lp, s, n) memcpy((lp)->l_text,(s),(n))
 #define llength(lp)	((lp)->l_used)
-#define wllength(lp)	(unslen((lp)->l_text,(lp)->l_used))
+
+/*
+ * The wide-character line-related macros deal
+ * with Unicode / UTF-8 characters instead of raw bytes:
+ *  - wlgetc:    get the nth Unicode character from the line
+ *  - wllength:  get the number of Unicode characters in the line
+ *  - wlgetcptr: get the address of nth UTF-8 character in the line
+ *  - wloffset:  get byte offset of nth UTF-8 character in the line
+ */
+#define wlgetc(lp, n)	 (ugetc((lp)->l_text,(n),NULL))
+#define wllength(lp)	 (unslen((lp)->l_text,(lp)->l_used))
+#define wlgetcptr(lp, n) (ugetcptr((lp)->l_text,(n)))
+#define wloffset(lp, n)  (uoffset((lp)->l_text,(n)))
 
 /*
  * Externals.
@@ -612,6 +621,14 @@ void addwind (EWINDOW *wp, int n);	/* Bump ref. count for window.	*/
  * Defined by "cinfo.c".
  */
 void upmapinit (void);			/* Initialize case table.	*/
+int cisword(wchar_t c);			/* Is c a word character?	*/
+int cisctrl (wchar_t c);		/* Is c a control character?	*/
+int cisupper (wchar_t c);		/* Is c an upper case letter?	*/
+int cislower (wchar_t c);		/* Is c a lower case letter?	*/
+int ciseosp (wchar_t c);		/* End-of-sentence punctiation?	*/
+wchar_t ctoupper (wchar_t c);		/* Change c to upper case.	*/
+wchar_t ctolower (wchar_t c);		/* Change c to lower case.	*/
+int ceq (wchar_t c1, wchar_t c2);	/* C1 == C2 with casefolding?	*/
 
 /*
  * Defined by "cscope.c".
@@ -920,11 +937,17 @@ void killundo (BUFFER *bp);		/* Kill undo records for buffer */
  * Defined by "utf8.c".
  */
 int uclen (const uchar *s);		/* Length of UTF-8 character	*/
+const uchar * ugetcptr (const uchar *s, int n);
+					/* Addr of nth UTF-8 char in s	*/
 int uoffset (const uchar *s, int n);	/* Offset of nth UTF-8 char in s */
 int uslen (const uchar *s);		/* # of UTF-8 chars in		*/
 					/*  null-terminated string s	*/
 int unslen (const uchar *s, int n);	/* # of UTF-8 chars in string s	*/
 					/*  of length n			*/
+int unblen (const uchar *s, int n);	/* # of bytes in next n UTF-8	*/
+					/*  chars in s			*/
 wchar_t ugetc (const uchar *s, int n, int *len);
 					/* Convert one UTF-8 character	*/
 					/*  to 32-bit Unicode		*/
+int ucombining (wchar_t c);		/* c is a combining char?	*/
+int uputc (wchar_t c, unsigned char *s);/* Convert Unicode to UTF-8	*/

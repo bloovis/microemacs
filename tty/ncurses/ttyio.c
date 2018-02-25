@@ -149,21 +149,6 @@ ttputc (int c)
 }
 
 /*
- * Return true if c is a combining character,
- * i.e. is a non-spacing character that combines
- * with a subsequent one.
- */
-static int
-iscombining (wchar_t c)
-{
-  return ((c >= 0x300  && c <= 0x36f) ||
-	  (c >= 0x1ab0 && c <= 0x1aff) ||
-	  (c >= 0x1dc0 && c <= 0x1dff) ||
-	  (c >= 0x20d0 && c <= 0x20ff) ||
-	  (c >= 0xfe20 && c <= 0xfe2f));
-}
-
-/*
  * Write multiple characters to the display.
  * Use this entry point to optimization on some systems.
  * Here we just call ttputc.
@@ -188,7 +173,7 @@ ttputs (const wchar_t *buf, int size)
 	}
       else
 	{
-	  if (iscombining (wch[0]))
+	  if (ucombining (wch[0]))
 	    {
 	      modifier = wch[0];
 	      continue;

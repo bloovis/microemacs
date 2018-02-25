@@ -118,9 +118,10 @@ upperword (int f, int n, int k)
 	}
       while (inword () != FALSE)
 	{
-	  c = lgetc (curwp->w_dot.p, curwp->w_dot.o);
+	  c = wlgetc (curwp->w_dot.p, curwp->w_dot.o);
 	  if (ISLOWER (c) != FALSE)
 	    {
+	      /*blotz*/
 	      saveundo (UDEL, &curwp->w_dot, 1);
 	      saveundo (UCH, NULL, 1, c);
 	      c = TOUPPER (c);
@@ -158,7 +159,7 @@ lowerword (int f, int n, int k)
 	}
       while (inword () != FALSE)
 	{
-	  c = lgetc (curwp->w_dot.p, curwp->w_dot.o);
+	  c = wlgetc (curwp->w_dot.p, curwp->w_dot.o);
 	  if (ISUPPER (c) != FALSE)
 	    {
 	      saveundo (UDEL, &curwp->w_dot, 1);
@@ -325,9 +326,9 @@ out:
 int
 inword (void)
 {
-  if (curwp->w_dot.o == llength (curwp->w_dot.p))
+  if (curwp->w_dot.o == wllength (curwp->w_dot.p))
     return (FALSE);
-  if (ISWORD (lgetc (curwp->w_dot.p, curwp->w_dot.o)) != FALSE)
+  if (ISWORD (wlgetc (curwp->w_dot.p, curwp->w_dot.o)) != FALSE)
     return (TRUE);
   return (FALSE);
 }

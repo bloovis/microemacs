@@ -388,21 +388,15 @@ update (void)
   curmsgf = newmsgf;		/* Sync. up right now.  */
 
   curcol = 0;			/* find current column  */
-  i = 0;
   lp = curwp->w_dot.p;		/* Cursor location.     */
   s = lgets (lp);
-  end = s + uoffset (s, curwp->w_dot.o);
+  end = (uchar *) wlgetcptr (lp, curwp->w_dot.o);
   while (s < end)
     {
       int ulen;
 
-#if 1
       c = ugetc (s, 0, &ulen);
       s += ulen;
-      ++i;
-#else
-      c = lgetc (lp, i++);
-#endif
       if (c == '\t')
 	curcol += (tabsize - curcol % tabsize) - 1;
       else if (c < 0x80 && ISCTRL (c) != FALSE)

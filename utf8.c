@@ -30,7 +30,7 @@ typedef unsigned char uchar;
 #include <stdio.h>
 
 /*
- * Return the length in bytes of the utf-8 character whose first byte is c.
+ * Return the length in bytes of the UTF-8 character whose first byte is c.
  */
 int
 uclen (const uchar *s)
@@ -55,8 +55,38 @@ uclen (const uchar *s)
   return n;
 }
 
+
 /*
- * Return the byte offset of the nth utf-8 character in the string s.
+ * Return true if Unicode character c is a combining character,
+ * i.e. is a non-spacing character that combines
+ * with a subsequent one.
+ */
+int
+ucombining (wchar_t c)
+{
+  return ((c >= 0x300  && c <= 0x36f) ||
+	  (c >= 0x1ab0 && c <= 0x1aff) ||
+	  (c >= 0x1dc0 && c <= 0x1dff) ||
+	  (c >= 0x20d0 && c <= 0x20ff) ||
+	  (c >= 0xfe20 && c <= 0xfe2f));
+}
+
+/*
+ * Return the address of the nth UTF-8 character in the string s.
+ */
+const uchar *
+ugetcptr (const uchar *s, int n)
+{
+  while (n > 0)
+    {
+      s += uclen (s);
+      --n;
+    }
+  return s;
+}
+
+/*
+ * Return the byte offset of the nth UTF-8 character in the string s.
  */
 int
 uoffset (const uchar *s, int n)
@@ -71,7 +101,7 @@ uoffset (const uchar *s, int n)
 }
 
 /*
- * Return number of utf-8 characters in the null-terminated string s.
+ * Return number of UTF-8 characters in the null-terminated string s.
  */
 int
 uslen (const uchar *s)
@@ -87,7 +117,7 @@ uslen (const uchar *s)
 }
 
 /*
- * Return number of utf-8 characters in the string s of length n.
+ * Return number of UTF-8 characters in the string s of length n.
  */
 int
 unslen (const uchar *s, int n)
@@ -104,20 +134,38 @@ unslen (const uchar *s, int n)
 }
 
 /*
- * Get the nth utf-8 character in s, return it
+ * Return the number of bytes used by the next n UFT-8 characters
+ * in the string s.
+ */
+int
+unblen (const uchar *s, int n)
+{
+  const uchar *start = s;
+
+  while (n > 0)
+    {
+      s += uclen (s);
+      --n;
+    }
+  return s - start;
+}
+
+/*
+ * Get the nth UTF-8 character in s, return it
  * as a 32-bit unicode character.  Return the
- * length of the utf-8 character to *len.
+ * length of the UTF-8 character to *len.
  */
 wchar_t
 ugetc (const uchar *s, int n, int *len)
 {
   uchar c;
 
-  s += uoffset (s, n);
+  s = ugetcptr (s, n);
   c = *s;
   if (c < 0x80)
     {
-      *len = 1;
+      if (len)
+	*len = 1;
       return c;
     }
   if (c >= 0xc0 && c <= 0xdf)
@@ -170,6 +218,65 @@ ugetc (const uchar *s, int n, int *len)
   return c;
 }
   
+/*
+ * Convert a Unicode character c to UTF-8, writing the
+ * characters to s; s must be at least 6 bytes long.
+ * Return the number of bytes in the UTF-8 string.
+ */
+int
+uputc (wchar_t c, uchar *s)
+{
+  if (c < 0x80)
+    {
+      s[0] = c;
+      return 1;
+    }
+  if (c >= 0x80 && c <= 0x7ff)
+    {
+      s[0] = 0xc0 | ((c >> 6) & 0x1f);
+      s[1] = 0x80 | (c & 0x3f);
+      return 2;
+    }
+  if (c >= 0x800 && c <= 0xffff)
+    {
+      s[0] = 0xe0 | ((c >> 12) & 0x0f);
+      s[1] = 0x80 | ((c >>  6) & 0x3f);
+      s[2] = 0x80 | (c & 0x3f);
+      return 3;
+    }
+  if (c >= 0x10000 && c <= 0x1fffff)
+    {
+      s[0] = 0xf0 | ((c >> 18) & 0x07);
+      s[1] = 0x80 | ((c >> 12) & 0x3f);
+      s[2] = 0x80 | ((c >>  6) & 0x3f);
+      s[3] = 0x80 | (c & 0x3f);
+      return 4;
+    }
+  if (c >= 0x200000 && c <= 0x3ffffff)
+    {
+      s[0] = 0xf8 | ((c >> 24) & 0x03);
+      s[1] = 0x80 | ((c >> 18) & 0x3f);
+      s[2] = 0x80 | ((c >> 12) & 0x3f);
+      s[3] = 0x80 | ((c >>  6) & 0x3f);
+      s[4] = 0x80 | (c & 0x3f);
+      return 5;
+    }
+  if (c >= 0x4000000 && c <= 0x7fffffff)
+    {
+      s[0] = 0xfc | ((c >> 30) & 0x01);
+      s[1] = 0x80 | ((c >> 24) & 0x3f);
+      s[2] = 0x80 | ((c >> 18) & 0x3f);
+      s[3] = 0x80 | ((c >> 12) & 0x3f);
+      s[4] = 0x80 | ((c >>  6) & 0x3f);
+      s[5] = 0x80 | (c & 0x3f);
+      return 6;
+    }
+  /* Error */
+  s[0] = c;
+  return 1;
+}
+
+
 #ifdef TEST
 
 int
@@ -186,12 +293,12 @@ main(int argc, char *argv[])
   printf("s is '%s'\n", s);
   printf("length of s is %ld\n", sizeof(s));
   len = uslen(s);
-  printf("number of utf-8 chars in s is %d\n", len);
+  printf("number of UTF-8 chars in s is %d\n", len);
   for (i = 0; i < len; i++)
     {
       int u, size;
 
-      printf("offset of utf-8 char #%d in s is %d\n", i, uoffset(s, i));
+      printf("offset of UTF-8 char #%d in s is %ld\n", i, ugetcptr(s, i) - s);
       u = ugetc(s, i, &size);
       printf("char #%d in s in unicode is %x, size %d\n", i, u, size);
     }

@@ -52,6 +52,9 @@
 #define	KBLOCK	256		/* Kill buffer block size.      */
 #endif
 
+#define UPPER 0x01
+#define LOWER 0x02
+
 char *kbufp = NULL;		/* Kill buffer data.            */
 int kused = 0;			/* # of bytes used in KB.       */
 int ksize = 0;			/* # of bytes allocated in KB.  */
@@ -214,9 +217,9 @@ adjustforinsert (const POS *oldpos, LINE *newlp, int nchars, POS *pos)
 
 /*
  * If the string pointer "s" is NULL,
- * insert "n" copies of the character "c"
+ * insert "n" copies of the Uncode character "c", converted to UTF-8
  * at the current location of dot.  Otherwise,
- * insert "n" bytes from the string "s" at the current
+ * insert "n" bytes from the UTF-8 string "s" at the current
  * location of dot.  In the easy case,
  * all that happens is the text is stored in the line.
  * In the hard case, the line has to be reallocated.
@@ -234,35 +237,59 @@ linsert (int n, int c, char *s)
   register LINE *lp2;
   register LINE *lp3;
   POS dot;
+  int chars, bytes, offset, buflen;
+  char buf[6];
 
   if (checkreadonly () == FALSE)
     return FALSE;
   lchange (WFEDIT);
   dot = curwp->w_dot;		/* Save current line.	*/
-  saveundo (UDEL, NULL, n);
+
+  /* Get byte offset of insertion point. */
+  offset = wloffset (dot.p, dot.o);
+
+  if (s != NULL)
+    {
+      /* set chars to number of characters in UTF-8 string.
+       * Set bytes to number of bytes in the string.
+       */
+      chars = unslen ((uchar *)s, n);
+      bytes = n;
+    }
+ else
+    {
+      /* Convert character to UTF-8, store in buf. Set chars to
+       * total number of characters to insert, bytes to total number
+       * of bytes to insert.
+       */
+      buflen = uputc (c, (uchar *)buf);
+      chars = n;
+      bytes = n * buflen;
+    }
+  saveundo (UDEL, NULL, chars);
 
   if (dot.p == curbp->b_linep)
     {				/* At the end: special  */
-      if (dot.o != 0)
+      if (offset != 0)
 	{
 	  eprintf ("bug: linsert");
 	  return (FALSE);
 	}
-      if ((lp2 = lalloc (n)) == NULL)	/* Allocate new line    */
+      if ((lp2 = lalloc (bytes)) == NULL)	/* Allocate new line    */
 	return (FALSE);
-      lp3 = dot.p->l_bp;			/* Previous line        */
+      lp3 = dot.p->l_bp;		/* Previous line        */
       lp3->l_fp = lp2;			/* Link in              */
       lp2->l_fp = dot.p;
       dot.p->l_bp = lp2;
       lp2->l_bp = lp3;
     }
-  else if (dot.p->l_used + n > dot.p->l_size)
+  else if (dot.p->l_used + bytes > dot.p->l_size)
     {					/* Hard: reallocate     */
-      if ((lp2 = lalloc (dot.p->l_used + n)) == NULL)
+      if ((lp2 = lalloc (dot.p->l_used + bytes)) == NULL)
 	return (FALSE);
-      memcpy (&lp2->l_text[0], &dot.p->l_text[0], dot.o);
-      memcpy (&lp2->l_text[dot.o + n], &dot.p->l_text[dot.o],
-      	     dot.p->l_used - dot.o);	/* make room            */
+      memcpy (&lp2->l_text[0], &dot.p->l_text[0], offset);
+      memcpy (&lp2->l_text[offset + bytes], &dot.p->l_text[offset],
+	      dot.p->l_used - offset);	/* make room            */
       dot.p->l_bp->l_fp = lp2;
       lp2->l_fp = dot.p->l_fp;
       dot.p->l_fp->l_bp = lp2;
@@ -272,15 +299,20 @@ linsert (int n, int c, char *s)
   else
     {				/* Easy: in place       */
       lp2 = dot.p;		/* Pretend new line     */
-      memmove (&dot.p->l_text[dot.o + n], &dot.p->l_text[dot.o],
-	       dot.p->l_used - dot.o);	/* make room            */
-      lp2->l_used += n;		/* bump length up       */
+      memmove (&dot.p->l_text[offset + bytes], &dot.p->l_text[offset],
+	       dot.p->l_used - offset);	/* make room            */
+      lp2->l_used += bytes;		/* bump length up       */
     }
 
   if (s == NULL)		/* fill or copy?        */
-    memset (&lp2->l_text[dot.o], c, n);	/* fill the characters  */
+    {
+      int i, o;
+
+      for (i = 0, o = offset; i < chars; i++, o += buflen)
+	memcpy (&lp2->l_text[o], buf, buflen);	/* fill the characters  */
+    }
   else
-    memcpy (&lp2->l_text[dot.o], s, n);	/* copy the characters  */
+    memcpy (&lp2->l_text[offset], s, bytes);	/* copy the characters  */
 
   ALLWIND (wp)
   {				/* Update windows       */
@@ -292,9 +324,9 @@ linsert (int n, int c, char *s)
       {
 	wp->w_dot.p = lp2;
 	if (wp == curwp || wp->w_dot.o > dot.o)
-	  wp->w_dot.o += n;
+	  wp->w_dot.o += chars;
       }
-    adjustforinsert (&dot, lp2, n, &wp->w_mark);
+    adjustforinsert (&dot, lp2, chars, &wp->w_mark);
   }
   return (TRUE);
 }
@@ -390,8 +422,11 @@ adjustfordelete (POS *oldpos, int nchars, POS *pos)
 
 
 /*
- * This function deletes "n" bytes,
- * starting at dot. It understands how do deal
+ * This function deletes "n" characters,
+ * starting at dot. Because lines are stored as UTF-8
+ * characters, a character may contain more than one byte.
+ *
+ * It understands how do deal
  * with end of lines, etc. It returns TRUE if all
  * of the characters were deleted, and FALSE if
  * they were not (because dot ran into the end of
@@ -401,10 +436,9 @@ adjustfordelete (POS *oldpos, int nchars, POS *pos)
 int
 ldelete (int n, int kflag)
 {
-  register char *cp1;
-  register char *cp2;
+  uchar *cp1, *cp2, *end;
   POS dot;
-  register int chunk;
+  int bytes, chars;
   register EWINDOW *wp;
 
   if (n < 0)
@@ -419,10 +453,21 @@ ldelete (int n, int kflag)
       dot = curwp->w_dot;
       if (dot.p == curbp->b_linep)	/* Hit end of buffer.   */
 	return (FALSE);
-      chunk = dot.p->l_used - dot.o;	/* Size of chunk.       */
-      if (chunk > n)
-	chunk = n;
-      if (chunk == 0)
+
+      /* Get pointer to first byte of the UTF-8 character
+       * indexed by dot.  Then get the number of UTF-8 characters
+       * in the rest of line.
+       */
+      cp1 = (uchar *) wlgetcptr (dot.p, dot.o);
+      end = &dot.p->l_text[dot.p->l_used];
+      bytes = end - cp1;
+      chars = unslen (cp1, bytes);
+      if (chars > n)
+	{
+	  chars = n;
+	  bytes = unblen (cp1, chars);
+	}
+      if (chars == 0)
 	{			/* End of line, merge.  */
 	  lchange (WFHARD);
 	  if (ldelnewline () == FALSE
@@ -433,20 +478,19 @@ ldelete (int n, int kflag)
 	  continue;
 	}
       lchange (WFEDIT);
-      cp1 = (char *) &dot.p->l_text[dot.o];	/* Scrunch text.        */
-      cp2 = cp1 + chunk;
+      cp2 = cp1 + bytes;			/* Scrunch text.        */
       if (kflag != FALSE)	/* Kill?                */
-	if (kinsert (cp1, chunk) == FALSE)
+	if (kinsert ((const char *) cp1, bytes) == FALSE)
 	  return (FALSE);
-      saveundo(USTR, NULL, chunk, cp1);
-      memmove (cp1, cp2, dot.p->l_used - (dot.o + chunk));
-      dot.p->l_used -= chunk;
+      saveundo(USTR, NULL, bytes, cp1);
+      memmove (cp1, cp2, end - cp2);
+      dot.p->l_used -= bytes;
       ALLWIND (wp)
       {				/* Fix windows          */
-	adjustfordelete (&dot, chunk, &wp->w_dot);
-	adjustfordelete (&dot, chunk, &wp->w_mark);
+	adjustfordelete (&dot, chars, &wp->w_dot);
+	adjustfordelete (&dot, chars, &wp->w_mark);
       }
-      n -= chunk;
+      n -= chars;
     }
   return (TRUE);
 }
@@ -566,17 +610,17 @@ lreplace (
    * happens with lowercase found), so bypass check.
    */
   backchar (TRUE, plen, KRANDOM);
-  rtype = _L;
+  rtype = LOWER;
   c = lgetc (curwp->w_dot.p, curwp->w_dot.o);
   if (ISUPPER (c) != FALSE && f == FALSE)
     {
-      rtype = _U | _L;
+      rtype = UPPER | LOWER;
       if (curwp->w_dot.o + 1 < llength (curwp->w_dot.p))
 	{
 	  c = lgetc (curwp->w_dot.p, curwp->w_dot.o + 1);
 	  if (ISUPPER (c) != FALSE)
 	    {
-	      rtype = _U;
+	      rtype = UPPER;
 	    }
 	}
     }
@@ -606,10 +650,10 @@ lreplace (
    */
   while ((c = *st++ & 0xff) != '\0')
     {
-      if ((rtype & _U) != 0 && ISLOWER (c) != 0)
+      if ((rtype & UPPER) != 0 && ISLOWER (c) != 0)
 	c = TOUPPER (c);
-      if (rtype == (_U | _L))
-	rtype = _L;
+      if (rtype == (UPPER | LOWER))
+	rtype = LOWER;
       if (c == '\n')
 	{
 	  if (curwp->w_dot.o == llength (curwp->w_dot.p))

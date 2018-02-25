@@ -65,7 +65,7 @@ backchar (int f, int n, int k)
 	  if ((lp = lback (curwp->w_dot.p)) == curbp->b_linep)
 	    return (FALSE);
 	  curwp->w_dot.p = lp;
-	  curwp->w_dot.o = llength (lp);
+	  curwp->w_dot.o = wllength (lp);
 	  curwp->w_flag |= WFMOVE;
 	}
       else
@@ -99,7 +99,7 @@ forwchar (int f, int n, int k)
     return (backchar (f, -n, KRANDOM));
   while (n--)
     {
-      if (curwp->w_dot.o == llength (curwp->w_dot.p))
+      if (curwp->w_dot.o == wllength (curwp->w_dot.p))
 	{
 	  if (curwp->w_dot.p == curbp->b_linep)
 	    return (FALSE);
@@ -138,7 +138,7 @@ int
 gotoeob (int f, int n, int k)
 {
   curwp->w_dot.p = lback (curbp->b_linep);
-  curwp->w_dot.o = llength (curwp->w_dot.p);
+  curwp->w_dot.o = wllength (curwp->w_dot.p);
   curwp->w_flag |= WFHARD;
   return (TRUE);
 }

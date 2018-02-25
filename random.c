@@ -119,12 +119,12 @@ showcpos (int f, int n, int k)
 	{
 	  cline = nline;
 	  cchar = nchar + doto;
-	  if (doto == llength (clp))
+	  if (doto == wllength (clp))
 	    cbyte = '\n';
 	  else
-	    cbyte = lgetc (clp, doto);
+	    cbyte = wlgetc (clp, doto);
 	}
-      nchar += llength (clp) + 1;	/* Count characters     */
+      nchar += wllength (clp) + 1;	/* Count characters     */
 #ifdef __TURBOC__
       nchar++;			/* Count carriage return */
 #endif
@@ -156,8 +156,8 @@ showcpos (int f, int n, int k)
       if (ratio == 0 && cchar != 0)	/* Allow 0% only at the */
 	ratio = 1;		/* start of the file.   */
     }
-  eprintf ("[CH:0%o(0x%x) Line:%d Row:%d Col:%d %d%% of %l]",
-	   cbyte, cbyte, cline, row, getcolpos (), ratio, nchar);
+  eprintf ("[CH:0x%x Line:%d Row:%d Col:%d %d%% of %l]",
+	   cbyte, cline, row, getcolpos (), ratio, nchar);
   return (TRUE);
 }
 
@@ -174,10 +174,10 @@ getcolpos (void)
   col = 0;			/* Determine column.    */
   for (i = 0; i < curwp->w_dot.o; ++i)
     {
-      c = lgetc (curwp->w_dot.p, i);
+      c = wlgetc (curwp->w_dot.p, i);
       if (c == '\t')
 	col += (tabsize - col % tabsize) - 1;
-      else if (ISCTRL (c) != FALSE)
+      else if (c < 0x80 && ISCTRL (c) != FALSE)
 	++col;
       ++col;
     }
