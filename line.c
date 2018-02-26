@@ -58,6 +58,7 @@
 char *kbufp = NULL;		/* Kill buffer data.            */
 int kused = 0;			/* # of bytes used in KB.       */
 int ksize = 0;			/* # of bytes allocated in KB.  */
+int kchars = 0;			/* # of UTF-8 chars in KB.	*/
 
 /*
  * Forward declarations.
@@ -461,7 +462,7 @@ ldelete (int n, int kflag)
        * in the rest of line.
        */
       cp1 = (uchar *) wlgetcptr (dot.p, dot.o);
-      end = &dot.p->l_text[dot.p->l_used];
+      end = lend(dot.p);
       bytes = end - cp1;
       chars = unslen (cp1, bytes);
       if (chars > n)
@@ -709,6 +710,7 @@ kdelete (void)
       kbufp = NULL;
       kused = 0;
       ksize = 0;
+      kchars = 0;
     }
 }
 
@@ -757,22 +759,30 @@ kinsert (const char *s, int n)
     }
   memcpy (&kbufp[kused], s, n);
   kused += n;
+  kchars = unslen ((const uchar *)kbufp, kused);
   return (TRUE);
 }
 
 /*
- * This function gets characters from
- * the kill buffer. If the character index "n" is
+ * This function gets the n'th UTF-8 character from
+ * the kill buffer, stores it in buf, which must be
+ * at least 6 bytes long, and returns the number of
+ * bytes stored.  If the character index "n" is
  * off the end, it returns "-1". This lets the caller
  * just scan along until it gets a "-1" back.
  * Recently this function was replaced by a macro
  * in "def.h" for speed-up purposes.
  */
-#if	0
-kremove (n)
+int
+kremove (int n, uchar *buf)
 {
-  if (n >= kused)
-    return (-1);
-  return (kbufp[n] & 0xFF);
+  int len;
+  const uchar *cptr;
+
+  if (n >= kchars)
+    return -1;
+  cptr = ugetcptr ((const uchar *) kbufp, n);
+  len = uclen (cptr);
+  memcpy (buf, cptr, len);
+  return len;
 }
-#endif

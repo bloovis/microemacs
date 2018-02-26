@@ -162,7 +162,8 @@ fillpara (int f, int n, int k)
   int newlength;		/* tentative new line length    */
   int eolflag;			/* was at end of line           */
   LINE *eopline;		/* pointer to line just past EOP */
-  char wbuf[MAXWORD];		/* buffer for current word      */
+  wchar_t wbuf[MAXWORD];	/* buffer for current word      */
+  int i;
 
   /* Record the pointer to the line just past the
    * end of the paragraph.
@@ -194,14 +195,14 @@ fillpara (int f, int n, int k)
     {
       /* get the next character in the paragraph
        */
-      if ((eolflag = (curwp->w_dot.o == llength (curwp->w_dot.p))) == TRUE)
+      if ((eolflag = (curwp->w_dot.o == wllength (curwp->w_dot.p))) == TRUE)
 	{
 	  c = ' ';
 	  if (lforw (curwp->w_dot.p) == eopline)
 	    eopflag = TRUE;
 	}
       else
-	c = lgetc (curwp->w_dot.p, curwp->w_dot.o);
+	c = wlgetc (curwp->w_dot.p, curwp->w_dot.o);
 
       /* and then delete it
        */
@@ -233,8 +234,8 @@ fillpara (int f, int n, int k)
 	  /* if at end of line or at doublespace and previous
 	   * character was one of '.','?','!' doublespace here.
 	   */
-	  if ((eolflag || curwp->w_dot.o == llength (curwp->w_dot.p)
-	       || (c = lgetc (curwp->w_dot.p, curwp->w_dot.o)) == ' '
+	  if ((eolflag || curwp->w_dot.o == wllength (curwp->w_dot.p)
+	       || (c = wlgetc (curwp->w_dot.p, curwp->w_dot.o)) == ' '
 	       || c == '\t')
 	      && ISEOSP (wbuf[wordlen - 1]) && wordlen < MAXWORD - 1)
 	    wbuf[wordlen++] = ' ';
@@ -254,7 +255,7 @@ fillpara (int f, int n, int k)
 	  else
 	    {
 	      if (curwp->w_dot.o > 0 &&
-		  lgetc (curwp->w_dot.p, curwp->w_dot.o - 1) == ' ')
+		  wlgetc (curwp->w_dot.p, curwp->w_dot.o - 1) == ' ')
 		{
 		  curwp->w_dot.o -= 1;
 		  saveundo (UMOVE, &curwp->w_dot);
@@ -266,7 +267,8 @@ fillpara (int f, int n, int k)
 	    }
 
 	  /* and add the word in in either case */
-	  linsert (wordlen, 0, wbuf);
+	  for (i = 0; i < wordlen; i++)
+	    linsert (1, wbuf[i], NULLPTR);
 	  clength += wordlen;
 	  wordlen = 0;
 	}

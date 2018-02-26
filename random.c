@@ -814,6 +814,8 @@ yank (int f, int n, int k)
   register LINE *lp;
   register int nline;
   char lbuf[80];
+  uchar ubuf[6];
+  int ulen;
 
   if (n < 0)
     return (FALSE);
@@ -821,8 +823,9 @@ yank (int f, int n, int k)
   while (n--)
     {
       i = j = 0;
-      while ((c = kremove (i)) >= 0)
+      while ((ulen = kremove (i, ubuf)) > 0)
 	{
+	  c = ubuf[0];
 	  if (c == '\n')
 	    {			/* Newline is special   */
 	      if (j > 0)
@@ -836,12 +839,14 @@ yank (int f, int n, int k)
 	    }
 	  else
 	    {			/* Not newline  */
-	      if (j == sizeof (lbuf))
+	      if (j + ulen >= sizeof (lbuf))
 		{		/* Need flush?  */
 		  linsert (j, 0, lbuf);
 		  j = 0;
 		}
-	      lbuf[j++] = c;	/* Buffer it    */
+	      /* Buffer it    */
+	      memcpy (&lbuf[j], ubuf, ulen);
+	      j += ulen;
 	    }
 	  ++i;
 	}

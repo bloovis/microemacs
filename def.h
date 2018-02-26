@@ -466,6 +466,7 @@ LINE;
 #define lputc(lp, n, c) ((lp)->l_text[(n)]=(c))
 #define lputs(lp, s, n) memcpy((lp)->l_text,(s),(n))
 #define llength(lp)	((lp)->l_used)
+#define lend(lp)	(&(lp)->l_text[(lp)->l_used])
 
 /*
  * The wide-character line-related macros deal
@@ -541,11 +542,6 @@ extern int savetabs;
 
 #define	ALLWIND(wp)	for (wp=wheadp;wp;wp=wp->w_wndp)
 #define ALLBUF(bp)	for (bp=bheadp;bp;bp=bp->b_bufp)
-
-/*
- * Macro for removing a character from the kill buffer.
- */
-#define	kremove(n)	(n>=kused?-1:kbufp[n]&0xff)
 
 /*
  * A tagfile is a filename that has a list of references.
@@ -788,7 +784,8 @@ int setoverstrike (int f, int n, int k);/* set overstrike mode          */
 int checkheap (int f, int n, int k);	/* Check for heap corruption    */
 
 int getcolpos (void);			/* Return cur. column pos.	*/
-
+int kremove (int n, uchar *buf);	/* Remove n'th UTF-8 char from	*/
+					/*  kill buffer, return length.	*/
 /*
  * Defined by "region.c".
  */

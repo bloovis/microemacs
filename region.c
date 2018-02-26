@@ -72,6 +72,7 @@ getregion (REGION *rp)
   register LINE *blp;
   register long fsize;		/* Long now.            */
   register long bsize;
+  const uchar *cptr;
 
   if (curwp->w_mark.p == NULL)
     {
@@ -93,10 +94,17 @@ getregion (REGION *rp)
 	}
       return (TRUE);
     }
-  blp = curwp->w_dot.p;		/* Get region size.     */
+
+  /* Get region size, which is number of characters, not number of bytes. */
+  blp = curwp->w_dot.p;
   flp = curwp->w_dot.p;
-  bsize = curwp->w_dot.o;
+  bsize = wloffset (curwp->w_dot.p, curwp->w_dot.o);
+#if 1
+  cptr = wlgetcptr (curwp->w_dot.p, curwp->w_dot.o);
+  fsize = unblen (cptr, lend (curwp->w_dot.p) - cptr);
+#else
   fsize = llength (flp) - curwp->w_dot.o + 1;
+#endif
   while (flp != curbp->b_linep || lback (blp) != curbp->b_linep)
     {
       if (flp != curbp->b_linep)
@@ -106,19 +114,21 @@ getregion (REGION *rp)
 	    {
 	      rp->r_pos.p = curwp->w_dot.p;
 	      rp->r_pos.o = curwp->w_dot.o;
-	      return (setsize (rp, fsize + curwp->w_mark.o));
+	      return (setsize (rp, fsize + wloffset (curwp->w_mark.p,
+						     curwp->w_mark.o)));
 	    }
-	  fsize += llength (flp) + 1;
+	  fsize += wllength (flp) + 1;
 	}
       if (lback (blp) != curbp->b_linep)
 	{
 	  blp = lback (blp);
-	  bsize += llength (blp) + 1;
+	  bsize += wllength (blp) + 1;
 	  if (blp == curwp->w_mark.p)
 	    {
 	      rp->r_pos.p = blp;
 	      rp->r_pos.o = curwp->w_mark.o;
-	      return (setsize (rp, bsize - curwp->w_mark.o));
+	      return (setsize (rp, bsize - wloffset (curwp->w_mark.p,
+						     curwp->w_mark.o)));
 	    }
 	}
     }
@@ -169,7 +179,7 @@ copyregion (int f, int n, int k)
   loffs = region.r_pos.o;	/* Current offset.      */
   while (region.r_size > 0)
     {
-      if (loffs == llength (linep))
+      if (loffs == wllength (linep))
 	{			/* End of line.         */
 	  if (kinsert ("\n", 1) != TRUE)
 	    return (FALSE);
@@ -179,10 +189,15 @@ copyregion (int f, int n, int k)
 	}
       else
 	{			/* Middle of line.      */
-	  chunk = llength (linep) - loffs;
+	  const uchar *cptr;
+	  int bytes;
+
+          chunk = wllength (linep) - loffs;
 	  if (chunk > region.r_size)
 	    chunk = region.r_size;
-	  if (kinsert ((char *) lgets (linep) + loffs, chunk) != TRUE)
+	  cptr = wlgetcptr (linep, loffs);
+	  bytes = unblen (cptr, chunk);
+	  if (kinsert ((char *) cptr, bytes) != TRUE)
 	    return (FALSE);
 	  loffs += chunk;
 	  region.r_size -= chunk;
