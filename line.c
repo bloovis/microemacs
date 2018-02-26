@@ -366,23 +366,25 @@ lnewline (void)
   register LINE *lp2;
   register int doto;
   register EWINDOW *wp;
+  int offset;
 
   if (checkreadonly () == FALSE)
     return FALSE;
   lchange (WFHARD);
   lp1 = curwp->w_dot.p;			/* Get the address and  */
   doto = curwp->w_dot.o;		/* offset of "."        */
+  offset = wloffset (lp1, doto);	/* Actual byte offset	*/
 
   /* Save undo information. */
   saveundo (UDEL, NULL, 1);
 
-  if ((lp2 = lalloc (doto)) == NULL)	/* New first half line  */
+  if ((lp2 = lalloc (offset)) == NULL)	/* New first half line  */
     return (FALSE);
-  memcpy (&lp2->l_text[0], &lp1->l_text[0], doto);	/* shuffle text */
-  if (doto != 0) {
-    memmove (&lp1->l_text[0], &lp1->l_text[doto], lp1->l_used - doto);
+  memcpy (&lp2->l_text[0], &lp1->l_text[0], offset);	/* shuffle text */
+  if (offset != 0) {
+    memmove (&lp1->l_text[0], &lp1->l_text[offset], lp1->l_used - offset);
   }
-  lp1->l_used -= doto;
+  lp1->l_used -= offset;
   lp2->l_bp = lp1->l_bp;
   lp1->l_bp = lp2;
   lp2->l_bp->l_fp = lp2;
@@ -536,6 +538,7 @@ ldelnewline (void)
     return (TRUE);
   if (lp2->l_used <= lp1->l_size - lp1->l_used)
     {
+      int chars = wllength (lp1);
       memcpy (&lp1->l_text[lp1->l_used], &lp2->l_text[0], lp2->l_used);	/* copy bytes up        */
       ALLWIND (wp)
       {
@@ -546,12 +549,12 @@ ldelnewline (void)
 	if (wp->w_dot.p == lp2)
 	  {
 	    wp->w_dot.p = lp1;
-	    wp->w_dot.o += lp1->l_used;
+	    wp->w_dot.o += chars;
 	  }
 	if (wp->w_mark.p == lp2)
 	  {
 	    wp->w_mark.p = lp1;
-	    wp->w_mark.o += lp1->l_used;
+	    wp->w_mark.o += chars;
 	  }
       }
       lp1->l_used += lp2->l_used;
