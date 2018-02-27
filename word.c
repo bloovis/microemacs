@@ -109,6 +109,7 @@ upperword (int f, int n, int k)
     return (FALSE);
   if (checkreadonly () == FALSE)
     return FALSE;
+  saveundo (UMOVE, &curwp->w_dot);
   while (n--)
     {
       while (inword () == FALSE)
@@ -121,14 +122,15 @@ upperword (int f, int n, int k)
 	  c = wlgetc (curwp->w_dot.p, curwp->w_dot.o);
 	  if (ISLOWER (c) != FALSE)
 	    {
-	      /*blotz*/
+#if 0
 	      saveundo (UDEL, &curwp->w_dot, 1);
 	      saveundo (UCH, NULL, 1, c);
+#endif
 	      c = TOUPPER (c);
-	      lputc (curwp->w_dot.p, curwp->w_dot.o, c);
+	      lputc (curwp->w_dot, c);
 	      lchange (WFHARD);
 	    }
-	  if (forwchar (FALSE, 1, KRANDOM) == FALSE)
+	  else if (forwchar (FALSE, 1, KRANDOM) == FALSE)
 	    return (FALSE);
 	}
     }
@@ -150,6 +152,7 @@ lowerword (int f, int n, int k)
     return (FALSE);
   if (checkreadonly () == FALSE)
     return FALSE;
+  saveundo (UMOVE, &curwp->w_dot);
   while (n--)
     {
       while (inword () == FALSE)
@@ -162,13 +165,15 @@ lowerword (int f, int n, int k)
 	  c = wlgetc (curwp->w_dot.p, curwp->w_dot.o);
 	  if (ISUPPER (c) != FALSE)
 	    {
+#if 0
 	      saveundo (UDEL, &curwp->w_dot, 1);
 	      saveundo (UCH, NULL, 1, c);
+#endif
 	      c = TOLOWER (c);
-	      lputc (curwp->w_dot.p, curwp->w_dot.o, c);
+	      lputc (curwp->w_dot, c);
 	      lchange (WFHARD);
 	    }
-	  if (forwchar (FALSE, 1, KRANDOM) == FALSE)
+	  else if (forwchar (FALSE, 1, KRANDOM) == FALSE)
 	    return (FALSE);
 	}
     }
@@ -191,6 +196,7 @@ capword (int f, int n, int k)
     return (FALSE);
   if (checkreadonly () == FALSE)
     return FALSE;
+  saveundo (UMOVE, &curwp->w_dot);
   while (n--)
     {
       while (inword () == FALSE)
@@ -203,26 +209,30 @@ capword (int f, int n, int k)
 	  c = lgetc (curwp->w_dot.p, curwp->w_dot.o);
 	  if (ISLOWER (c) != FALSE)
 	    {
+#if 0
 	      saveundo (UDEL, &curwp->w_dot, 1);
 	      saveundo (UCH, NULL, 1, c);
+#endif
 	      c = TOUPPER (c);
-	      lputc (curwp->w_dot.p, curwp->w_dot.o, c);
+	      lputc (curwp->w_dot, c);
 	      lchange (WFHARD);
 	    }
-	  if (forwchar (FALSE, 1, KRANDOM) == FALSE)
+	  else if (forwchar (FALSE, 1, KRANDOM) == FALSE)
 	    return (FALSE);
 	  while (inword () != FALSE)
 	    {
 	      c = lgetc (curwp->w_dot.p, curwp->w_dot.o);
 	      if (ISUPPER (c) != FALSE)
 		{
+#if 0
 		  saveundo (UDEL, NULL, 1);
 		  saveundo (UCH, NULL, 1, c);
+#endif
 		  c = TOLOWER (c);
-		  lputc (curwp->w_dot.p, curwp->w_dot.o, c);
+		  lputc (curwp->w_dot, c);
 		  lchange (WFHARD);
 		}
-	      if (forwchar (FALSE, 1, KRANDOM) == FALSE)
+	      else if (forwchar (FALSE, 1, KRANDOM) == FALSE)
 		return (FALSE);
 	    }
 	}

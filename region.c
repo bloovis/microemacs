@@ -229,25 +229,28 @@ lowerregion (int f, int n, int k)
   lchange (WFHARD);
   linep = region.r_pos.p;
   loffs = region.r_pos.o;
+  saveundo (UMOVE, &curwp->w_dot);
   while (region.r_size--)
     {
-      if (loffs == llength (linep))
+      if (loffs == wllength (linep))
 	{
 	  linep = lforw (linep);
 	  loffs = 0;
 	}
       else
 	{
-	  c = lgetc (linep, loffs);
+	  c = wlgetc (linep, loffs);
 	  if (ISUPPER (c) != FALSE)
 	    {
 	      POS pos;
 
 	      pos.p = linep;
 	      pos.o = loffs;
+#if 0
 	      saveundo (UDEL, &pos, 1);
 	      saveundo (UCH, NULL, 1, c);
-	      lputc (linep, loffs, TOLOWER (c));
+#endif
+	      lputc (pos, TOLOWER (c));
 	    }
 	  ++loffs;
 	}
@@ -278,25 +281,28 @@ upperregion (int f, int n, int k)
   lchange (WFHARD);
   linep = region.r_pos.p;
   loffs = region.r_pos.o;
+  saveundo (UMOVE, &curwp->w_dot);
   while (region.r_size--)
     {
-      if (loffs == llength (linep))
+      if (loffs == wllength (linep))
 	{
 	  linep = lforw (linep);
 	  loffs = 0;
 	}
       else
 	{
-	  c = lgetc (linep, loffs);
+	  c = wlgetc (linep, loffs);
 	  if (ISLOWER (c) != FALSE)
 	    {
 	      POS pos;
 
 	      pos.p = linep;
 	      pos.o = loffs;
+#if 0
 	      saveundo (UDEL, &pos, 1);
 	      saveundo (UCH, NULL, 1, c);
-	      lputc (linep, loffs, TOUPPER (c));
+#endif
+	      lputc (pos, TOUPPER (c));
 	    }
 	  ++loffs;
 	}
@@ -331,7 +337,7 @@ indentregion (int f, int n, int k)
   while (region.r_size > 0)
     {
       saveundo (UMOVE, &curwp->w_dot);
-      llen = llength (curwp->w_dot.p);
+      llen = wllength (curwp->w_dot.p);
       region.r_size -= llen + 1;
       nicol = 0;
 
@@ -339,7 +345,7 @@ indentregion (int f, int n, int k)
        */
       for (i = 0; i < llen; ++i)
 	{
-	  c = lgetc (curwp->w_dot.p, i);
+	  c = wlgetc (curwp->w_dot.p, i);
 	  if (c != ' ' && c != '\t')
 	    break;
 	  if (c == '\t')

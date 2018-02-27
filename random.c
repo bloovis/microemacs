@@ -207,22 +207,23 @@ twiddle (int f, int n, int k)
     return FALSE;
   dotp = curwp->w_dot.p;
   doto = curwp->w_dot.o;
-  if (doto == llength (dotp) && --doto < 0)
+  if (doto == wllength (dotp) && --doto < 0)
     return (FALSE);
   cr = lgetc (dotp, doto);
   if (--doto < 0)
     return (FALSE);
   cl = lgetc (dotp, doto);
-  lputc (dotp, doto + 0, cr);
-  lputc (dotp, doto + 1, cl);
-  lchange (WFEDIT);
-
   dot.p = dotp;
   dot.o = doto;
+  lputc (dot, cr);
+  ++dot.o;
+  lputc (dot, cl);
+  lchange (WFEDIT);
+#if 0
   saveundo (UDEL, &dot, 2);
   saveundo (UCH, NULL, 1, cl);
   saveundo (UCH, NULL, 1, cr);
-
+#endif
   return (TRUE);
 }
 

@@ -463,7 +463,6 @@ LINE;
 #define lback(lp)	((lp)->l_bp)
 #define lgetc(lp, n)	((lp)->l_text[(n)]&0xFF)
 #define lgets(lp)	((lp)->l_text)
-#define lputc(lp, n, c) ((lp)->l_text[(n)]=(c))
 #define lputs(lp, s, n) memcpy((lp)->l_text,(s),(n))
 #define llength(lp)	((lp)->l_used)
 #define lend(lp)	(&(lp)->l_text[(lp)->l_used])
@@ -728,6 +727,7 @@ LINE * lalloc (int used);		/* Allocate line.		*/
 LINE * lallocx (int used);		/* Allocate line w/o round-up.	*/
 int linsert (int n, int c, char *s);
 					/* Insert char(s) at dot	*/
+void lputc (POS p, wchar_t c);		/* Replace char at p with c.	*/
 int lnewline (void);			/* Insert newline.		*/
 void lchange (int flag);		/* Change buffer flag.		*/
 int ldelete (int n, int kflag);		/* Delete n bytes at dot.	*/

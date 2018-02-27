@@ -587,6 +587,39 @@ ldelnewline (void)
 }
 
 /*
+ * Replace the character at offset n in the line lp with
+ * the Unicode character c, which is first converted to UTF-8.
+ * This function used to be macro which directly overwrote
+ * the byte at lp->l_text[n].  That worked with ASCII, but
+ * in UTF-8, characters may be differently lengths.  Simplify
+ * the logic by letting ldelete and linsert do the hard work.
+ */
+void
+lputc (POS pos, wchar_t c)
+{
+  POS dot;
+  int move;
+
+  dot.p = curwp->w_dot.p;
+  dot.o = curwp->w_dot.o;
+  move = dot.p != pos.p || dot.o != pos.o;
+  if (move)
+    {
+      curwp->w_dot.p = pos.p;
+      curwp->w_dot.o = pos.o;
+    }
+  saveundo (UMOVE, &curwp->w_dot);
+  ldelete (1, FALSE);
+  linsert (1, c, NULLPTR);
+  if (move)
+    {
+      curwp->w_dot.p = dot.p;
+      curwp->w_dot.o = dot.o;
+    }
+  saveundo (UMOVE, &curwp->w_dot);
+}
+
+/*
  * Replace plen characters before dot with argument string.
  * Control-J characters in st are interpreted as newlines.
  * There is a casehack disable flag (normally it likes to match
@@ -679,9 +712,14 @@ lreplace (
 	}
       else
 	{
+#if 0
 	  saveundo (UDEL, NULL, 1);
 	  saveundo (UCH, NULL, 1, lgetc (curwp->w_dot.p, curwp->w_dot.o));
-	  lputc (curwp->w_dot.p, curwp->w_dot.o++, c);
+#endif
+	  lputc (curwp->w_dot, c);
+#if 0
+	  curwp->w_dot.o++;
+#endif
 	}
     }
 
