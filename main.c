@@ -292,7 +292,9 @@ execute (int c, int f, int n)
   register int status;
   int oldcasefold = casefold;
 
-  if ((sp = getbinding (c)) != NULL)
+  if ((sp = getbinding (c)) == NULL)
+    sp = getbinding (' ');
+  if (sp != NULL)
     {
       thisflag = 0;
       if (sp->s_macro)
