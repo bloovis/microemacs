@@ -208,18 +208,16 @@ typedef unsigned char uchar;
  * between "getkey" and "getkbd" easier. The funny keys get
  * mapped into the C1 control area.
  */
-#define NKEYS	2048		/* 11 bit code.                 */
-
 #define METACH	0x1B		/* M- prefix,   Control-[, ESC  */
 #define CTMECH	0x1C		/* C-M- prefix, Control-\       */
 #define EXITCH	0x1D		/* Exit level,  Control-]       */
 #define CTRLCH	0x1E		/* C- prefix,   Control-^       */
 #define HELPCH	0x1F		/* Help key,    Control-_       */
 
-#define KCHAR	0x00FF		/* The basic character code.    */
-#define KCTRL	0x0100		/* Control flag.                */
-#define KMETA	0x0200		/* Meta flag.                   */
-#define KCTLX	0x0400		/* Control-X flag.              */
+#define KCHAR	0x00FFFF	/* The basic character code.    */
+#define KCTRL	0x010000	/* Control flag.                */
+#define KMETA	0x020000	/* Meta flag.                   */
+#define KCTLX	0x040000	/* Control-X flag.              */
 
 #define KFIRST	0x0080		/* First special.               */
 #define KLAST	0x009F		/* Last special.                */
@@ -300,11 +298,11 @@ typedef struct UNDOSTACK UNDOSTACK;
  */
 typedef struct SYMBOL
 {
-  struct SYMBOL *s_symp;	/* Hash chain.                  */
+  struct SYMBOL *s_symp;	/* Hash chain.			*/
   short s_nkey;			/* Count of keys bound here.    */
   char *s_name;			/* Name.                        */
   int (*s_funcp) ();		/* Function.                    */
-  short *s_macro;		/* Macro definition.            */
+  int *s_macro;			/* Macro definition.            */
 }
 SYMBOL;
 
@@ -494,12 +492,11 @@ extern BUFFER *curbp;
 extern EWINDOW *wheadp;
 extern BUFFER *bheadp;
 extern BUFFER *blistp;
-extern short kbdm[];
-extern short *kbdmip;
-extern short *kbdmop;
+extern int kbdm[];
+extern int *kbdmip;
+extern int *kbdmop;
 extern uchar pat[];
 extern SYMBOL *symbol[];
-extern SYMBOL *binding[];
 extern int inprof;
 extern int bflag;
 extern int rflag;
@@ -666,7 +663,6 @@ void eerase (void);			/* Erase the echo line.		*/
 int extend (int f, int n, int k);	/* Extended commands.           */
 int help (int f, int n, int k);		/* Help key.                    */
 int bindtokey (int f, int n, int k);	/* Modify key bindings.         */
-int wallchart (int f, int n, int k);	/* Make wall chart.             */
 int insertmacro (int f, int n, int k);	/* Insert macro text in buffer. */
 
 /*
@@ -747,7 +743,7 @@ int ctlxe (int f, int n, int k);	/* Execute macro                */
 int jeffexit (int f, int n, int k);	/* Jeff Lomicka style exit.     */
 int showversion (int f, int n, int k);	/* Show version numbers, etc.   */
 
-int domacro (short *macrop, int n);	/* Execute macro.	*/
+int domacro (int *macrop, int n);	/* Execute macro.	*/
 
 /*
  * Defined by "paragraph.c"
@@ -833,8 +829,11 @@ int namemacro (int f, int n, int k);	/* Assign a name to cur. macro  */
 extern void keymapinit ();
 extern void keyadd ();
 extern void keydup ();
-int getbinding (const char *s);		/* Find key bound to cmd. name	*/
 SYMBOL *symlookup (const char *cp);	/* Symbol table lookup		*/
+int getbindingforcmd (const char *s);	/* Find key bound to cmd. name	*/
+SYMBOL *getbinding (int key);		/* Get symbol bound to key	*/
+void setbinding (int key, SYMBOL *sym);	/* Set symbol bound to key	*/
+int wallchart (int f, int n, int k);	/* Make wall chart.             */
 
 /*
  * Defined by "tags.c".

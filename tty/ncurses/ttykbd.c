@@ -101,7 +101,7 @@ getkbd(void)
   for (i = 0; i < 32; i++)		/* search SPECIAL map	*/
     if (c == specmap[i])		/* found it?		*/
       return (KFIRST + i);		/* return internal code */
-  return (KRANDOM);			/* not found		*/
+  return (c);				/* not found, maybe Unicode? */
 }
 
 /*

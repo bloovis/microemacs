@@ -118,7 +118,7 @@ extern int dirlist ();		/* Directory list.              */
  */
 typedef struct
 {
-  short k_key;			/* Key to bind.                 */
+  int k_key;			/* Key to bind.                 */
   int (*k_funcp) ();		/* Function.                    */
   char *k_name;			/* Function name string.        */
 }
@@ -292,6 +292,20 @@ KEY key[] = {
 
 #define	NKEY	(sizeof(key) / sizeof(key[0]))
 
+
+/*
+ * Structure used to store key bindings in a hash table;
+ * a hash of the key value is bucket index.
+ */
+typedef struct BINDING
+{
+  struct BINDING *bi_next;		/* Next binding in list		*/
+  int bi_key;				/* Key value			*/
+  SYMBOL *bi_symbol;			/* Pointer to symbol		*/
+} BINDING;
+
+static BINDING *binding[NSHASH];	/* Key bindings.                */
+
 /*
  * Take a string, and compute the symbol table
  * bucket number. This is done by adding all of the characters
@@ -311,6 +325,78 @@ symhash (cp)
   while ((c = *cp++) != 0)
     n += c;
   return (n % NSHASH);
+}
+
+/*
+ * Take a key code, and compute the binding table
+ * bucket number. This is done by adding all of the bytes
+ * together, and taking the sum mod NSHASH.
+ */
+int
+keyhash (int key)
+{
+  int i, c, n;
+
+  n = 0;
+  for (i = 0; i < 4; i++)
+    {
+      c = key >> (i * 8) & 0xff;
+      n += c;
+    }
+  return (n % NSHASH);
+}
+
+/*
+ * Return a pointer to the SYMBOL node that is bound
+ * to a particular key.
+ */
+SYMBOL *
+getbinding (int key)
+{
+  BINDING *bp;
+  int hash;
+
+  hash = keyhash (key);
+  for (bp = binding[hash]; bp != NULL; bp = bp->bi_next)
+    if (bp->bi_key == key)
+      return bp->bi_symbol;
+  return NULL;		/* not found */
+}
+
+/*
+ * Set the binding for a key to the specified symbol.
+ */
+void
+setbinding (int key, SYMBOL *sym)
+{
+  BINDING *bp, *bp1;
+  int hash;
+
+  /* If a binding already exists for this binding, modify it
+   * to point to the new symbol.
+   */
+  hash = keyhash (key);
+  bp = NULL;
+  for (bp1 = binding[hash]; bp1 != NULL; bp1 = bp1->bi_next)
+    if (bp1->bi_key == key)
+      {
+	bp = bp1;
+	break;
+      }
+  if (bp != NULL)
+    --bp->bi_symbol->s_nkey;	/* Unbind from old symbol */
+  else
+    {
+      /* Create a new binding, insert into hash chain. */
+      bp = calloc (1, sizeof (*bp));
+      if (bp == NULL)
+	abort ();
+      bp->bi_next = binding[hash];
+      bp->bi_key = key;
+      binding[hash] = bp;
+    }
+  bp->bi_symbol = sym;		/* Bind to new symbol */
+  ++sym->s_nkey;
 }
 
 /*
@@ -348,7 +434,7 @@ keymapinit ()
   register KEY *kp;
   register int i;
 
-  for (i = 0; i < NKEYS; ++i)
+  for (i = 0; i < NSHASH; ++i)
     binding[i] = NULL;
   for (kp = &key[0]; kp < &key[NKEY]; ++kp)
     keyadd (kp->k_key, kp->k_funcp, kp->k_name);
@@ -368,10 +454,9 @@ keymapinit ()
     abort ();
   for (i = 0x20; i < 0x7F; ++i)
     {
-      if (binding[i] != NULL)
+      if (getbinding (i) != NULL)
 	abort ();
-      binding[i] = sp;
-      ++sp->s_nkey;
+      setbinding (i, sp);
     }
   ttykeymapinit ();
 }
@@ -402,10 +487,9 @@ keyadd (
   sp->s_macro = NULL;
   if (new >= 0)
     {				/* Bind this key.       */
-      if (binding[new] != NULL)
+      if (getbinding (new) != NULL)
 	abort ();
-      binding[new] = sp;
-      ++sp->s_nkey;
+      setbinding (new, sp);
     }
 }
 
@@ -421,10 +505,9 @@ keydup (new, name)
 {
   register SYMBOL *sp;
 
-  if (binding[new] != NULL || (sp = symlookup (name)) == NULL)
+  if (getbinding (new) != NULL || (sp = symlookup (name)) == NULL)
     abort ();
-  binding[new] = sp;
-  ++sp->s_nkey;
+  setbinding (new, sp);
 }
 
 /*
@@ -435,16 +518,21 @@ keydup (new, name)
  * bound to that command.
  */
 int
-getbinding (const char *s)
+getbindingforcmd (const char *s)
 {
-  int k;
   SYMBOL *sp;
+  BINDING *bp;
+  int hash;
 
   if ((sp = symlookup (s)) == NULL)
     return (-1);
-  for (k = 0; k < NKEYS; k++)
-    if (binding[k] == sp)
-      return (k);
+
+  for (hash = 0; hash < NSHASH; hash++)
+    {
+      for (bp = binding[hash]; bp != NULL; bp = bp->bi_next)
+	if (bp->bi_symbol == sp)
+	  return bp->bi_key;
+    }
   return (-1);
 }
 
@@ -460,7 +548,7 @@ int
 namemacro (int f, int n, int k)
 {
   register SYMBOL *sp;		/* Symbol name pointer. */
-  register short *mp;		/* Macro pointer.       */
+  register int *mp;		/* Macro pointer.       */
   register char *cp;		/* Character pointer.   */
   char xname[NXNAME];		/* Symbol name.         */
   register int hash;		/* Hash of symbol name. */
@@ -484,10 +572,10 @@ namemacro (int f, int n, int k)
   /* Compute the size of the macro, then allocate space
    * to copy the macro into.
    */
-  msize = sizeof (short);
+  msize = sizeof (kbdm[0]);
   for (mp = kbdm; *mp != (KCTLX | ')'); mp++)
-    msize += sizeof (short);
-  if ((mp = (short *) malloc (msize)) == NULL)
+    msize += sizeof (kbdm[0]);
+  if ((mp = (int *) malloc (msize)) == NULL)
     {
       eprintf ("Out of memory.");
       return (FALSE);
@@ -577,4 +665,54 @@ symsearch (sname, cpos, prev)
       if (strncmp (sname, name, cpos) == 0)
 	return (name);
     }
+}
+
+/*
+ * This function creates a table, listing all
+ * of the command keys and their current bindings, and stores
+ * the table in the standard pop-op buffer (the one used by the
+ * directory list command, the buffer list command, etc.). This
+ * lets MicroEMACS produce it's own wall chart. The bindings to
+ * "ins-self" are only displayed if there is an argument.
+ */
+int
+wallchart (int f, int n, int k)
+{
+  register int s;
+  register int key;
+  register SYMBOL *sp;
+  register char *cp1;
+  register char *cp2;
+  char buf[64];
+  BINDING *bp;
+  int hash;
+
+  if ((s = bclear (blistp)) != TRUE)	/* Clear it out.        */
+    return (s);
+  strcpy (blistp->b_fname, "");
+  for (hash = 0; hash < NSHASH; hash++)
+    {
+      for (bp = binding[hash]; bp != NULL; bp = bp->bi_next)
+	{
+	  key = bp->bi_key;
+	  sp = bp->bi_symbol;
+	  if (f != FALSE || strcmp (sp->s_name, "ins-self") != 0)
+	    {
+	      ekeyname (buf, key);
+	      cp1 = &buf[0];	/* Find end.            */
+	      while (*cp1 != 0)
+		++cp1;
+	      while (cp1 < &buf[16])	/* Goto column 16.      */
+		*cp1++ = ' ';
+	      cp2 = sp->s_name;	/* Add function name.   */
+	      while ((*cp1++ = *cp2++) != 0)
+		;
+	      if (addline (buf) == FALSE)
+		return (FALSE);
+	    }
+	}
+    }
+  if (addline ("") == FALSE)
+    return (FALSE);
+  return (popblist ());
 }

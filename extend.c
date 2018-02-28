@@ -75,10 +75,7 @@ bindtokey (int f, int n, int k)
 	}
       *kbdmip++ = c;
     }
-  if (binding[c] != NULL)	/* Unbind old, and      */
-    --binding[c]->s_nkey;
-  binding[c] = sp;		/* rebind new.          */
-  ++sp->s_nkey;
+  setbinding (c, sp);
   return (TRUE);
 }
 
@@ -133,55 +130,11 @@ help (int f, int n, int k)
 
   c = getkey ();
   ekeyname (b, c);
-  if ((sp = binding[c]) == NULL)
+  if ((sp = getbinding (c)) == NULL)
     eprintf ("[%s is unbound]", b);
   else
     eprintf ("[%s is bound to %s]", b, sp->s_name);
   return (TRUE);
-}
-
-/*
- * This function creates a table, listing all
- * of the command keys and their current bindings, and stores
- * the table in the standard pop-op buffer (the one used by the
- * directory list command, the buffer list command, etc.). This
- * lets MicroEMACS produce it's own wall chart. The bindings to
- * "ins-self" are only displayed if there is an argument.
- */
-int
-wallchart (int f, int n, int k)
-{
-  register int s;
-  register int key;
-  register SYMBOL *sp;
-  register char *cp1;
-  register char *cp2;
-  char buf[64];
-
-  if ((s = bclear (blistp)) != TRUE)	/* Clear it out.        */
-    return (s);
-  strcpy (blistp->b_fname, "");
-  for (key = 0; key < NKEYS; ++key)
-    {				/* For all keys.        */
-      sp = binding[key];
-      if (sp != NULL && (f != FALSE || strcmp (sp->s_name, "ins-self") != 0))
-	{
-	  ekeyname (buf, key);
-	  cp1 = &buf[0];	/* Find end.            */
-	  while (*cp1 != 0)
-	    ++cp1;
-	  while (cp1 < &buf[16])	/* Goto column 16.      */
-	    *cp1++ = ' ';
-	  cp2 = sp->s_name;	/* Add function name.   */
-	  while ((*cp1++ = *cp2++) != 0)
-	    ;
-	  if (addline (buf) == FALSE)
-	    return (FALSE);
-	}
-    }
-  if (addline ("") == FALSE)
-    return (FALSE);
-  return (popblist ());
 }
 
 /*
@@ -321,7 +274,7 @@ flushstring (void)
 int
 insertmacro (int f, int n, int k)
 {
-  register short *mp;		/* Macro pointer.       */
+  register int *mp;		/* Macro pointer.       */
   char xname[NXNAME + 2];	/* Symbol name.         */
   register SYMBOL *sp = NULL;
   register int named;

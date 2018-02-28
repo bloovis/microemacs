@@ -203,17 +203,17 @@ ttflush (void)
 int
 ttgetc (void)
 {
-  int c;
+  wint_t c;
 
   waiting = TRUE;
 
   /* We get an error character if the window is resized, probably
    * because of an interrupted system call.  Just ignore those.
    */
-  while ((c = getch ()) == ERR)
+  while (get_wch (&c) == ERR)
     ;
   waiting = FALSE;
-  return c;
+  return (int) c;
 }
 
 /*

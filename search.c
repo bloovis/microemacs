@@ -481,7 +481,7 @@ cvtbind (const char *command, int defkey)
 {
   int key;
 
-  key = getbinding (command);	/* look up key  */
+  key = getbindingforcmd (command);	/* look up key  */
   if (key == -1 || (key & (KCTLX | KMETA)) != 0)	/* META or C-X  */
     return (defkey);
   else if ((key & KCTRL) != 0)	/* CTRL- key?   */

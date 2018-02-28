@@ -76,14 +76,13 @@ int curgoal;			/* Goal column                  */
 BUFFER *curbp = 0;		/* Current buffer               */
 EWINDOW *curwp = 0;		/* Current window               */
 BUFFER *bheadp;			/* BUFFER listhead              */
-EWINDOW *wheadp;		/* EWINDOW listhead              */
+EWINDOW *wheadp;		/* EWINDOW listhead             */
 BUFFER *blistp;			/* Buffer list BUFFER           */
-short kbdm[NKBDM] = { KCTLX | ')' };	/* Macro                        */
-short *kbdmip;			/* Input  for above             */
-short *kbdmop;			/* Output for above             */
+int kbdm[NKBDM] = { KCTLX | ')' }; /* Macro                     */
+int *kbdmip;			/* Input  for above             */
+int *kbdmop;			/* Output for above             */
 uchar pat[NPAT] = { 0 };	/* Pattern                      */
 SYMBOL *symbol[NSHASH];		/* Symbol table listhead.       */
-SYMBOL *binding[NKEYS];		/* Key bindings.                */
 int inprof;			/* True if reading profile      */
 int bflag;			/* True if -b option specified  */
 int mouse;			/* True if -m option specified  */
@@ -293,7 +292,7 @@ execute (int c, int f, int n)
   register int status;
   int oldcasefold = casefold;
 
-  if ((sp = binding[c]) != NULL)
+  if ((sp = getbinding (c)) != NULL)
     {
       thisflag = 0;
       if (sp->s_macro)
@@ -469,7 +468,7 @@ ctlxe (int f, int n, int k)
  * FALSE.
  */
 int
-domacro (short *macrop, int n)
+domacro (int *macrop, int n)
 {
   register int c;
   register int af;
