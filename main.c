@@ -292,6 +292,9 @@ execute (int c, int f, int n)
   register int status;
   int oldcasefold = casefold;
 
+  /* If there is no binding for the key, assume it is
+   * a Unicode character that should be self-inserted.
+   */
   if ((sp = getbinding (c)) == NULL)
     sp = getbinding (' ');
   if (sp != NULL)
