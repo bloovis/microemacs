@@ -122,10 +122,6 @@ upperword (int f, int n, int k)
 	  c = wlgetc (curwp->w_dot.p, curwp->w_dot.o);
 	  if (ISLOWER (c) != FALSE)
 	    {
-#if 0
-	      saveundo (UDEL, &curwp->w_dot, 1);
-	      saveundo (UCH, NULL, 1, c);
-#endif
 	      c = TOUPPER (c);
 	      lputc (curwp->w_dot, c);
 	      lchange (WFHARD);
@@ -165,10 +161,6 @@ lowerword (int f, int n, int k)
 	  c = wlgetc (curwp->w_dot.p, curwp->w_dot.o);
 	  if (ISUPPER (c) != FALSE)
 	    {
-#if 0
-	      saveundo (UDEL, &curwp->w_dot, 1);
-	      saveundo (UCH, NULL, 1, c);
-#endif
 	      c = TOLOWER (c);
 	      lputc (curwp->w_dot, c);
 	      lchange (WFHARD);
@@ -209,10 +201,6 @@ capword (int f, int n, int k)
 	  c = lgetc (curwp->w_dot.p, curwp->w_dot.o);
 	  if (ISLOWER (c) != FALSE)
 	    {
-#if 0
-	      saveundo (UDEL, &curwp->w_dot, 1);
-	      saveundo (UCH, NULL, 1, c);
-#endif
 	      c = TOUPPER (c);
 	      lputc (curwp->w_dot, c);
 	      lchange (WFHARD);
@@ -224,10 +212,6 @@ capword (int f, int n, int k)
 	      c = lgetc (curwp->w_dot.p, curwp->w_dot.o);
 	      if (ISUPPER (c) != FALSE)
 		{
-#if 0
-		  saveundo (UDEL, NULL, 1);
-		  saveundo (UCH, NULL, 1, c);
-#endif
 		  c = TOLOWER (c);
 		  lputc (curwp->w_dot, c);
 		  lchange (WFHARD);

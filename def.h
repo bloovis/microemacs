@@ -196,11 +196,11 @@ typedef unsigned char uchar;
 #define EFBUF   0x0010		/* Autocomplete buffer name.    */
 
 /*
- * Keys are represented inside using an 11 bit
+ * Keys are represented inside using a 19 bit
  * keyboard code. The transformation between the keys on
- * the keyboard and 11 bit code is done by terminal specific
+ * the keyboard and 19 bit code is done by terminal specific
  * code in the "kbd.c" file. The actual character is stored
- * in 8 bits (DEC multinationals work); there is also a control
+ * as a Unicode value in the low 16 bits; there is also a control
  * flag KCTRL, a meta flag KMETA, and a control-X flag KCTLX.
  * ASCII control characters are always represented using the
  * KCTRL form. Although the C0 control set is free, it is

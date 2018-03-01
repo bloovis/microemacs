@@ -60,7 +60,7 @@
 #include	"def.h"
 
 /*
- * Next token from profile input: a sequence of MicroEMACS 11-bit
+ * Next token from profile input: a sequence of MicroEMACS 19-bit
  * keyboard values.
  */
 #define	PSIZE	128		/* maximum token size   */
@@ -127,7 +127,7 @@ getctl (void)
  * one of the special codes used by the special keys
  * on the keyboard. The "getkbd" routine returns the
  * C0 controls as received; this routine moves them to
- * the right spot in 11 bit code.
+ * the right spot in 19 bit code.
  */
 int
 getkey (void)

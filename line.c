@@ -712,14 +712,7 @@ lreplace (
 	}
       else
 	{
-#if 0
-	  saveundo (UDEL, NULL, 1);
-	  saveundo (UCH, NULL, 1, lgetc (curwp->w_dot.p, curwp->w_dot.o));
-#endif
 	  lputc (curwp->w_dot, c);
-#if 0
-	  curwp->w_dot.o++;
-#endif
 	}
     }
 

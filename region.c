@@ -246,10 +246,6 @@ lowerregion (int f, int n, int k)
 
 	      pos.p = linep;
 	      pos.o = loffs;
-#if 0
-	      saveundo (UDEL, &pos, 1);
-	      saveundo (UCH, NULL, 1, c);
-#endif
 	      lputc (pos, TOLOWER (c));
 	    }
 	  ++loffs;
@@ -298,10 +294,6 @@ upperregion (int f, int n, int k)
 
 	      pos.p = linep;
 	      pos.o = loffs;
-#if 0
-	      saveundo (UDEL, &pos, 1);
-	      saveundo (UCH, NULL, 1, c);
-#endif
 	      lputc (pos, TOUPPER (c));
 	    }
 	  ++loffs;

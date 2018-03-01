@@ -219,11 +219,6 @@ twiddle (int f, int n, int k)
   ++dot.o;
   lputc (dot, cl);
   lchange (WFEDIT);
-#if 0
-  saveundo (UDEL, &dot, 2);
-  saveundo (UCH, NULL, 1, cl);
-  saveundo (UCH, NULL, 1, cr);
-#endif
   return (TRUE);
 }
 
