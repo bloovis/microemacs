@@ -16,7 +16,7 @@ header-includes:
       }
     - \usepackage{fancyhdr}
     - \pagestyle{fancy}
-    - \fancyhead[C]{MicroEmacs}
+    - \fancyhead[C]{MicroEMACS}
     - \fancyfoot[C]{\thepage}
 include-after:
     - \printindex
@@ -25,7 +25,7 @@ include-after:
 \vspace*{2in}
 
 \begin{center}
-\textbf{MicroEmacs:}\\
+\textbf{MicroEMACS:}\\
 \textbf{Reasonable Editing}\\
 \textbf{on}\\
 \textbf{Tiny Computers}\\
@@ -70,18 +70,20 @@ Feb 13, 2018\\
 # Introduction
 
 This document describes MicroEMACS, a
-public-domain display editor, loosely based on EMACS, that runs on little
+public-domain[^1] display editor, loosely based on EMACS, that runs on little
 computers.
 It is intended as a reference manual
 for users already familiar with EMACS.
+
+[^1]: The source is now copylefted with the GPL.
 
 We call it Micro *EMACS* to emphasize the fact that
 most of the commands are very similar to, if not identical to,
 fundamental mode EMACS\index{EMACS} commands (actually, it implements a set of
 rebindings used by a group of users at Digital Equipment
-Corporation[^1]).
+Corporation[^2]).
 
-[^1]: Further modified at DRI to more closely resemble, but not
+[^2]: Further modified at DRI to more closely resemble, but not
 completely emulate, MINCE.\index{MINCE}.
 
 We call it *Micro* EMACS to emphasize the fact that it is
@@ -91,9 +93,9 @@ customizable (without writing code), or to have extensive online documentation.
 All of this sophistication was thrown away right at the start, because
 it was important that MicroEMACS run on little computers.
 In all fairness, is should be stated here and now that the most popular
-small computer these days is the MicroVAX[^2]!
+small computer these days is the MicroVAX[^3]!
 
-[^2]: This appears to be a reference by Conroy to DEC's \index{DEC} attempt to ignore the IBM PC.
+[^3]: This appears to be a reference by Conroy to DEC's \index{DEC} attempt to ignore the IBM PC.
 
 ## History
 
@@ -116,7 +118,7 @@ to bring the document up to date with the program itself.
 
 ### 2018 Update
 
-I have lost the original source of Conroy's version of MicroEmacs (including the TeX version
+I have lost the original source of Conroy's version of MicroEMACS (including the TeX version
 of this document), and I cannot find it on Google's USENET archive.
 I have also lost my DOS and OS/2 source
 code, though the Windows code (in the `nt` subdirectory) still exists.
@@ -124,15 +126,12 @@ This document contains many reference to historical machines and operating
 systems, but I have kept them for historical interest.  I maintain
 only the Linux\index{Linux} version now.
 
-In 80s MicroEmacs was small enough to run easily from a floppy disk, but the amount of text that
+In 80s MicroEMACS was small enough to run easily from a floppy disk, but the amount of text that
 could be edited was limited by the very small amount of available RAM
 (640kb in DOS).  Nowadays this limit is effectly non-existent, give the huge amount of memory
-found in modern computers, but MicroEmacs is still small enough to be run from a floppy disk
+found in modern computers, but MicroEMACS is still small enough to be run from a floppy disk
 (if one could be found); its code size is 2/3 that of `/bin/ls` on a current 64-bit
 Linux distro!
-
-MicroEmacs does not support UTF-8 characters.  Fixing this will be
-my next project.
 
 # Some Basic Concepts
 
@@ -447,7 +446,7 @@ things, so that you will never do damage by aborting a command.
 
 The echo line supports autocompletion\index{autocompletion}.  If you are entering
 a command name, a filename, or a buffer name, you can use the
-`Space` or `Tab` keys to tell MicroEmacs to complete as
+`Space` or `Tab` keys to tell MicroEMACS to complete as
 much of the entry as possible, based on what you have entered so far.
 Pressing the `?` or `Control-D` keys will open a new temporary window containing
 the possible list of choices.
@@ -505,7 +504,7 @@ pe [-b] [-x] [-z] [-p \emph{profile}] \emph{filename1} \emph{filename} ...
 \end{Verbatim}
 
 (The name `pe` was chosen to avoid confusion with other versions
-of MicroEmacs.  Think of it as an abbreviation of "puny emacs".)
+of MicroEMACS.  Think of it as an abbreviation of "puny emacs".)
 
 The options -b, -x, -z, and -p are optional.  They have the following
 meanings:
@@ -561,7 +560,7 @@ meanings:
 
 -r
 
-:   Tells MicroEmacs to mark all buffers as read-only\index{read-only} by default.  This
+:   Tells MicroEMACS to mark all buffers as read-only\index{read-only} by default.  This
     is useful in preventing unwanted changes being made when browsing files.
     A buffer can subsequently be made read-write with the
     **toggle-readonly**\index{toggle-readonly} command.
@@ -1636,7 +1635,7 @@ C-X C-Q
     This command toggles the read-only flag on the current buffer:
     if the buffer is currently read-only, it is made read-write;
     otherwise it is made read-only.  This can be useful to counteract
-    the effect of [starting MicroEmacs](#starting) with the `-r` option.
+    the effect of [starting MicroEMACS](#starting) with the `-r` option.
 
 # Window Management
 
@@ -1844,7 +1843,7 @@ in response to the prompt `:` on the echo line.
 # Tags
 
 \index{tags}
-MicroEmacs can use the source-code tagging programs `cscope`\index{cscope} and `ctags`\index{ctags}
+MicroEMACS can use the source-code tagging programs `cscope`\index{cscope} and `ctags`\index{ctags}
 to make it easier to find functions and variables in C programs.  The `find-` functions
 prompt for a name to find, but they also attempt to extract a name from the
 current buffer and location, to be used if you do not enter a name and simply hit
@@ -1888,7 +1887,7 @@ M-.
 
 # Ruby on Rails
 
-MicroEmacs has three functions that make it slightly easier to
+MicroEMACS has three functions that make it slightly easier to
 find files within a Rails\index{Rails} project.  These functions work only
 when the current directory is the top-level directory of
 your project.
@@ -1906,7 +1905,7 @@ C-X M
 
     This command prompts you to enter the name of a class,
     then visits the source file for the corresponding model.
-    The class name must be singular and lower case (MicroEmacs
+    The class name must be singular and lower case (MicroEMACS
     does not understand the pluralizing conventions used by Rails).
 
 C-X V
@@ -1919,10 +1918,10 @@ C-X V
 
 # Undo
 
-MicroEmacs supports a limited undo\index{Undo} facility.  It saves
+MicroEMACS supports a limited undo\index{Undo} facility.  It saves
 information about the last 100 commands that modified a given buffer,
 so that these commands can be undone.  Each buffer has its own set of
-undo records.  MicroEmacs does not currently support a redo facility
+undo records.  MicroEMACS does not currently support a redo facility
 (for undoing an undo).  It treats consecutive typing of normal (non-command)
 keys as a single operation; this makes it less tedious to undo large
 amounts of typing.
@@ -2135,6 +2134,51 @@ processing (or at any other time) with the following command.
 
     Note the required carriage return (\\r) at the end of the string.
 
+# UTF-8 and Unicode
+
+\index{UTF-8}\index{Unicode}
+Starting in 2018, MicroEMACS supports reading and writing text files
+encoded with UTF-8, a byte-oriented encoding of Unicode.  UTF-8 can
+be thought of as a superset of ASCII: bytes less then 0x80 are
+identical to ASCII, and bytes greater than or equal to 0x80 are always
+parts of UTF-8 sequences.  UTF-8 characters vary in length from
+one byte (ASCII) to six bytes, though four bytes is the longest
+typically seen.
+
+Internally, Microemacs stores lines of text in their original
+UTF-8 encoding, but displays multibyte UTF-8 sequences to the user
+as single Unicode characters in the range 0x80 to 0xffff.  Unicode
+characters greater then 0xffff are not supported; in practice
+these characters are extremely rare.
+
+For the most part, MicroEMACS is able to display UTF-8 characters 
+correctly, with the exception of non-spacing or combining characters.
+The display of these characters is undefined: sometimes they show up
+as modifiers of subsequent characters, or as blanks, or as a lowercase
+'x' with a modifier.
+
+MicroEMACS does not yet support entering Unicode characters into
+strings for which you are prompted, such as search and replace strings.
+
+You can enter UTF-8 characters into the edit buffer in two ways.
+On Linux, most terminal programs support a standard method: hold down
+Ctrl and Shift, then enter 'u', then the hex digits of the Unicode character.
+If this method isn't support by your terminal, then you can use
+the following command.
+
+**M-C-U**
+
+:   **unicode**\index{M-C-U}\index{unicode (command)}
+
+    This command prompts you to enter a line of text containing the hexadecimal
+    values of one or more Unicode characters.  The hex values must
+    not have a '0x' prefix, or any other prefix, and must be
+    separated by spaces.  MicroEMACS will then insert the corresponding UTF-8
+    characters into the current buffer.
+
+    As an example, entering the string `e0 e1 e2` would insert the characters
+    `àáâ` into the buffer.
+
 # Building a MicroEMACS
 
 \index{Building a MicroEMACS}
@@ -2297,6 +2341,9 @@ C-X C-O
 
 :   del-blank-lines
 
+M-C-U
+
+:   unicode
 
 *Little Moves*
 
