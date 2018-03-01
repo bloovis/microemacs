@@ -240,6 +240,7 @@ KEY key[] = {
   {KMETA | KCTRL | 'I', settabsize,	"set-tab-size"},
   {KMETA | KCTRL | 'R', backregsearch,	"back-regexp-search"},
   {KMETA | KCTRL | 'S', forwregsearch,	"forw-regexp-search"},
+  {KMETA | KCTRL | 'U', unicode,	"unicode"},
   {KMETA | KCTRL | 'V', showversion,	"display-version"},
   {KMETA | KCTRL | 'W', killpara,	"kill-paragraph"},
   {KMETA | '.',		findtag,	"find-tag"},
@@ -340,7 +341,7 @@ keyhash (int key)
   n = 0;
   for (i = 0; i < 4; i++)
     {
-      c = key >> (i * 8) & 0xff;
+      c = (key >> (i * 8)) & 0xff;
       n += c;
     }
   return (n % NSHASH);

@@ -947,3 +947,4 @@ wchar_t ugetc (const uchar *s, int n, int *len);
 					/*  to 32-bit Unicode		*/
 int ucombining (wchar_t c);		/* c is a combining char?	*/
 int uputc (wchar_t c, unsigned char *s);/* Convert Unicode to UTF-8	*/
+int unicode (int f, int n, int k);	/* Command to insert Unicode.	*/

@@ -276,6 +276,40 @@ uputc (wchar_t c, uchar *s)
   return 1;
 }
 
+/*
+ * Prompt for a string of hex numbers separated by spaces.
+ * Treat each hex number as a Unicode character, convert
+ * it to UTF-8, and insert into the current buffer.
+ */
+int
+unicode (int f, int n, int k)
+{
+  int s, len, i;
+  char buf[80];
+  char *p;
+  unsigned int c[40];
+  int count;
+
+  s = ereply ("Enter Unicode characters in hex: ", buf, sizeof (buf));
+  if (s != TRUE)
+    return s;
+  for (p = buf, count = 0; p < &buf[sizeof (buf)] && *p != '\0'; p += len, ++count)
+    {
+      s = sscanf (p, " %x%n", &c[count], &len);
+      if (s != 1)
+	{
+	  eprintf("Illegal hex number: %s", s);
+	  return FALSE;
+	}
+    }
+  for (i = 0; i < count; i++)
+    {
+      if (linsert (1, c[i], NULL) == FALSE)
+	return FALSE;
+    }
+  return TRUE;
+}
+
 
 #ifdef TEST
 
