@@ -298,7 +298,7 @@ unicode (int f, int n, int k)
       s = sscanf (p, " %x%n", &c[count], &len);
       if (s != 1)
 	{
-	  eprintf("Illegal hex number: %s", s);
+	  eprintf("Illegal hex number: %s", p);
 	  return FALSE;
 	}
     }
