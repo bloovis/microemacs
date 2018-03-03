@@ -2162,7 +2162,8 @@ strings for which you are prompted, such as search and replace strings.
 
 You can enter UTF-8 characters into the edit buffer in two ways.
 On Linux, most terminal programs support a standard method: hold down
-Ctrl and Shift, then enter 'u', then the hex digits of the Unicode character.
+Ctrl and Shift, then press and release 'u', release Ctrl and Shift,
+then the hex digits of the Unicode character followed by Enter.
 If this method isn't support by your terminal, then you can use
 the following command.
 

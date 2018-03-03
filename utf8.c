@@ -152,8 +152,8 @@ unblen (const uchar *s, int n)
 
 /*
  * Get the nth UTF-8 character in s, return it
- * as a 32-bit unicode character.  Return the
- * length of the UTF-8 character to *len.
+ * as a 32-bit unicode character.  If len is not NULL,
+ * return the * length of the UTF-8 character to *len.
  */
 wchar_t
 ugetc (const uchar *s, int n, int *len)

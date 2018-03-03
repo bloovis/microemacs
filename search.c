@@ -312,16 +312,18 @@ forwsrch (void)
   register int tbo;
   register int pp;
   register LINE *lastline;
+  int patlen;
 
   clp = curwp->w_dot.p;
   cbo = curwp->w_dot.o;
   lastline = curbp->b_linep;
   if (clp == lastline)
     return (FALSE);
+  patlen = uslen (pat);
   for (;;)
     {
     fail:
-      if (cbo == llength (clp))
+      if (cbo == wllength (clp))
 	{
 	  if ((clp = lforw (clp)) == lastline)
 	    return (FALSE);
@@ -329,21 +331,21 @@ forwsrch (void)
 	  if (pat[0] != '\n')
 	    goto fail;
 	}
-      else if (!EQ (lgetc (clp, cbo++), pat[0]))
+      else if (!EQ (wlgetc (clp, cbo++), ugetc (pat, 0, NULL)))
 	goto fail;
       tlp = clp;
       tbo = cbo;
-      for (pp = 1; pat[pp] != 0; pp++)
+      for (pp = 1; pp < patlen; pp++)
 	{
-	  if (tbo == llength (tlp))
+	  if (tbo == wllength (tlp))
 	    {
 	      if ((tlp = lforw (tlp)) == lastline)
 		return (FALSE);
 	      tbo = 0;
-	      if (pat[pp] != '\n')
+	      if (ugetc (pat, pp, NULL) != '\n')
 		goto fail;
 	    }
-	  else if (!EQ (lgetc (tlp, tbo++), pat[pp]))
+	  else if (!EQ (wlgetc (tlp, tbo++), ugetc (pat, pp, NULL)))
 	    goto fail;
 	}
       curwp->w_dot.p = tlp;
@@ -373,9 +375,12 @@ backsrch (void)
   register int pp;
 
   lastline = curbp->b_linep;
+  epp = uslen (pat) - 1;
+#if 0
   for (epp = 0; pat[epp] != 0; epp++)
     ;
   --epp;
+#endif
   clp = curwp->w_dot.p;
   cbo = curwp->w_dot.o;
   for (;;)
@@ -385,11 +390,11 @@ backsrch (void)
 	{
 	  if ((clp = lback (clp)) == lastline)
 	    return (FALSE);
-	  cbo = llength (clp);
-	  if (pat[epp] != '\n')
+	  cbo = wllength (clp);
+	  if (ugetc (pat, epp, NULL) != '\n')
 	    goto fail;
 	}
-      else if (!EQ (lgetc (clp, --cbo), pat[epp]))
+      else if (!EQ (wlgetc (clp, --cbo), ugetc (pat, epp, NULL)))
 	goto fail;
       tlp = clp;
       tbo = cbo;
@@ -400,11 +405,11 @@ backsrch (void)
 	    {
 	      if ((tlp = lback (tlp)) == lastline)
 		return (FALSE);
-	      tbo = llength (tlp);
-	      if (pat[--pp] != '\n')
+	      tbo = wllength (tlp);
+	      if (ugetc (pat, --pp, NULL) != '\n')
 		goto fail;
 	    }
-	  else if (!EQ ((lgetc (tlp, --tbo)), pat[--pp]))
+	  else if (!EQ ((wlgetc (tlp, --tbo)), ugetc (pat, --pp, NULL)))
 	    goto fail;
 	}
       curwp->w_dot.p = tlp;

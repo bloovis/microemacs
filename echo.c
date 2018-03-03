@@ -538,11 +538,13 @@ eread (const char *fp, char *buf, int nbuf, int flag, va_list ap)
   register int nxtra;
   register int bxtra;
   char savebuf[NFILEN];
+  uchar ubuf[6];
+  int ulen;
 
   cpos = 0;
   if (kbdmop != NULL)
     {				/* In a macro.          */
-      while ((c = *kbdmop++) != '\0')
+      while ((c = *kbdmop++) != '\0' && cpos < nbuf - 1)
 	buf[cpos++] = c;
       buf[cpos] = '\0';
       goto done;
@@ -716,9 +718,11 @@ eread (const char *fp, char *buf, int nbuf, int flag, va_list ap)
 	case 0x11:		/* Control-Q - quote    */
 	  c = getinp ();	/* drop into default    */
 	default:		/* All the rest.        */
-	  if (cpos < nbuf - 1)
+	  ulen = uputc (c, ubuf);
+	  if (cpos + ulen < nbuf)
 	    {
-	      buf[cpos++] = c;
+	      memcpy (&buf[cpos], ubuf, ulen);
+	      cpos += ulen;
 	      eputc (c);
 	      ettflush ();
 	    }
@@ -884,10 +888,17 @@ eformat (const char *fp, va_list ap)
 void
 eputs (const char *s)
 {
-  register int c;
+  const char * end;
+  int len;
+  wchar_t c;
 
-  while ((c = *s++) != '\0')
-    eputc (c);
+  end = s + strlen (s);
+  while (s < end)
+    {
+      c = ugetc ((const uchar *) s, 0, &len);
+      eputc (c);
+      s += len;
+    }
 }
 
 /*
