@@ -171,13 +171,13 @@ doregsrch (int dir)
        */
       if (dir == SRCH_REGFORW)
 	{
-	  line = lgets (clp) + cbo;
-	  linelen = llength (clp) - cbo;
+	  line = (uchar *) wlgetcptr (clp, cbo);
+	  linelen = wllength (clp) - cbo;
 	}
       else
 	{
 	  line = lgets (clp);
-	  linelen = cbo;
+	  linelen = wloffset (clp, cbo);
 	}
       if (linelen + 1 > buflen)
 	{
@@ -209,9 +209,9 @@ doregsrch (int dir)
 	{
 	  curwp->w_dot.p = clp;
 	  if (dir == SRCH_REGFORW)
-	    curwp->w_dot.o = regpat->endp[0] - (char *) buf + cbo;
+	    curwp->w_dot.o = unslen (buf, regpat->endp[0] - (char *) buf) + cbo;
 	  else
-	    curwp->w_dot.o = regpat->startp[0] - (char *) buf;
+	    curwp->w_dot.o = unslen (buf, regpat->startp[0] - (char *) buf);
 	  curwp->w_flag |= WFMOVE;
 	  free (buf);
 	  return (TRUE);
