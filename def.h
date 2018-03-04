@@ -727,7 +727,7 @@ void lputc (POS p, wchar_t c);		/* Replace char at p with c.	*/
 int lnewline (void);			/* Insert newline.		*/
 void lchange (int flag);		/* Change buffer flag.		*/
 int ldelete (int n, int kflag);		/* Delete n bytes at dot.	*/
-int lreplace (int plen, char *st, int f);
+int lreplace (int plen, const char *st, int f);
 					/* Replace chars at dot		*/
 int kinsert (const char *s, int n);	/* Insert text in kill buffer	*/
 void kdelete (void);			/* Delete text in kill buffer	*/

@@ -628,13 +628,15 @@ lputc (POS pos, wchar_t c)
 int
 lreplace (
      int plen,			/* length to remove             */
-     char *st,			/* replacement string           */
+     const char *st,		/* replacement string           */
      int f)			/* case hack disable            */
 {
   register int rlen;		/* replacement length           */
   register int rtype;		/* capitalization               */
   register int c;		/* used for random characters   */
   register int doto;		/* offset into line             */
+  int clen;			/* length of UTF-8 char		*/
+  const char *end;		/* end of replacement string	*/
 
   if (checkreadonly () == FALSE)
     return FALSE;
@@ -648,13 +650,13 @@ lreplace (
    */
   backchar (TRUE, plen, KRANDOM);
   rtype = LOWER;
-  c = lgetc (curwp->w_dot.p, curwp->w_dot.o);
+  c = wlgetc (curwp->w_dot.p, curwp->w_dot.o);
   if (ISUPPER (c) != FALSE && f == FALSE)
     {
       rtype = UPPER | LOWER;
-      if (curwp->w_dot.o + 1 < llength (curwp->w_dot.p))
+      if (curwp->w_dot.o + 1 < wllength (curwp->w_dot.p))
 	{
-	  c = lgetc (curwp->w_dot.p, curwp->w_dot.o + 1);
+	  c = wlgetc (curwp->w_dot.p, curwp->w_dot.o + 1);
 	  if (ISUPPER (c) != FALSE)
 	    {
 	      rtype = UPPER;
@@ -668,7 +670,7 @@ lreplace (
    * be careful with dot's offset.
    */
   saveundo(UMOVE, &curwp->w_dot);
-  rlen = strlen (st);
+  rlen = uslen ((const uchar *)st);
   doto = curwp->w_dot.o;
   if (plen > rlen)
     ldelete (plen - rlen, FALSE);
@@ -685,8 +687,11 @@ lreplace (
    * char as if upper, and subsequent chars as if lower.  
    * If inserting upper, check replacement for case.
    */
-  while ((c = *st++ & 0xff) != '\0')
+  end = st + strlen (st);
+  while (st < end)
     {
+      c = ugetc ((const uchar *) st, 0, &clen);
+      st += clen;
       if ((rtype & UPPER) != 0 && ISLOWER (c) != 0)
 	c = TOUPPER (c);
       if (rtype == (UPPER | LOWER))

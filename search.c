@@ -856,7 +856,7 @@ queryrepl (int f, int n, int k)
   if (s == FALSE)
     news[0] = '\0';
   eprintf ("[Query Replace:  \"%s\" -> \"%s\"]", pat, news);
-  plen = strlen ((const char *) pat);
+  plen = uslen ((const uchar *) pat);
 
   /*
    * Search forward repeatedly, checking each time whether to insert
@@ -959,7 +959,7 @@ replstring (int f, int n, int k)
     return (s);
   if (s == FALSE)
     news[0] = '\0';
-  plen = strlen ((const char *) pat);
+  plen = uslen ((const uchar *) pat);
 
   clp = curwp->w_dot.p;		/* save the return location     */
   cbo = curwp->w_dot.o;
