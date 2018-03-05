@@ -698,7 +698,7 @@ lreplace (
 	rtype = LOWER;
       if (c == '\n')
 	{
-	  if (curwp->w_dot.o == llength (curwp->w_dot.p))
+	  if (curwp->w_dot.o == wllength (curwp->w_dot.p))
 	    forwchar (FALSE, 1, KRANDOM);
 	  else
 	    {
@@ -710,7 +710,7 @@ lreplace (
 	{
 	  linsert (1, c, NULLPTR);
 	}
-      else if (curwp->w_dot.o == llength (curwp->w_dot.p))
+      else if (curwp->w_dot.o == wllength (curwp->w_dot.p))
 	{
 	  ldelete (1, FALSE);
 	  linsert (1, c, NULLPTR);

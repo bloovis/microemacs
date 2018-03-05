@@ -387,7 +387,7 @@ preptag (const char *string)
 static int
 inwordpos (struct LINE *linep, int doto)
 {
-  return (doto < llength (linep)) && ISWORD (lgetc (linep, doto)) &&
+  return (doto < wllength (linep)) && ISWORD (lgetc (linep, doto)) &&
 	  lgetc (linep, doto) != '\'';
 }
 

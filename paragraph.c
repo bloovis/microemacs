@@ -336,10 +336,10 @@ fillword (int f, int n, int k)
       else if (ISCTRL (c) != FALSE)
 	++col;
     }
-  if (curwp->w_dot.o != llength (curwp->w_dot.p))
+  if (curwp->w_dot.o != wllength (curwp->w_dot.p))
     {
       selfinsert (f, n, k);
-      nce = llength (curwp->w_dot.p) - curwp->w_dot.o;
+      nce = wllength (curwp->w_dot.p) - curwp->w_dot.o;
     }
   else
     nce = 0;
@@ -359,12 +359,12 @@ fillword (int f, int n, int k)
 	forwchar (FALSE, 1, KRANDOM);
       }
     while ((c = lgetc (curwp->w_dot.p, curwp->w_dot.o)) != ' '
-	   && c != '\t' && curwp->w_dot.o < llength (curwp->w_dot.p));
+	   && c != '\t' && curwp->w_dot.o < wllength (curwp->w_dot.p));
 
   delwhite (FALSE, 1, KRANDOM);
   backdel (FALSE, 1, KRANDOM);
   lnewline ();
-  curwp->w_dot.o = llength (curwp->w_dot.p) - nce;
+  curwp->w_dot.o = wllength (curwp->w_dot.p) - nce;
   curwp->w_flag |= WFMOVE;
   if (nce == 0 && curwp->w_dot.o != 0)
     return (fillword (f, n, k));

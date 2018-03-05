@@ -227,7 +227,7 @@ doregsrch (int dir)
       else
 	{
 	  clp = lback (clp);
-	  cbo = llength (clp);
+	  cbo = wllength (clp);
 	}
       if (clp == lastline)
 	{
@@ -1184,7 +1184,7 @@ searchparen (int f, int n, int k)
   cbo = curwp->w_dot.o;		/* and offset into that line    */
   count = 0;
 
-  len = llength (clp);
+  len = wllength (clp);
   if (cbo >= len)
     chinc = '\n';
   else
@@ -1217,7 +1217,7 @@ searchparen (int f, int n, int k)
 	      clp = lforw (clp);
 	      if (clp == curbp->b_linep)
 		break;		/* if end of buffer     */
-	      len = llength (clp);
+	      len = wllength (clp);
 	      cbo = 0;
 	    }
 	  else
@@ -1230,7 +1230,7 @@ searchparen (int f, int n, int k)
 	      clp = lback (clp);
 	      if (clp == curbp->b_linep)
 		break;
-	      len = llength (clp);
+	      len = wllength (clp);
 	      cbo = len;
 	    }
 	  else

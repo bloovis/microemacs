@@ -99,12 +99,8 @@ getregion (REGION *rp)
   blp = curwp->w_dot.p;
   flp = curwp->w_dot.p;
   bsize = wloffset (curwp->w_dot.p, curwp->w_dot.o);
-#if 1
   cptr = wlgetcptr (curwp->w_dot.p, curwp->w_dot.o);
   fsize = unblen (cptr, lend (curwp->w_dot.p) - cptr);
-#else
-  fsize = llength (flp) - curwp->w_dot.o + 1;
-#endif
   while (flp != curbp->b_linep || lback (blp) != curbp->b_linep)
     {
       if (flp != curbp->b_linep)

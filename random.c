@@ -264,7 +264,7 @@ quote (int f, int n, int k)
       while (s == TRUE && --n);
       return (s);
     }
-  if (overstrike && curwp->w_dot.o != llength (curwp->w_dot.p))
+  if (overstrike && curwp->w_dot.o != wllength (curwp->w_dot.p))
     ldelete (1, FALSE);
   return (linsert (n, c, NULLPTR));
 }
@@ -291,7 +291,7 @@ selfinsert (int f, int n, int k)
   c = k & KCHAR;
   if ((k & KCTRL) != 0 && c >= '@' && c <= '_')	/* ASCII-ify.           */
     c -= '@';
-  if (overstrike && curwp->w_dot.o != llength (curwp->w_dot.p))
+  if (overstrike && curwp->w_dot.o != wllength (curwp->w_dot.p))
     ldelete (1, FALSE);
   return (linsert (n, c, NULLPTR));
 }
@@ -349,9 +349,9 @@ newline (int f, int n, int k)
 #if	NLMOVE
       register LINE *lp;
       lp = curwp->w_dot.p;
-      if (llength (lp) == curwp->w_dot.o
+      if (wllength (lp) == curwp->w_dot.o
 	  && lp != curbp->b_linep
-	  && lforw (lp) != curbp->b_linep && llength (lforw (lp)) == 0)
+	  && lforw (lp) != curbp->b_linep && wllength (lforw (lp)) == 0)
 	{
 	  if ((s = forwchar (FALSE, 1, KRANDOM)) != TRUE)
 	    return (s);
@@ -406,7 +406,7 @@ delwhite (int f, int n, int k)
   /* Scan forward to find end of whitespace.  If cursor
    * isn't already in some whitespace, just insert a space.
    */
-  len = llength (curwp->w_dot.p);
+  len = wllength (curwp->w_dot.p);
   for (col = curwp->w_dot.o; col < len; col++)
     if ((c = lgetc (curwp->w_dot.p, col)) != ' ' && c != '\t')
       break;
@@ -447,13 +447,15 @@ indent (int f, int n, int k)
   register int nicol;
   register int c;
   register int i;
+  int nchars;
 
   if (n < 0)
     return (FALSE);
   while (n--)
     {
       nicol = 0;
-      for (i = 0; i < llength (curwp->w_dot.p); ++i)
+      nchars = wllength (curwp->w_dot.p);
+      for (i = 0; i < nchars; ++i)
 	{
 	  c = lgetc (curwp->w_dot.p, i);
 	  if (c != ' ' && c != '\t')
@@ -494,7 +496,7 @@ static int
 currentindent (int *offset)
 {
   int nicol = 0;
-  int len = llength (curwp->w_dot.p);
+  int len = wllength (curwp->w_dot.p);
   int i, c;
 
   for (i = 0; i < len; ++i)
@@ -522,15 +524,17 @@ static int
 nlindent (int nicol, int nonwhitepos, int f)
 {
   int i;
-  int linelen = llength (curwp->w_dot.p);
+  int linelen = wllength (curwp->w_dot.p);
 
   /* Zero out the current line if it's all whitespace;
    * otherwise insert a new line.
    */
   if (linelen != 0 && nonwhitepos == linelen)
     {
-      if (gotobol (FALSE, 1, KRANDOM) == FALSE
-	  || ldelete (linelen, FALSE) == FALSE)
+      if (gotobol (FALSE, 1, KRANDOM) == FALSE)
+	return FALSE;
+      saveundo (UMOVE, &curwp->w_dot);
+      if (ldelete (linelen, FALSE) == FALSE)
 	return FALSE;
       if (f == FALSE && lnewline () == FALSE)
 	return FALSE;
@@ -596,7 +600,7 @@ int
 rubyindent (int f, int n, int k)
 {
   int nicol, i;
-  int len = llength (curwp->w_dot.p);
+  int len = wllength (curwp->w_dot.p);
 
   /* Find indentation of current line.
    */
@@ -755,19 +759,19 @@ killline (int f, int n, int k)
   kdelete ();			/* Purge kill buffer.   */
   if (f == FALSE)
     {
-      chunk = llength (curwp->w_dot.p) - curwp->w_dot.o;
+      chunk = wllength (curwp->w_dot.p) - curwp->w_dot.o;
       if (chunk == 0)
 	chunk = 1;
     }
   else if (n > 0)
     {
-      chunk = llength (curwp->w_dot.p) - curwp->w_dot.o + 1;
+      chunk = wllength (curwp->w_dot.p) - curwp->w_dot.o + 1;
       nextp = lforw (curwp->w_dot.p);
       while (--n)
 	{
 	  if (nextp == curbp->b_linep)
 	    return (FALSE);
-	  chunk += llength (nextp) + 1;
+	  chunk += wllength (nextp) + 1;
 	  nextp = lforw (nextp);
 	}
     }
@@ -781,7 +785,7 @@ killline (int f, int n, int k)
 	    break;
 	  curwp->w_dot.p = lback (curwp->w_dot.p);
 	  curwp->w_flag |= WFMOVE;
-	  chunk += llength (curwp->w_dot.p) + 1;
+	  chunk += wllength (curwp->w_dot.p) + 1;
 	}
     }
   return (ldelete (chunk, TRUE));
