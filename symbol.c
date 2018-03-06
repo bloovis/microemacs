@@ -235,6 +235,7 @@ KEY key[] = {
   {KCTLX | 'V',		railsview,	"rails-view"},
 #endif
   {KCTLX | 'Z',		enlargewind,	"enlarge-window"},
+  {KMETA | KCTRL | 'E',	gccerror,	"gcc-error"},
   {KMETA | KCTRL | 'F',	foldcase,	"fold-case"},
   {KMETA | KCTRL | 'H', delbword,	"back-del-word"},
   {KMETA | KCTRL | 'I', settabsize,	"set-tab-size"},

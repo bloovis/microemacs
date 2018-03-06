@@ -58,6 +58,7 @@
  */
 #include	"def.h"
 #include	<string.h>
+#include	<unistd.h>
 
 #define DEBUG 0
 
@@ -664,4 +665,95 @@ railsmodel(int f, int n, int k)
         return FALSE;
       return TRUE;
     }
+}
+
+/*
+ * Visit the file and line mentioned in the next gcc error message in the
+ * current buffer.
+ */
+
+#define STRINGIZE(x) #x
+#define INT2STR(x) STRINGIZE(x)
+
+int
+gccerror (int f, int n, int k)
+{
+  LINE *lp;
+  BUFFER *bp;
+  EWINDOW *wp;
+  static const char *fmt = "%" INT2STR(NFILEN) "[^:]:%d:%d:%n";
+  static const char *pfx = "In file included from";
+  int pfxlen;
+  char filename[NFILEN];
+  int line, column;
+  const uchar *str;
+  int len, chars;
+  char *copy = NULL;
+
+  lp = curwp->w_dot.p;		/* Cursor location.	*/
+  if (curwp->w_dot.o != 0)	/* Skip to next line	*/
+    lp = lforw (lp);		/*  if not at column 1	*/
+  bp = curwp->w_bufp;
+  pfxlen = strlen(pfx);
+  while (lp != bp->b_linep)
+    {
+      /* Make a copy of the line with a null termination
+       * so that sscanf won't run off the end.
+       */
+      str = lgets (lp);
+      len = llength (lp);
+      copy = realloc (copy, len + 1);
+      memcpy (copy, str, len);
+      copy[len] = '\0';
+
+      /* Test that the line doesn't start with a non-error prefix,
+       * and that it starts with the pattern filename:line:column: .
+       */
+      if (strncmp (copy, pfx, pfxlen) != 0 &&
+	  sscanf (copy, fmt, filename, &line, &column, &chars) == 3)
+	{
+	  /* Don't need the copy of the string any more.
+	   */
+	  free (copy);
+
+	  /* Move cursor past the filename:line:column.
+	   */
+	  /* eprintf ("gcc error found: %s, %d, %d", filename, line, column);*/
+	  curwp->w_dot.p = lp;
+	  curwp->w_dot.o = unslen (str, chars);
+	  curwp->w_flag |= WFMOVE;
+
+	  /* Check if file exists.
+	   */
+	  if (access (filename, R_OK) != F_OK)
+	    {
+	      eprintf ("Cannot read '%s'", filename);
+	      return FALSE;
+	    }
+
+	  /* Pop up a window and read the indicated file into it.
+	   */
+	  if ((wp = wpopup ()) == NULL)
+	    return FALSE;
+	  curwp = wp;
+	  if (visit_file (filename) == FALSE)
+	    return FALSE;
+
+	  /* Move to the indicated line and column.
+	   */
+	  if (gotoline (TRUE, line, 0) == FALSE)
+	    return FALSE;
+	  len = wllength (curwp->w_dot.p);
+	  if (column >= len)
+	    curwp->w_dot.o = len;
+	  else
+	    curwp->w_dot.o = column - 1;
+	  return TRUE;
+	}
+      lp = lforw (lp);
+    }
+  eprintf ("gcc error not found");
+  if (copy)
+    free (copy);
+  return FALSE;
 }
