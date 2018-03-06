@@ -29,7 +29,7 @@ main ()
 }
 
 void
-regerror (char *s)
+regerror (const char *s)
 {
   printf ("regerror: %s\n", s);
 }
