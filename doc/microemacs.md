@@ -1916,6 +1916,32 @@ C-X V
     followed a view method, then visits the source file for the
     corresponding view.
 
+# GCC errors
+
+\index{GCC errors}
+MicroEMACS is able to parse a file containing gcc error messages, and
+load the source files mentioned in the error messages.  You would
+typically save the error messages to a file when running `make`,
+for example:
+
+    make >&errs
+
+Then load the resulting `errs` file into MicroEMACS and use
+the following command to process the error messages contained within:
+
+M-C-E
+
+:   **gcc-error**\index{gcc-error}
+
+    This command looks for the next gcc error message in the current buffer.
+    If one is found, then a new window is opened if there is currently only
+    one window; otherwise the next window below the current one is used.
+    MicroEMACS reads into that window the file indicated in
+    the error message, and positions the cursor at the line and column
+    in the error message.  To find the next error location, switch
+    back to the error buffer (using the `back-window` command (**C-X P**)),
+    and issue this command again.
+
 # Undo
 
 MicroEMACS supports a limited undo\index{Undo} facility.  It saves
@@ -2659,7 +2685,7 @@ C-X C-E
 
 :   echo
 
-*Tags and Rails*
+*Tags, Rails, GCC*
 
 M-,
 
@@ -2684,6 +2710,10 @@ C-X M
 C-X V
 
 :   rails-view
+
+M-C-E
+
+:   gcc-error
 
 *PC Function Keys*
 
