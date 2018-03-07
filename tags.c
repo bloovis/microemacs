@@ -681,13 +681,13 @@ gccerror (int f, int n, int k)
   LINE *lp;
   BUFFER *bp;
   EWINDOW *wp;
-  static const char *fmt = "%" INT2STR(NFILEN) "[^:]:%d:%d:%n";
+  static const char *fmt = "%" INT2STR(NFILEN) "[^:]:%d:%d: %n";
   static const char *pfx = "In file included from";
   int pfxlen;
   char filename[NFILEN];
   int line, column;
   const uchar *str;
-  int len, chars;
+  int len, chars, wlen;
   char *copy = NULL;
 
   lp = curwp->w_dot.p;		/* Cursor location.	*/
@@ -718,7 +718,6 @@ gccerror (int f, int n, int k)
 
 	  /* Move cursor past the filename:line:column.
 	   */
-	  /* eprintf ("gcc error found: %s, %d, %d", filename, line, column);*/
 	  curwp->w_dot.p = lp;
 	  curwp->w_dot.o = unslen (str, chars);
 	  curwp->w_flag |= WFMOVE;
@@ -743,11 +742,26 @@ gccerror (int f, int n, int k)
 	   */
 	  if (gotoline (TRUE, line, 0) == FALSE)
 	    return FALSE;
-	  len = wllength (curwp->w_dot.p);
-	  if (column >= len)
-	    curwp->w_dot.o = len;
+	  wlen = wllength (curwp->w_dot.p);
+	  if (column >= wlen)
+	    curwp->w_dot.o = wlen;
 	  else
 	    curwp->w_dot.o = column - 1;
+
+	  /* Put as much of the error message as will fit
+	   * on the echo line.
+	   */
+	  len = len - chars;
+	  str += chars;
+	  wlen = uslen (str);
+	  if (wlen > ncol)
+	    wlen = ncol;
+	  len = uoffset (str, wlen);
+	  copy = malloc (len + 1);
+	  memcpy (copy, str, len);
+	  copy[len] = '\0';
+	  eprintf ("%s", copy);
+	  free (copy);
 	  return TRUE;
 	}
       lp = lforw (lp);
