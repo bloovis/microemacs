@@ -686,9 +686,9 @@ gccerror (int f, int n, int k)
   int pfxlen;
   char filename[NFILEN];
   int line, column;
-  const uchar *str;
+  uchar *str;
   int len, chars, wlen;
-  char *copy = NULL;
+  uchar *copy = NULL;
 
   lp = curwp->w_dot.p;		/* Cursor location.	*/
   if (curwp->w_dot.o != 0)	/* Skip to next line	*/
@@ -709,13 +709,9 @@ gccerror (int f, int n, int k)
       /* Test that the line doesn't start with a non-error prefix,
        * and that it starts with the pattern filename:line:column: .
        */
-      if (strncmp (copy, pfx, pfxlen) != 0 &&
-	  sscanf (copy, fmt, filename, &line, &column, &chars) == 3)
+      if (strncmp ((const char *) copy, pfx, pfxlen) != 0 &&
+	  sscanf ((const char *) copy, fmt, filename, &line, &column, &chars) == 3)
 	{
-	  /* Don't need the copy of the string any more.
-	   */
-	  free (copy);
-
 	  /* Move cursor past the filename:line:column.
 	   */
 	  curwp->w_dot.p = lp;
@@ -727,21 +723,31 @@ gccerror (int f, int n, int k)
 	  if (access (filename, R_OK) != F_OK)
 	    {
 	      eprintf ("Cannot read '%s'", filename);
+	      free (copy);
 	      return FALSE;
 	    }
 
 	  /* Pop up a window and read the indicated file into it.
 	   */
 	  if ((wp = wpopup ()) == NULL)
-	    return FALSE;
+	    {
+	      free (copy);
+	      return FALSE;
+	    }
 	  curwp = wp;
 	  if (visit_file (filename) == FALSE)
-	    return FALSE;
+	    {
+	      free (copy);
+	      return FALSE;
+	    }
 
 	  /* Move to the indicated line and column.
 	   */
 	  if (gotoline (TRUE, line, 0) == FALSE)
-	    return FALSE;
+	    {
+	      free (copy);
+	      return FALSE;
+	    }
 	  wlen = wllength (curwp->w_dot.p);
 	  if (column >= wlen)
 	    curwp->w_dot.o = wlen;
@@ -752,15 +758,13 @@ gccerror (int f, int n, int k)
 	   * on the echo line.
 	   */
 	  len = len - chars;
-	  str += chars;
-	  wlen = unslen (str, len);
-	  if (wlen > ncol)
-	    wlen = ncol;
-	  len = uoffset (str, wlen);
-	  copy = malloc (len + 1);
-	  memcpy (copy, str, len);
-	  copy[len] = '\0';
-	  eprintf ("%s", copy);
+	  str = copy + chars;
+	  if (unslen (str, len) > ncol)
+	    {
+	      len = uoffset (str, ncol);
+	      str[len] = '\0';
+	    }
+	  eprintf ("%s", str);
 	  free (copy);
 	  return TRUE;
 	}
