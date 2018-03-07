@@ -753,7 +753,7 @@ gccerror (int f, int n, int k)
 	   */
 	  len = len - chars;
 	  str += chars;
-	  wlen = uslen (str);
+	  wlen = unslen (str, len);
 	  if (wlen > ncol)
 	    wlen = ncol;
 	  len = uoffset (str, wlen);
