@@ -167,17 +167,21 @@ doregsrch (int dir)
     return (FALSE);
   for (;;)
     {
+      /* Get byte offset of the UTF-8 character at cbo.
+       */
+      int offset = wloffset (clp, cbo);
+
       /* Make a copy of the line in the temporary buffer.
        */
       if (dir == SRCH_REGFORW)
 	{
-	  line = (uchar *) wlgetcptr (clp, cbo);
-	  linelen = wllength (clp) - cbo;
+	  line = lgets (clp) + offset;
+	  linelen = llength (clp) - offset;
 	}
       else
 	{
 	  line = lgets (clp);
-	  linelen = wloffset (clp, cbo);
+	  linelen = offset;
 	}
       if (linelen + 1 > buflen)
 	{
