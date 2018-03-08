@@ -40,6 +40,7 @@ OBJ :=	@EXTRA_OBJS@ \
 	random.o \
 	regexp.o \
 	region.o \
+	regsub.o \
 	ring.o \
 	search.o \
 	symbol.o \

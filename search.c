@@ -143,7 +143,8 @@ readpattern (const char *prompt)
 /*
  * This routine does the real work of a regular expression
  * forward search. The pattern is sitting in the static
- * variable "pat". If found, dot is updated, the window system
+ * variable "pat", and the compiled pattern is in "regpat".
+ * If found, dot is updated, the window system
  * is notified of the change, and TRUE is returned. If the
  * string isn't found, FALSE is returned.
  */
@@ -426,6 +427,41 @@ backsrch (void)
 #endif
 
 
+/*
+ * Do a search of the type specified by dir.
+ * If the search succeeds, return TRUE.
+ * If the search fails, return FALSE.
+ * If there is an error that prevents the search from being
+ * performed (e.g., a regexp search when no regular expression
+ * is available in regpat), return ABORT.
+ */
+int
+dosearch (int dir)
+{
+  int status;
+
+  switch (dir)
+    {
+    case SRCH_FORW:
+      status = forwsrch ();
+      break;
+    case SRCH_BACK:
+      status = backsrch ();
+      break;
+    case SRCH_REGFORW:
+    case SRCH_REGBACK:
+      if (regpat != NULL)
+	status = doregsrch (dir);
+      else
+	status = ABORT;
+      break;
+    default:
+      status = ABORT;
+      break;
+    }
+  return status;
+}
+
 /* 
  * Search again, using the same search string
  * and direction as the last search command. The direction
@@ -435,36 +471,16 @@ backsrch (void)
 int
 searchagain (int f, int n, int k)
 {
-  if (srch_lastdir == SRCH_FORW)
+  int status = dosearch (srch_lastdir);
+
+  if (status == FALSE)
+    eprintf ("Not found");
+  else if (status == ABORT)
     {
-      if (forwsrch () == FALSE)
-	{
-	  eprintf ("Not found");
-	  return (FALSE);
-	}
-      return (TRUE);
+      eprintf ("No last search");
+      status = FALSE;
     }
-  if (srch_lastdir == SRCH_BACK)
-    {
-      if (backsrch () == FALSE)
-	{
-	  eprintf ("Not found");
-	  return (FALSE);
-	}
-      return (TRUE);
-    }
-  if ((srch_lastdir == SRCH_REGFORW || srch_lastdir == SRCH_REGBACK)
-      && regpat != NULL)
-    {
-      if (doregsrch (srch_lastdir) == FALSE)
-	{
-	  eprintf ("Not found");
-	  return (FALSE);
-	}
-      return (TRUE);
-    }
-  eprintf ("No last search");
-  return (FALSE);
+  return status;
 }
 
 /*

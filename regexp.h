@@ -38,5 +38,5 @@ regexp;
 
 extern regexp *regcomp (const char *exp);
 extern int regexec (regexp * prog, const char *string);
-extern int regsub (regexp * prog, const char *source, char *dest);
+extern void regsub (const regexp * prog, const char *source, char *dest);
 extern void regerror (const char *s);

@@ -18,14 +18,60 @@
 */
 
 #include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
+
 #include "regexp.h"
 
-void
-main ()
+int
+main (int argc, const char *argv[])
 {
-  regexp *r = regcomp ("o.*ing");
-  int i = regexec (r, "This is a Gosling display algorithm");
-  printf ("Result is %d\n", i);
+  const char *rex, *str, *repl;
+  int i, len;
+  regexp *r;
+  static char dest[256];
+  char *copy;
+  const char *start;
+  const char *end;
+  const char *match;
+
+  if (argc != 4)
+    {
+      printf("usage: regtest regexp replacement string\n");
+      return 1;
+    }
+  rex = argv[1];
+  repl = argv[2];
+  str = argv[3];
+  r = regcomp (rex);
+  i = regexec (r, str);
+  printf ("Result is of regexec (/%s/, \"%s\" is %d\n", rex, str, i);
+  if (i != 0)
+    {
+      for (i = 0; i < NSUBEXP; i++)
+	{
+
+	  if (start != NULL)
+	    {
+              start = r->startp[i];
+	      end = r->endp[i];
+	      len = end - start;
+	      copy = malloc (len + 1);
+	      strncpy (copy, start, len);
+	      copy[len] = '\0';
+	      printf("group %d = \"%s\"\n", i, copy);
+	      if (i == 0)
+		match = copy;
+	      else
+		free (copy);
+	    }
+	}
+
+      /* Do the substitution */
+      regsub (r, repl, dest);
+      printf ("Replaced '%s' with '%s' using replacement pattern '%s'\n", match, dest, repl);
+    }
+  return 0;
 }
 
 void
