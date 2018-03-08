@@ -1246,8 +1246,7 @@ In search strings, all characters stand for themselves, and all searches
 are normally case insensitive.  The case insensitivity may be
 defeated with the "fold-case"\index{fold-case}\index{Case folding}
 command, described below.
-There are no regular expression searches, and there
-probably should be. The newline characters at the ends of the lines are
+The newline characters at the ends of the lines are
 considered to have hexadecimal value 0A, and can be matched by a linefeed
 (**Control-J**) in the search string.
 
@@ -1257,6 +1256,24 @@ On PC-DOS\index{PC-DOS}, CP/M\index{CP/M} and FlexOS\index{FlexOS}
 this will not match the carriage return in the CR-LF character pair
 that normally terminates a line of text.  It will only match a bare
 carriage return that has no following line feed.
+
+MicroEMACS supports regular expression searches using a subset of POSIX regular expressions:
+
+* character classes (square brackets with optional ^ negation operator)
+
+* groups (parentheses)
+
+* alternatives (`|`)
+
+* `^` (start of line) and `$` (end of line)
+
+* `?` (zero or one occurrence)
+
+* `*` (zero or more occurrences)
+
+* `+` (one or more occurrences)
+
+MicroEMACS does not currently support search and replace using regular expressions.
 
 C-S, M-S
 
@@ -1283,6 +1300,20 @@ C-R
     Search reverse, from the current location, toward the front of
     the buffer. If found, dot is positioned at the first character of the
     matched text. If the text is not found, dot does not move.
+
+M-C-S
+
+:   **forw-regexp-search**
+
+    Similar to **forw-search**, except that the search string is
+    a regular expression, and searches cannot cross line boundaries.
+
+M-C-R
+
+:   **back-regexp-search**
+
+    Similar to **back-search**, except that the search string is
+    a regular expression, and searches cannot cross line boundaries.
 
 M-C-F
 
@@ -2523,6 +2554,14 @@ C-X S
 C-X R
 
 :   back-i-search
+
+M-C-S
+
+:   forw-regexp-search
+
+M-C-R
+
+:   back-regexp-search
 
 *File and System Operations*
 
