@@ -50,25 +50,23 @@ main (int argc, const char *argv[])
     {
       for (i = 0; i < NSUBEXP; i++)
 	{
-
-	  if (start != NULL)
-	    {
-              start = r->startp[i];
-	      end = r->endp[i];
-	      len = end - start;
-	      copy = malloc (len + 1);
-	      strncpy (copy, start, len);
-	      copy[len] = '\0';
-	      printf("group %d = \"%s\"\n", i, copy);
-	      if (i == 0)
-		match = copy;
-	      else
-		free (copy);
-	    }
+	  start = r->startp[i];
+	  if (start == NULL)
+	    continue;
+	  end = r->endp[i];
+	  len = end - start;
+	  copy = malloc (len + 1);
+	  strncpy (copy, start, len);
+	  copy[len] = '\0';
+	  printf("group %d = \"%s\"\n", i, copy);
+	  if (i == 0)
+	    match = copy;
+	  else
+	    free (copy);
 	}
 
       /* Do the substitution */
-      regsub (r, repl, dest);
+      regsub (r, repl, dest, sizeof (dest));
       printf ("Replaced '%s' with '%s' using replacement pattern '%s'\n", match, dest, repl);
     }
   return 0;

@@ -50,14 +50,15 @@
  - regsub - perform substitutions after a regexp match
  */
 void
-regsub (const regexp * rp, const char *source, char *dest)
+regsub (const regexp * rp, const char *source, char *dest, int destlen)
 {
-  register regexp *const prog = (regexp *) rp;
-  register char *src = (char *) source;
-  register char *dst = dest;
-  register char c;
-  register int no;
-  register size_t len;
+  regexp *const prog = (regexp *) rp;
+  char *src = (char *) source;
+  char *dst = dest;
+  const char *end = dest + destlen;
+  char c;
+  int no;
+  size_t len;
 
   if (prog == NULL || source == NULL || dest == NULL)
     {
@@ -83,12 +84,23 @@ regsub (const regexp * rp, const char *source, char *dest)
 	{			/* Ordinary character. */
 	  if (c == '\\' && (*src == '\\' || *src == '&'))
 	    c = *src++;
+	  if (dst >= end)
+	    {
+	      regerror ("destination buffer too small");
+	      return;
+	    }
 	  *dst++ = c;
 	}
       else if (prog->startp[no] != NULL && prog->endp[no] != NULL &&
 	       prog->endp[no] > prog->startp[no])
 	{
 	  len = prog->endp[no] - prog->startp[no];
+	  if (dst + len >= end)
+	    {
+	      regerror ("destination buffer too small");
+	      return;
+	    }
+
 	  (void) strncpy (dst, prog->startp[no], len);
 	  dst += len;
 	  if (*(dst - 1) == '\0')
@@ -97,6 +109,12 @@ regsub (const regexp * rp, const char *source, char *dest)
 	      return;
 	    }
 	}
+    }
+
+  if (dst >= end)
+    {
+      regerror ("destination buffer too small");
+      return;
     }
   *dst++ = '\0';
 }
