@@ -811,7 +811,8 @@ int forwisearch (int f, int n, int k);	/* Incremental search forward   */
 int backisearch (int f, int n, int k);	/* Incremental search backwards */
 int queryrepl (int f, int n, int k);	/* Query replace                */
 int replstring (int f, int n, int k);	/* Replace with no query        */
-int regqueryrepl (int f, int n, int k);	/* Regexp query replace                */
+int regqueryrepl (int f, int n, int k);	/* Regexp query replace         */
+int regrepl (int f, int n, int k);	/* Regexp replace with no query */
 int searchparen (int f, int n, int k);	/* Search for matching paren    */
 int foldcase (int f, int n, int k);	/* Set casefold flag            */
 

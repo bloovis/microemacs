@@ -1004,7 +1004,7 @@ searchandreplace (int f, int query, int dir)
 	      rcnt++;
 	      clp = curwp->w_savep;
 	    }
-	  while (dosearch (SRCH_FORW) == TRUE);
+	  while (dosearch (dir) == TRUE);
 	  goto stopsearch;
 
 	case 'n':
@@ -1060,6 +1060,18 @@ int
 regqueryrepl (int f, int n, int k)
 {
   return searchandreplace (f, TRUE, SRCH_REGFORW);
+}
+
+/*
+ * Regexp Replace.
+ *	Replace strings unconditionally, using a regular expression as the pattern
+ *      and a regular expression subsitution string as the replacement.
+ *	Otherwise similar to replace-string.
+ */
+int
+regrepl (int f, int n, int k)
+{
+  return searchandreplace (f, FALSE, SRCH_REGFORW);
 }
 
 #if 0				/* replaced by EQ macro */
