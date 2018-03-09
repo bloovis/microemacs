@@ -147,6 +147,11 @@ readpattern (const char *prompt)
  * If found, dot is updated, the window system
  * is notified of the change, and TRUE is returned. If the
  * string isn't found, FALSE is returned.
+ *
+ * A copy of the line where the pattern was found is kept
+ * around until the next search is performed, so that that
+ * pointers to the pattern in regpat will still be valid
+ * if regsub is called.  The copy is freed on the next search.
  */
 static int
 doregsrch (int dir)
@@ -156,11 +161,9 @@ doregsrch (int dir)
   register LINE *lastline;
   uchar *line;
   int linelen;
-  uchar *buf;
-  int buflen;
+  static uchar *buf = NULL;
+  static int buflen = 0;
 
-  buf = NULL;
-  buflen = 0;
   clp = curwp->w_dot.p;
   cbo = curwp->w_dot.o;
   lastline = curbp->b_linep;
@@ -189,15 +192,10 @@ doregsrch (int dir)
 	  uchar *newbuf;
 
 	  buflen = linelen + 1;
-	  if (buf == NULL)
-	    newbuf = malloc (buflen);
-	  else
-	    newbuf = realloc (buf, buflen);
+	  newbuf = realloc (buf, buflen);
 	  if (newbuf == NULL)
 	    {
 	      eprintf ("Can't allocate %d bytes for searching", buflen);
-	      if (buf)
-		free (buf);
 	      return (FALSE);
 	    }
 	  buf = newbuf;
@@ -218,7 +216,6 @@ doregsrch (int dir)
 	  else
 	    curwp->w_dot.o = unslen (buf, regpat->startp[0] - (char *) buf);
 	  curwp->w_flag |= WFMOVE;
-	  free (buf);
 	  return (TRUE);
 	}
 
@@ -236,7 +233,6 @@ doregsrch (int dir)
 	}
       if (clp == lastline)
 	{
-	  free (buf);
 	  return (FALSE);
 	}
     }
@@ -853,21 +849,72 @@ prcnt (int rcnt)
 
 
 /*
- * Query Replace.
- *	Replace strings selectively.  Does a search and replace operation.
- *	A space or a comma replaces the string, a period replaces and quits,
- *	an n doesn't replace, a C-G quits.  If an argument is given,
- *	don't query, just do all replacements.
+ * Get the appropriate replacement string for the kind of search
+ * and replace operation indicated by dir.  If this is a regular
+ * expression operation, use regsub to create the replacement
+ * string based on the substitution pattern in news, and store
+ * the replacement string in sub (whose maximum size is sublen).
+ * Otherwise use news without modification as the replacement string.
+ * Store the number of Unicode characters in the found pattern
+ * at *plen, and return a pointer to the correct substitution string.
+ */
+static char *
+getrepl (int dir, char *news, char *sub, int sublen, int *plen)
+{
+  char *str;
+
+  switch (dir)
+    {
+    case SRCH_FORW:
+    case SRCH_BACK:
+      str = news;
+      break;
+    case SRCH_REGFORW:
+    case SRCH_REGBACK:
+      if (regpat == NULL)
+	{
+	  eprintf ("No regular expression!");
+	  str = news;
+	}
+      if (regsub (regpat, news, sub, sublen))
+	str = sub;
+      else
+	str = news;
+      break;
+    default:
+      eprintf ("Illegal search direction %d\n", dir);
+      str = news;
+    }
+  if (str == news)
+    *plen = uslen ((const uchar *) pat);
+  else
+    *plen = unslen ((const uchar *) regpat->startp[0],
+		    regpat->endp[0] - regpat->startp[0]);
+  return str;
+}
+
+/*
+ * Helper function for all search and replace functions:
+ *      If query is TRUE, prompt the user for each replacement:
+ *	  A space or a comma replaces the string, a period replaces and quits,
+ *	  an n doesn't replace, a C-G quits.
+ *	If query is FALSE, replace all strings with no prompting.
+ *      The f parameter is a case-fold hack flag, passed to lreplace.
+ *      The dir parameter indicates the kind of operation (normal
+ *        or regular expression).
  */
 int
-queryrepl (int f, int n, int k)
+searchandreplace (int f, int query, int dir)
 {
   register int s;
   char news[NPAT];		/* replacement string           */
+  char sub[NPAT];		/* regsub-modified replacement	*/
+  char *repl;			/* correct replacement string	*/
   register LINE *clp;		/* saved line pointer           */
   int cbo;			/* offset into the saved line   */
   int rcnt = 0;			/* Replacements made so far     */
   int plen;			/* length of found string       */
+  int c;			/* input character		*/
 
   if ((s = readpattern ("Old string")) != TRUE)
     return (s);
@@ -875,7 +922,21 @@ queryrepl (int f, int n, int k)
     return (s);
   if (s == FALSE)
     news[0] = '\0';
-  eprintf ("[Query Replace:  \"%s\" -> \"%s\"]", pat, news);
+
+  /* If this a regular expression operation, compile the pattern into a
+   * regexp program.
+   */
+  if (dir == SRCH_REGFORW || dir == SRCH_REGBACK)
+    {
+      if (regpat != NULL)
+	free (regpat);
+      if ((regpat = regcomp ((const char *) pat)) == NULL)	/* regerror shows message */
+	return (FALSE);
+    }
+
+  if (query)
+    eprintf ("[Query Replace:  \"%s\" -> \"%s\"]", pat, news);
+
   plen = uslen ((const uchar *) pat);
 
   /*
@@ -897,19 +958,24 @@ queryrepl (int f, int n, int k)
 
   clp = curwp->w_dot.p;		/* save the return location     */
   cbo = curwp->w_dot.o;
-  while (forwsrch () == TRUE)
+  while (dosearch (dir) == TRUE)
     {
     retry:
       if (!inprof)
 	update ();		/* show current position        */
-      switch (getinp ())
+      if (query)
+	c = getinp ();
+      else
+	c = '!';
+      switch (c)
 	{
 	case ' ':
 	case ',':
 	case 'y':
 	case 'Y':
 	  curwp->w_savep = clp;
-	  if (lreplace (plen, news, f) == FALSE)
+	  repl = getrepl (dir, news, sub, sizeof (sub), &plen);
+	  if (lreplace (plen, repl, f) == FALSE)
 	    return (FALSE);
 	  rcnt++;
 	  clp = curwp->w_savep;
@@ -917,7 +983,8 @@ queryrepl (int f, int n, int k)
 
 	case '.':
 	  curwp->w_savep = clp;
-	  if (lreplace (plen, news, f) == FALSE)
+	  repl = getrepl (dir, news, sub, sizeof (sub), &plen);
+	  if (lreplace (plen, repl, f) == FALSE)
 	    return (FALSE);
 	  rcnt++;
 	  clp = curwp->w_savep;
@@ -931,12 +998,13 @@ queryrepl (int f, int n, int k)
 	  do
 	    {
 	      curwp->w_savep = clp;
-	      if (lreplace (plen, news, f) == FALSE)
+	      repl = getrepl (dir, news, sub, sizeof (sub), &plen);
+	      if (lreplace (plen, repl, f) == FALSE)
 		return (FALSE);
 	      rcnt++;
 	      clp = curwp->w_savep;
 	    }
-	  while (forwsrch () == TRUE);
+	  while (dosearch (SRCH_FORW) == TRUE);
 	  goto stopsearch;
 
 	case 'n':
@@ -959,46 +1027,39 @@ stopsearch:
 }
 
 /*
- * Replace-string function.  This is derived from query-replace,
+ * Query Replace.
+ *	Replace strings selectively.  Does a search and replace operation.
+ *	A space or a comma replaces the string, a period replaces and quits,
+ *	an n doesn't replace, a C-G quits.  If an argument is given,
+ *	don't query, just do all replacements.
+ */
+int
+queryrepl (int f, int n, int k)
+{
+  return searchandreplace (f, TRUE, SRCH_FORW);
+}
+
+/*
+ * Replace-string function.  This is the same as query-replace,
  * with the difference that it does not prompt for confirmation
  * on each string.
  */
 int
 replstring (int f, int n, int k)
 {
-  register int s;
-  char news[NPAT];		/* replacement string           */
-  register LINE *clp;		/* saved line pointer           */
-  int cbo;			/* offset into the saved line   */
-  int rcnt = 0;			/* Replacements made so far     */
-  int plen;			/* length of found string       */
+  return searchandreplace (f, FALSE, SRCH_FORW);
+}
 
-  if ((s = readpattern ("Old string")) != TRUE)
-    return (s);
-  if ((s = ereply ("New string: ", news, NPAT)) == ABORT)
-    return (s);
-  if (s == FALSE)
-    news[0] = '\0';
-  plen = uslen ((const uchar *) pat);
-
-  clp = curwp->w_dot.p;		/* save the return location     */
-  cbo = curwp->w_dot.o;
-  while (forwsrch () == TRUE)
-    {
-      curwp->w_savep = clp;
-      if (lreplace (plen, news, f) == FALSE)
-	return (FALSE);
-      rcnt++;
-      clp = curwp->w_savep;
-    }
-
-  curwp->w_dot.p = clp;
-  curwp->w_dot.o = cbo;
-  curwp->w_flag |= WFHARD;
-  if (!inprof)
-    update ();
-  prcnt (rcnt);
-  return (TRUE);
+/*
+ * Regexp Query Replace.
+ *	Replace strings selectively, using a regular expression as the pattern
+ *      and a regular expression subsitution string as the replacement.
+ *	Otherwise similar to query-replace.
+ */
+int
+regqueryrepl (int f, int n, int k)
+{
+  return searchandreplace (f, TRUE, SRCH_REGFORW);
 }
 
 #if 0				/* replaced by EQ macro */
@@ -1041,12 +1102,7 @@ forwsearch (int f, int n, int k)
   if ((s = readpattern ("Search")) != TRUE)
     return (s);
   srch_lastdir = SRCH_FORW;
-  if (forwsrch () == FALSE)
-    {
-      eprintf ("Not found");
-      return (FALSE);
-    }
-  return (TRUE);
+  return searchagain (f, n, k);
 }
 
 /*
@@ -1064,12 +1120,7 @@ backsearch (int f, int n, int k)
   if ((s = readpattern ("Reverse search")) != TRUE)
     return (s);
   srch_lastdir = SRCH_BACK;
-  if (backsrch () == FALSE)
-    {
-      eprintf ("Not found");
-      return (FALSE);
-    }
-  return (TRUE);
+  return searchagain (f, n, k);
 }
 
 /*

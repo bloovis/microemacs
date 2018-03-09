@@ -47,9 +47,11 @@
 #include "regmagic.h"
 
 /*
- - regsub - perform substitutions after a regexp match
+ * regsub - perform substitutions after a regexp match
+ *
+ * Return 1 if success, 0 if failure.
  */
-void
+int
 regsub (const regexp * rp, const char *source, char *dest, int destlen)
 {
   regexp *const prog = (regexp *) rp;
@@ -63,12 +65,12 @@ regsub (const regexp * rp, const char *source, char *dest, int destlen)
   if (prog == NULL || source == NULL || dest == NULL)
     {
       regerror ("NULL parameter to regsub");
-      return;
+      return 0;
     }
   if ((unsigned char) *(prog->program) != MAGIC)
     {
       regerror ("damaged regexp");
-      return;
+      return 0;
     }
 
   while ((c = *src++) != '\0')
@@ -87,7 +89,7 @@ regsub (const regexp * rp, const char *source, char *dest, int destlen)
 	  if (dst >= end)
 	    {
 	      regerror ("destination buffer too small");
-	      return;
+	      return 0;
 	    }
 	  *dst++ = c;
 	}
@@ -98,7 +100,7 @@ regsub (const regexp * rp, const char *source, char *dest, int destlen)
 	  if (dst + len >= end)
 	    {
 	      regerror ("destination buffer too small");
-	      return;
+	      return 0;
 	    }
 
 	  (void) strncpy (dst, prog->startp[no], len);
@@ -106,7 +108,7 @@ regsub (const regexp * rp, const char *source, char *dest, int destlen)
 	  if (*(dst - 1) == '\0')
 	    {			/* strncpy hit NUL. */
 	      regerror ("damaged match string");
-	      return;
+	      return 0;
 	    }
 	}
     }
@@ -114,7 +116,8 @@ regsub (const regexp * rp, const char *source, char *dest, int destlen)
   if (dst >= end)
     {
       regerror ("destination buffer too small");
-      return;
+      return 0;
     }
   *dst++ = '\0';
+  return 1;
 }

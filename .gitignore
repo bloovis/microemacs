@@ -8,3 +8,13 @@ objrevf
 cscope.out
 cscope.files
 macos
+junk*
+*.aux
+*.dvi
+*.idx
+*.ilg
+*.ind
+*.log
+*.out
+*.tex
+*.toc

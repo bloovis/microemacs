@@ -66,8 +66,10 @@ main (int argc, const char *argv[])
 	}
 
       /* Do the substitution */
-      regsub (r, repl, dest, sizeof (dest));
-      printf ("Replaced '%s' with '%s' using replacement pattern '%s'\n", match, dest, repl);
+      if (regsub (r, repl, dest, sizeof (dest)))
+	printf ("Replaced '%s' with '%s' using replacement pattern '%s'\n", match, dest, repl);
+      else
+	printf ("Error in replacement pattern '%s'\n", repl);
     }
   return 0;
 }
