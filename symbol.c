@@ -672,6 +672,53 @@ symsearch (sname, cpos, prev)
 }
 
 /*
+ * Sort the pop-up buffer so that it is in
+ * order by key name.  This uses the terribly
+ * slow bubblesort algorithm, but it's fast enough
+ * for this purpose.
+ */
+static void
+sortblist (void)
+{
+  int swapped, done;
+  LINE *lp, *next;
+
+  done = FALSE;
+  while (!done)
+    {
+      swapped = FALSE;
+      for (lp = lforw (blistp->b_linep);
+	   lp != blistp->b_linep &&
+	   (next = lforw (lp)) != blistp->b_linep;
+	   lp = next)
+	{
+	  int len, nlen;
+
+	  len = llength (lp);
+	  nlen = llength (next);
+	  if (len > nlen)
+	    len = nlen;
+	  if (strncmp ((const char *) lgets (lp),
+	               (const char *) lgets (next), len) > 0)
+	    {
+	      /* Swap lp and next.
+	       */
+	      lback (lforw (next)) = lp;
+	      lforw (lp) = lforw (next);
+	      lforw (lback (lp)) = next;
+	      lback (next) = lback (lp);
+	      lback (lp) = next;
+	      lforw (next) = lp;
+	      swapped = TRUE;
+	      next = lp;
+	    }
+	}
+      if (!swapped)
+	done = TRUE;
+    }
+}
+
+/*
  * This function creates a table, listing all
  * of the command keys and their current bindings, and stores
  * the table in the standard pop-op buffer (the one used by the
@@ -718,5 +765,6 @@ wallchart (int f, int n, int k)
     }
   if (addline ("") == FALSE)
     return (FALSE);
+  sortblist ();
   return (popblist ());
 }
