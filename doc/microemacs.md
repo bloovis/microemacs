@@ -1257,7 +1257,8 @@ this will not match the carriage return in the CR-LF character pair
 that normally terminates a line of text.  It will only match a bare
 carriage return that has no following line feed.
 
-MicroEMACS supports regular expression searches using a subset of POSIX regular expressions:
+MicroEMACS supports regular expression\index{regular expressons}
+searches using a subset of POSIX regular expressions:
 
 * character classes (square brackets with optional ^ negation operator)
 
@@ -1272,8 +1273,6 @@ MicroEMACS supports regular expression searches using a subset of POSIX regular 
 * `*` (zero or more occurrences)
 
 * `+` (one or more occurrences)
-
-MicroEMACS does not currently support search and replace using regular expressions.
 
 C-S, M-S
 
@@ -1434,6 +1433,30 @@ M-R
     match the old string when it performs a replacement.
     You can defeat this "feature"
     if you prefix this command with an argument (the argument value is ignored).
+
+M-?
+
+:   **reg-query-replace**\index{M-?}\index{reg-query-replace}
+
+    Similar to **query-replace**, except that the search string is a
+    regular expression, and the replacement string can contain special
+    the following special characters:
+
+    * `&` stands for the entire matched string.
+
+    * `\n`, where `n` is a digit in the range 0-9, stands for the nth
+      matched group (where groups are delineated by parentheses in the
+      regular expression pattern).
+
+    * `\` followed  by either `\` or `&` stands for that character itself,
+      without the leading `\`.
+
+M-/
+
+:   **rep-replace**\index{M-/}\index{reg-replace}
+
+    Similar to **reg-query-replace**, except that the user is prompted
+    to confirm each replacement, as in **query-replace**.
 
 # Files
 
@@ -2562,6 +2585,14 @@ M-C-S
 M-C-R
 
 :   back-regexp-search
+
+M-/
+
+:   reg-replace
+
+M-?
+
+:   reg-query-replace
 
 *File and System Operations*
 
