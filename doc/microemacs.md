@@ -1260,6 +1260,8 @@ carriage return that has no following line feed.
 MicroEMACS supports regular expression\index{regular expressons}
 searches using a subset of POSIX regular expressions:
 
+* `.` (dot) matches any character
+
 * character classes (square brackets with optional ^ negation operator)
 
 * groups (parentheses)
@@ -2238,15 +2240,15 @@ The display of these characters is undefined: sometimes they show up
 as modifiers of subsequent characters, or as blanks, or as a lowercase
 'x' with a modifier.
 
-MicroEMACS does not yet support entering Unicode characters into
-strings for which you are prompted, such as search and replace strings.
+On Linux, most terminal programs support a standard method for
+entering Unicode characters at the keyboard: hold down Ctrl and Shift,
+then press and release 'u', then release Ctrl and Shift, then enter
+the hex digits of the Unicode character followed by the Enter key.
+This method works when entering characters at prompts in the echo line,
+or while entering text in the edit buffer.
 
-You can enter UTF-8 characters into the edit buffer in two ways.
-On Linux, most terminal programs support a standard method: hold down
-Ctrl and Shift, then press and release 'u', release Ctrl and Shift,
-then the hex digits of the Unicode character followed by Enter.
-If this method isn't support by your terminal, then you can use
-the following command.
+If this method doesn't work, you can still enter Unicode characters
+in the edit buffer using the following command:
 
 **M-C-U**
 
