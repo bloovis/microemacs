@@ -196,11 +196,11 @@ typedef unsigned char uchar;
 #define EFBUF   0x0010		/* Autocomplete buffer name.    */
 
 /*
- * Keys are represented inside using a 19 bit
+ * Keys are represented inside using a 32 bit
  * keyboard code. The transformation between the keys on
- * the keyboard and 19 bit code is done by terminal specific
+ * the keyboard and 32 bit code is done by terminal specific
  * code in the "kbd.c" file. The actual character is stored
- * as a Unicode value in the low 16 bits; there is also a control
+ * as a Unicode value in the low 21 bits; there is also a control
  * flag KCTRL, a meta flag KMETA, and a control-X flag KCTLX.
  * ASCII control characters are always represented using the
  * KCTRL form. Although the C0 control set is free, it is
@@ -214,10 +214,10 @@ typedef unsigned char uchar;
 #define CTRLCH	0x1E		/* C- prefix,   Control-^       */
 #define HELPCH	0x1F		/* Help key,    Control-_       */
 
-#define KCHAR	0x00FFFF	/* The basic character code.    */
-#define KCTRL	0x010000	/* Control flag.                */
-#define KMETA	0x020000	/* Meta flag.                   */
-#define KCTLX	0x040000	/* Control-X flag.              */
+#define KCHAR	0x001FFFFF	/* The basic character code.    */
+#define KCTRL	0x10000000	/* Control flag.                */
+#define KMETA	0x20000000	/* Meta flag.                   */
+#define KCTLX	0x40000000	/* Control-X flag.              */
 
 #define KFIRST	0x0080		/* First special.               */
 #define KLAST	0x009F		/* Last special.                */

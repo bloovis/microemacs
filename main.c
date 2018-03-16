@@ -296,7 +296,7 @@ execute (int c, int f, int n)
    * a Unicode character that should be self-inserted.
    */
   if ((sp = getbinding (c)) == NULL)
-    if (c >= 0x80 && c <= 0xffff)
+    if (c >= 0x80 && c <= 0x10ffff)
       sp = getbinding (' ');
   if (sp != NULL)
     {

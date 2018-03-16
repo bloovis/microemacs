@@ -493,7 +493,7 @@ regerror (const char *s)
 
 /*
  * Find the first key bound to a particular command, and convert it
- * from the 19-bit internal code to ASCII.  If no key is bound to
+ * from the 32-bit internal code to ASCII.  If no key is bound to
  * the command, or the key is a META- or CTLX- key, return the default
  * key value parameter. Otherwise return the key converted to ASCII.
  */
@@ -687,7 +687,7 @@ isearch (int dir)
   /* Get the bindings for incremental search so user can use those
    * keys instead of C-S or C-R.  We can't allow C-X or M- keys
    * because those are two-key codes. But we can't use getkey()
-   * to get internal 19-bit codes because then we'd lose the
+   * to get internal 32-bit codes because then we'd lose the
    * ability to exit with an ESC key by itself.
    */
   fkey = cvtbind ("forw-i-search", CCHR ('S'));

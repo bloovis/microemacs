@@ -74,7 +74,7 @@ int	specmap[32] = {
 
 /*
  * Read in a key, doing the low level mapping
- * of ASCII code to 19 bit code. This level deals with
+ * of Unicode to 32 bit internal key code. This level deals with
  * mapping the special keys into their spots in the C1
  * control area. The C0 controls go right through, and
  * get remapped by "getkey".  The keys ALT-A through
