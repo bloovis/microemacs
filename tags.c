@@ -388,8 +388,10 @@ preptag (const char *string)
 static int
 inwordpos (struct LINE *linep, int doto)
 {
-  return (doto < wllength (linep)) && ISWORD (lgetc (linep, doto)) &&
-	  lgetc (linep, doto) != '\'';
+  int c;
+
+  return (doto < llength (linep)) && ISWORD (c = wlgetc (linep, doto)) &&
+	  c != '\'';
 }
 
 
@@ -410,14 +412,16 @@ getcursorword (char *buffer, int size)
   linep   = curwp->w_dot.p;
   if (!inwordpos (linep, doto))
     return;
-  while (doto >= 0 && inwordpos (linep, doto-1))
+  while (doto > 0 && inwordpos (linep, doto-1))
     doto--;
 
-  /* Copy the word characters to the buffer.
+  /* Copy the word characters to the buffer.  This chops off upper bits
+   * of Unicode characters, but it's unlikely that C identifiers will
+   * be anything other than ASCII.
    */
   for (n = 0; inwordpos (linep, doto) == TRUE && n < size - 1; n++)
     {
-      buffer[n] = lgetc (linep, doto);
+      buffer[n] = wlgetc (linep, doto);
       doto++;
     }
 
