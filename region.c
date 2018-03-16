@@ -199,6 +199,7 @@ copyregion (int f, int n, int k)
 	  region.r_size -= chunk;
 	}
     }
+  eprintf ("[Region copied]");
   return (TRUE);
 }
 
