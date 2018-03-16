@@ -277,7 +277,7 @@ cursor keys\index{Cursor keys} (Up, Down, Left,
 Right, PgUp, PgDn, Home, End), Delete, and Insert.
 These keys may be combined with the ALT and CTRL keys.
 
-PC-DOS\index{PC-DOS} and FlexOS allow you to use the `ALT` key
+On PCs, you can use the `ALT` key
 \index{ALT key} as the
 META flag, instead of the `ESC` key\index{ESC key}.
 For example, the **M-L** command
@@ -287,11 +287,9 @@ For example, the **M-L** command
 
 * Hold down `ALT` and hit `L`.
 
-On PC-DOS\index{PC-DOS} and Linux\index{Linux}, the `ALT` key only works with alphabetic
+On PC-DOS and Linux, the `ALT` key only works with alphabetic
 characters (`A` through `Z`).
 Using `ALT` and `CTRL` together is also not supported.
-These limitations are inherent in the ROM BIOS keyboard routines
-on the PC.
 
 On FlexOS, the `ALT` key works with both alpha and non-alpha
 characters, and simultaneously with the `CTRL` key.
@@ -519,7 +517,7 @@ meanings:
     name and moves the original file into that directory.  If you haven't
     defined XBACKUP, MicroEMACS renames the original file in one of two ways:
 
-    * On UNIX\index{UNIX}, it appends a "~" character to the filename.
+    * On UNIX-like operating systems, such as Linux,\index{UNIX}, it appends a "~" character to the filename.
 
     * On PC-DOS\index{PC-DOS} and FlexOS\index{FlexOS},
     it changes the extension to ".BAK".
@@ -610,7 +608,7 @@ C-X C-C
     written out, it will ask for permission to quit. Supplying an argument to
     **C-X C-C** makes the command quit unconditionally, without asking for
     confirmation. The value of the argument is not important.
-    On PC-DOS and FlexOS this function is also bound to `F4`.
+    On PCs, this function is also bound to `F4`.
 
 C-C
 
@@ -624,15 +622,15 @@ C-C
 
     Subjobs are implemented in FlexOS\index{FlexOS},
     PC-DOS\index{PC-DOS}
-    VMS\index{VMS}, and UNIX\index{UNIX}.
+    VMS\index{VMS}, and UNIX-like operating systems, such as Linux\index{UNIX}.
     Users of CP/M\index{CP/M} are out of luck.
 
     Exit the command interpreter and return to MicroEMACS with one of the following:
 
     * On VMS enter the **logout** command.
 
-    * If you are using the c-shell\index{c-shell}
-    on 4.2 BSD UNIX\index{UNIX}, enter the **fg** command.
+    * If you are using the c-shell\index{c-shell} or bash\index{bash}
+    on Unix-like operating systems, enter the **fg** command.
 
     * On all other systems enter the **exit** command.
 
@@ -673,7 +671,7 @@ C-A
 
     Move to the beginning of the current line. Any argument
     is ignored. Always succeeds.
-    On PC-DOS and FlexOS, this function is bound to the `Home` key.
+    On PCs, this function is bound to the `Home` key.
 
 C-B
 
@@ -683,7 +681,7 @@ C-B
     to move is specified by the argument. If no argument is given it moves
     backwards by 1 character. A newline counts as a single character. Fails
     if executed at the beginning of the buffer.
-    On PC-DOS and FlexOS, this function is bound to the `Left` arrow key.
+    On PCs, this function is bound to the `Left` arrow key.
 
 C-E
 
@@ -691,7 +689,7 @@ C-E
 
     Move to the end of the current line. Any argument is ignored.
     Always succeeds.
-    On PC-DOS and FlexOS, this function is bound to the `End` key.
+    On PCs, this function is bound to the `End` key.
 
 C-F
 
@@ -701,7 +699,7 @@ C-F
     to move is specified by the argument. If no argument is given it moves
     forwards by 1 character. A newline counts as a single character. Fails
     if executed at the end of the buffer.
-    On PC-DOS and FlexOS, this function is bound to the `Right` arrow key.
+    On PCs, this function is bound to the `Right` arrow key.
 
 C-N
 
@@ -711,7 +709,7 @@ C-N
     position. The number of lines to move is specified by the argument. If no
     argument is given it moves by 1 line. Fails if executed at the end of the
     buffer.
-    On PC-DOS and FlexOS, this function is bound to the `Down` arrow key.
+    On PCs, this function is bound to the `Down` arrow key.
 
 C-P
 
@@ -721,7 +719,7 @@ C-P
     position. The number of lines to move is specified by the argument. If no
     argument is given it moves by 1 line. Fails if executed at the beginning of
     the buffer.
-    On PC-DOS and FlexOS, this function is bound to the `Up` arrow key.
+    On PCs, this function is bound to the `Up` arrow key.
 
 C-V
 
@@ -732,7 +730,7 @@ C-V
     A page is a group of lines about 20% smaller than a window.
     If possible, dot is kept where it is; otherwise it it moved
     to the middle of the new page.
-    On PC-DOS and FlexOS, this function is bound to the `PgDn` key.
+    On PCs, this function is bound to the `PgDn` key.
 
     There is a compile time option that makes this command take an argument
     in lines instead of screenfuls. Look in `def.h` for the gory details.
@@ -746,7 +744,7 @@ M-V,C-Z
     A page is a group of lines about 20% smaller than a window.
     If possible, dot is kept where it is; otherwise it it moved
     to the middle of the new page.
-    On PC-DOS and FlexOS, this function is bound to the `PgUp` key.
+    On PCs, this function is bound to the `PgUp` key.
 
     There is a compile time option that makes this command take an argument
     in lines instead of screenfuls. Look in `def.h` for the gory details.
@@ -757,7 +755,7 @@ M-<
 
     Move to the beginning of the buffer. Any argument is ignored.
     Dot is set to the first character of the first line in the buffer.
-    On PC-DOS and FlexOS, this function is bound to the `Control-Home` key.
+    On PCs, this function is bound to the `Control-Home` key.
 
 M->
 
@@ -766,7 +764,7 @@ M->
     Move to the end of the buffer. Any argument is ignored. Dot is
     set to the first character in the fake line immediately after the buffer.
     The window is set to display dot near the center of the screen.
-    On PC-DOS and FlexOS, this function is bound to the `Control-End` key.
+    On PCs, this function is bound to the `Control-End` key.
 
 C-X G
 
@@ -970,7 +968,7 @@ C-D
     then the command kills the text instead of deleting it. It fails if
     there are not enough characters to delete between dot and the end of
     the buffer.
-    On PC-DOS and FlexOS, this function is also bound to `Del`\index{Del}.
+    On PCs, this function is also bound to `Del`\index{Del}.
 
 Rubout,C-H,Backspace
 
@@ -1346,7 +1344,7 @@ Pad-1,Shift-5
     on the numeric keypad of the Z-29\index{Zenith Z-29}
     terminal: the `1` key, and the shifted
     `5` key.
-    On PC-DOS and FlexOS this function is also bound to `F9`.
+    On PCs, this function is also bound to `F9`.
 
 C-X S
 
@@ -1513,8 +1511,7 @@ C-X C-S, M-T
 
     The **M-T** form of this command is easily entered on the
     Z-29\index{Zenith Z-29} keyboard
-    by pressing the `F2` key.  On PC-DOS and FlexOS
-    this function is also bound to `F2`.
+    by pressing the `F2` key.  On PCs, this function is also bound to `F2`.
 
 C-X C-V
 
@@ -1534,7 +1531,7 @@ C-X C-V
     supply a buffer name, or just type newline to overwrite the old
     buffer.
 
-    On PC-DOS and FlexOS, this function is also bound to `F3`.
+    On PCs, this function is also bound to `F3`.
 
 C-X C-W
 
@@ -1640,7 +1637,7 @@ C-X C-B
     MicroEMACS makes no attempt to keep a buffer list which is on the screen
     updated as other buffers are edited; however, another **C-X C-B** command
     will cause the display to be updated in place.
-    On PC-DOS and FlexOS this function is also bound to `F6`.
+    On PCs, this function is also bound to `F6`.
 
 C-X B
 
@@ -1746,7 +1743,7 @@ C-X 1
     This is the basic window destroying command. All windows but
     the current window are removed from the screen. The current window grows
     to fill the vacated screen space. Any argument is ignored.
-    On PC-DOS and FlexOS this command is also bound to `F10`.
+    On PCs, this command is also bound to `F10`.
 
 C-X N, C-X O
 
@@ -1780,7 +1777,7 @@ C-X C-N
 
     Scroll the current window down. Any argument is used as a
     "number of lines by which to scroll" count. The default argument is 1.
-    On PC-DOS and FlexOS this command is also bound to `C-PgDn`.
+    On PCs, this command is also bound to `C-PgDn`.
 
 C-X C-P
 
@@ -1788,7 +1785,7 @@ C-X C-P
 
     Scroll the current window up. Any argument is used as a
     "number of lines by which to scroll" count. The default argument is 1.
-    On PC-DOS and FlexOS this command is also bound to `C-PgUp`.
+    On PCs, this command is also bound to `C-PgUp`.
 
 C-X C-Z
 
@@ -1815,6 +1812,14 @@ M-!
     should be placed. If no argument is supplied, a default argument of 1 is
     used; This lets **M-!** function as a "move dot to the top of the window"
     command, which is very useful.
+
+C-X +
+
+:   **balance-windows**\index{C-X +}\index{balance-windows}
+
+    This command adjusts the windows so that they all have approximately
+    the same height.  This is useful after several **split-window**
+    commands have created some windows that are too small.
 
 # Messages
 
@@ -1894,7 +1899,7 @@ in response to the prompt `:` on the echo line.
 
     This command waits for the user to enter a key, then displays
     on the echo line the command name that is bound to that key.
-    On PC-DOS and FlexOS this function is bound to `F1`.
+    On PCs, this function is bound to `F1`.
 
 # Tags
 
@@ -2220,7 +2225,7 @@ processing (or at any other time) with the following command.
 # UTF-8 and Unicode
 
 \index{UTF-8}\index{Unicode}
-Starting in 2018, MicroEMACS supports reading and writing text files
+MicroEMACS supports reading and writing text files
 encoded with UTF-8, a byte-oriented encoding of Unicode.  UTF-8 can
 be thought of as a superset of ASCII: bytes less then 0x80 are
 identical to ASCII, and bytes greater than or equal to 0x80 are always
@@ -2683,6 +2688,10 @@ C-X 1
 C-X 2
 
 :   split-window
+
+C-X +
+
+:   balance-windows
 
 M-!
 
