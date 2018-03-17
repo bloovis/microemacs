@@ -864,7 +864,7 @@ C-M, Return
     argument of 16 (i.e. two `Control-U`s) is specified, reduce indentation by four
     spaces.  Otherwise retain the same indentation.
 
-[unbound]
+C-J
 
 :   **gnu-indent**\index{C-J}\index{gnu-indent}\index{Indent}
 
@@ -886,7 +886,7 @@ C-M, Return
     argument of 16 (i.e. two `Control-U`s) is specified, reduce indentation by three
     spaces.  Otherwise retain the same indentation.
 
-C-J
+[unbound]
 
 :   **ruby-indent**\index{C-J}\index{ruby-indent}\index{Indent}
 
@@ -1439,7 +1439,7 @@ M-?
 :   **reg-query-replace**\index{M-?}\index{reg-query-replace}
 
     Similar to **query-replace**, except that the search string is a
-    regular expression, and the replacement string can contain special
+    regular expression, and the replacement string can contain
     the following special characters:
 
     * `&` stands for the entire matched string.
@@ -1541,6 +1541,13 @@ C-X C-W
     then it writes the contents of the current buffer to that file. The
     "changed" flag for the current buffer is reset, and the supplied file
     name becomes the associated file name for the current buffer.
+
+C-X I
+
+:   **spell-check**\index{C-X I}\index{spell-check}
+
+    This command saves the current buffer to a file and runs `ispell` on the file.
+    When `ispell` exits, MicroEMACS  reads in the (possibly modified) file).
 
 # Keyboard Macros
 
@@ -2174,9 +2181,9 @@ changes and quits.
     replace-string\index{replace-string} "plugh\r" "xyzzy\r" file-save quit
 
 Here is a profile that causes the `Control-J` key
-to indent according to the GNU standard\index{gnu-indent}.
+to indent according to Ruby conventions\index{ruby-indent}.
 
-    bind-to-key "gnu-indent\r" [C-J]
+    bind-to-key "ruby-indent\r" [C-J]
 
 \index{file-save}\index{quit}
 You can automate this kind of global change with the **-p** option
@@ -2372,7 +2379,7 @@ Return
 
 C-J
 
-:   ins-nl-and-indent
+:   gnu-indent
 
 C-O
 
@@ -2678,6 +2685,10 @@ C-X C-C
 C-X C
 
 :   jeff-exit
+
+C-X I
+
+:   spell-check
 
 *Windows*
 

@@ -94,9 +94,9 @@
 #include	"def.h"
 
 /* #define USE_VMWAREINDENT */	/* Define to use VMware indent	*/
-/* #define USE_GNUINDENT */	/* Define to use gnu indent	*/
+#define USE_GNUINDENT		/* Define to use gnu indent	*/
 /* #define USE_BORLANDINDENT */	/* Define to use Borland indent	*/
-#define USE_RUBYINDENT		/* Define to use Ruby indent */
+/* #define USE_RUBYINDENT */	/* Define to use Ruby indent */
 
 #if defined(__linux__) || defined(__APPLE__) || defined(__CYGWIN__)
   #define HAS_CSCOPE 1
@@ -723,7 +723,7 @@ sortblist (void)
  * of the command keys and their current bindings, and stores
  * the table in the standard pop-op buffer (the one used by the
  * directory list command, the buffer list command, etc.). This
- * lets MicroEMACS produce it's own wall chart. The bindings to
+ * lets MicroEMACS produce its own wall chart. The bindings to
  * "ins-self" are only displayed if there is an argument.
  */
 int
