@@ -138,7 +138,19 @@ cisword (wchar_t c)
   if (c < 0x80)
     return AISWORD(c);
   else
-    return iswalnum(c) || c == '$' || c == '\'';
+    return iswalnum (c);
+}
+
+/*
+ * Return TRUE if c is a "letter" character.
+ */
+int
+cisalpha (wchar_t c)
+{
+  if (c < 0x80)
+    return AISUPPER(c) || AISLOWER(c);
+  else
+    return iswalpha (c);
 }
 
 /*

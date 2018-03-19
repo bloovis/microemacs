@@ -264,6 +264,7 @@ typedef unsigned char uchar;
  */
 
 #define ISWORD(c)	(cisword((c)))
+#define ISALPHA(c)	(cisalpha((c)))
 #define ISCTRL(c)	(cisctrl((c)))
 #define ISUPPER(c)	(cisupper((c)))
 #define ISLOWER(c)	(cislower((c)))
@@ -614,6 +615,7 @@ void addwind (EWINDOW *wp, int n);	/* Bump ref. count for window.	*/
  */
 void upmapinit (void);			/* Initialize case table.	*/
 int cisword(wchar_t c);			/* Is c a word character?	*/
+int cisalpha(wchar_t c);		/* Is c a letter?		*/
 int cisctrl (wchar_t c);		/* Is c a control character?	*/
 int cisupper (wchar_t c);		/* Is c an upper case letter?	*/
 int cislower (wchar_t c);		/* Is c a lower case letter?	*/
@@ -866,7 +868,8 @@ int searchtag (int f, int n, int (*prep)(const char *string),
 	       const char *tagtype);
 
 void getcursorword (char *buffer,	/* Get word under cursor.	*/
-		    int size);
+		    int size,
+		    int alpha);
 
 /*
  * Defined by "tty.c".

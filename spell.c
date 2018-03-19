@@ -27,8 +27,25 @@
 static FILE *ispell_input;
 static FILE *ispell_output;
 
-char word[NPAT];		/* word to check for spelling */
+static char word[NPAT];		/* word to check for spelling */
+static char repl[NPAT];		/* string to replace word */
 static char buf[256];		/* line buffer for input from ispell */
+static const char *guesses[10];	/* guesses returned by ispell */
+static int nguesses;		/* number of guesses */
+
+/*
+ * Return TRUE if the character at dot
+ * is a letter.
+ */
+static int
+inalpha (void)
+{
+  if (curwp->w_dot.o == wllength (curwp->w_dot.p))
+    return (FALSE);
+  if (ISALPHA (wlgetc (curwp->w_dot.p, curwp->w_dot.o)) != FALSE)
+    return (TRUE);
+  return (FALSE);
+}
 
 /*
  * Run ispell on the entire buffer.
@@ -91,7 +108,7 @@ replace (const char *old, const char *new)
   int oldlen = uslen ((const uchar *) old);
   int status;
 
-  while (inword ())
+  while (inalpha ())
     {
       if ((status = forwchar (TRUE, 1, KRANDOM)) != TRUE)
 	return status;
@@ -105,8 +122,7 @@ replace (const char *old, const char *new)
  * Otherwise return FALSE
  */
 static int
-getrepl (const char *prompt, const char *word, const char *guesses[],
-         int nguesses, char *repl, int replen)
+getrepl (const char *prompt)
 {
   int c;
   int status;
@@ -125,6 +141,8 @@ getrepl (const char *prompt, const char *word, const char *guesses[],
 	  /* Abort the replacement.
 	   */
 	  ctrlg (FALSE, 0, KRANDOM);
+	case 'q':
+	case 'Q':
 	  status = FALSE;
 	  done = TRUE;
 	  break;
@@ -163,7 +181,7 @@ getrepl (const char *prompt, const char *word, const char *guesses[],
 	      int n = c - '0';
 	      if (n < nguesses)
 		{
-		  strncpy (repl, guesses[n], replen);
+		  strncpy (repl, guesses[n], sizeof (repl));
 		  status = TRUE;
 		  done = TRUE;
 		}
@@ -187,10 +205,7 @@ static int
 ask_ispell (void)
 {
   char *s;
-  char repl[NPAT];
   char prompt[256];
-  const char *guesses[10];
-  int nguesses;
   int status;
   int chars;
   int i;
@@ -254,7 +269,7 @@ ask_ispell (void)
 		break;
 	      ++s;
 	    }
-	  strcpy (prompt, "SPC=ignore,A=accept,R=replace");
+	  strcpy (prompt, "SPC=ignore,A=accept,R=replace,Q=quit");
 	  for (i = 0; i < nguesses; i++)
 	    {
 	      char n[2];
@@ -266,8 +281,7 @@ ask_ispell (void)
 	      strcat (prompt, "=");
 	      strcat (prompt, guesses[i]);
 	    }
-	  if ((status = getrepl (prompt, word, guesses, nguesses, repl,
-				 sizeof (repl))) != TRUE)
+	  if ((status = getrepl (prompt)) != TRUE)
 	    break;
 	  status = replace (word, repl);
 	  break;
@@ -296,7 +310,7 @@ spellword (int f, int n, int k)
    * for a word to spell-check, using the cursor word as the default.
    */
   word[0] = '\0';
-  getcursorword (word, sizeof (word));
+  getcursorword (word, sizeof (word), TRUE);
   if (word[0] == '\0')
     {
       eprintf("No word under cursor");

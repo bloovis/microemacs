@@ -383,23 +383,32 @@ preptag (const char *string)
  * Return TRUE if the character at the specified offset and line
  * is a character that is considered to be part of a word.
  * Similar to inword () except that the latter uses the current line
- * and dot offset.
+ * and dot offset.  The alpha parameter is true
+ * if only alpha characters should be recognized; otherwise, programming
+ * language identifier characters such as '_' are also recognized.
  */
 static int
-inwordpos (struct LINE *linep, int doto)
+inwordpos (struct LINE *linep, int doto, int alpha)
 {
   int c;
 
-  return (doto < wllength (linep)) && ISWORD (c = wlgetc (linep, doto)) &&
-	  c != '\'';
+  if (doto >= wllength (linep))
+    return FALSE;
+  c = wlgetc (linep, doto);
+  if (alpha)
+    return ISALPHA (c);
+  else
+    return ISWORD (c) && c != '\'';
 }
 
 /*
  * Get the word under the current cursor position and copy it to 'buffer',
- * up to a maximum of 'size' characters.
+ * up to a maximum of 'size' characters.  The alpha parameter is true
+ * if only alpha characters should be recognized; otherwise, programming
+ * language identifier characters such as '_' are also recognized.
  */
 void
-getcursorword (char *buffer, int size)
+getcursorword (char *buffer, int size, int alpha)
 {
   int		n;
   int		doto;
@@ -409,16 +418,16 @@ getcursorword (char *buffer, int size)
    */
   doto    = curwp->w_dot.o;
   linep   = curwp->w_dot.p;
-  if (!inwordpos (linep, doto))
+  if (!inwordpos (linep, doto, alpha))
     return;
-  while (doto > 0 && inwordpos (linep, doto-1))
+  while (doto > 0 && inwordpos (linep, doto-1, alpha))
     doto--;
 
   /* Copy the word characters to the buffer.  This chops off upper bits
    * of Unicode characters, but it's unlikely that C identifiers will
    * be anything other than ASCII.
    */
-  for (n = 0; inwordpos (linep, doto) == TRUE && n < size - 1; n++)
+  for (n = 0; inwordpos (linep, doto, alpha) == TRUE && n < size - 1; n++)
     {
       buffer[n] = wlgetc (linep, doto);
       doto++;
@@ -468,7 +477,7 @@ searchtag (int f, int n, prepfunc prep, const char * tagtype)
       /* Get a default string to search for by looking at the word
        * under the cursor (if any).
        */
-      getcursorword (tagpat, sizeof (tagpat));
+      getcursorword (tagpat, sizeof (tagpat), FALSE);
 
       /* Prompt for the tag to search for if no argument
        * specified.
@@ -588,7 +597,7 @@ getrailsname(const char *type)
   /* Get a default string to search for by looking at the word
    * under the cursor (if any).
    */
-  getcursorword (tagpat, sizeof (tagpat));
+  getcursorword (tagpat, sizeof (tagpat), FALSE);
 
   /* Prompt for the tag to search for if no argument
    * specified.
