@@ -18,9 +18,6 @@
 */
 
 #include "def.h"
-#include <unistd.h>
-#include <fcntl.h>
-#include <signal.h>
 
 /* Uncomment this line to build test program. */
 /* #define TEST 1 */
@@ -30,7 +27,6 @@
  */
 static FILE *cscope_input;
 static FILE *cscope_output;
-static int saw_sigpipe;
 
 /*
  * Ignore the prompt characters from cscope.
@@ -45,91 +41,6 @@ ignore_prompt (void)
       printf ("bad prompt from cscope!\n");
 #endif
     }
-}
-
-/*
- * Signal handler for SIGPIPE, which can occur if cscope terminates
- * abnormally (e.g. if the current directory has no source files).
- */
-static void
-sigpipe_handler (int signum)
-{
-   saw_sigpipe = 1;
-}
-
-/*
- * Open a pipe to the cscope program, return TRUE if success.
- */
-static int
-open_cscope (void)
-{
-  int in_pipe[2];
-  int out_pipe[2];
-
-  saw_sigpipe = 0;
-  if (pipe (in_pipe) != 0)
-    {
-#if TEST
-      perror ("creating input pipe");
-#endif
-      return FALSE;
-    }
-  if (pipe (out_pipe) != 0)
-    {
-#if TEST
-      perror ("creating input pipe");
-#endif
-      return FALSE;
-    }
-
-  if (fork () == 0)
-    {
-      int devnull;
-
-      /* We're the child.  Redirect standard input to the input pipe, and
-         standard output to the output pipe. */
-      dup2 (out_pipe[0], 0);
-      dup2 (in_pipe[1], 1);
-
-      /* Close unneeded pipe handles. */
-      close (out_pipe[1]);
-      close (in_pipe[0]);
-
-      /* Redirect stderr to /dev/null. */
-      devnull = open ("/dev/null", O_WRONLY);
-      if (devnull >= 0)
-	dup2 (devnull, 2);
-
-      /* Execute the cscope program. */
-      execlp ("cscope", "cscope", "-l", "-k", NULL);
-    }
-  else
-    {
-      /* We're the parent.  Connect the two ends of pipe to line-buffered
-         FILEs. */
-      cscope_input = fdopen (in_pipe[0], "r");
-      cscope_output = fdopen (out_pipe[1], "w");
-      if (cscope_input == NULL || cscope_output == NULL)
-	{
-#if TEST
-	  perror ("creating FILEs from pipes");
-#endif
-	  return FALSE;
-	}
-
-      setvbuf (cscope_input, (char *)NULL, _IOLBF, 0);
-      setvbuf (cscope_output, (char *)NULL, _IOLBF, 0);
-
-      /* Close unneeded pipe handles. */
-      close (out_pipe[0]);
-      close (in_pipe[1]);
-
-      /* Set up a signal handler for SIGPIPE to prevent ourselves
-         from exiting should cscope bomb for some reason. */
-      signal (SIGPIPE, sigpipe_handler);
-    }
-
-  return TRUE;
 }
 
 /*
@@ -192,6 +103,21 @@ next_match (char *filename, char *where, int *line_number)
 #if TEST
   printf ("sscanf returned %d\n", ret);
 #endif
+}
+
+/*
+ * Open a two-way pipe to the cscope program.
+ */
+static int
+open_cscope (void)
+{
+  const char *args[4];
+
+  args[0] = "cscope";
+  args[1] = "-l";
+  args[2] = "-k";
+  args[3] = NULL;
+  return openpipe ("cscope", args, &cscope_input, &cscope_output);
 }
 
 /*

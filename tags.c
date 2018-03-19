@@ -390,16 +390,15 @@ inwordpos (struct LINE *linep, int doto)
 {
   int c;
 
-  return (doto < llength (linep)) && ISWORD (c = wlgetc (linep, doto)) &&
+  return (doto < wllength (linep)) && ISWORD (c = wlgetc (linep, doto)) &&
 	  c != '\'';
 }
-
 
 /*
  * Get the word under the current cursor position and copy it to 'buffer',
  * up to a maximum of 'size' characters.
  */
-static void
+void
 getcursorword (char *buffer, int size)
 {
   int		n;

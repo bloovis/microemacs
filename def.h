@@ -817,11 +817,23 @@ int searchparen (int f, int n, int k);	/* Search for matching paren    */
 int foldcase (int f, int n, int k);	/* Set casefold flag            */
 
 /*
+ * Defined by "spell.c".
+ */
+int spellword (int f, int n, int k);	/* Spell-check cursor word	*/
+
+
+/*
  * Defined by "spawn.c".
  */
 int spawncli (int f, int n, int k);	/* Run CLI in a subjob.         */
 int spellcheck (int f, int n, int k);	/* Run ispell in a subjob.      */
 
+int spawn (char *program,		/* Spawn a program.		*/
+	   const char *args[]);
+int openpipe (const char *program,	/* Open a two-way pipe.		*/
+	      const char *args[],
+	      FILE **infile,
+	      FILE **outfile);
 
 /*
  * Defined by "symbol.c".
@@ -852,6 +864,9 @@ tagref * addtagref (const char *string, tagfile *file, int line, long offset,
 		    int exact);
 int searchtag (int f, int n, int (*prep)(const char *string),
 	       const char *tagtype);
+
+void getcursorword (char *buffer,	/* Get word under cursor.	*/
+		    int size);
 
 /*
  * Defined by "tty.c".

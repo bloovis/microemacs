@@ -256,6 +256,7 @@ KEY key[] = {
   {KMETA | '+',		indentregion,	"indent-region"},
   {KMETA | '/',		regrepl,	"reg-replace"},
   {KMETA | '?',		regqueryrepl,	"reg-query-replace"},
+  {KMETA | '$',		spellword,	"spell-word"},
   {KMETA | 'B',		backword,	"back-word"},
   {KMETA | 'C',		capword,	"cap-word"},
   {KMETA | 'D',		delfword,	"forw-del-word"},

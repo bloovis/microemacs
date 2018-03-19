@@ -43,6 +43,7 @@ OBJ :=	@EXTRA_OBJS@ \
 	regsub.o \
 	ring.o \
 	search.o \
+	spell.o \
 	symbol.o \
 	version.o \
 	window.o \
