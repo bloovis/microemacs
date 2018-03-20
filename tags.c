@@ -383,8 +383,8 @@ preptag (const char *string)
  * Return TRUE if the character at the specified offset and line
  * is a character that is considered to be part of a word.
  * Similar to inword () except that the latter uses the current line
- * and dot offset.  The alpha parameter is true
- * if only alpha characters should be recognized; otherwise, programming
+ * and dot offset.  The alpha parameter is true if only alpha characters
+ * and the apostrophe should be recognized; otherwise, programming
  * language identifier characters such as '_' are also recognized.
  */
 static int
@@ -396,7 +396,7 @@ inwordpos (struct LINE *linep, int doto, int alpha)
     return FALSE;
   c = wlgetc (linep, doto);
   if (alpha)
-    return ISALPHA (c);
+    return c == '\'' || ISALPHA (c);
   else
     return ISWORD (c) && c != '\'';
 }
@@ -404,8 +404,9 @@ inwordpos (struct LINE *linep, int doto, int alpha)
 /*
  * Get the word under the current cursor position and copy it to 'buffer',
  * up to a maximum of 'size' characters.  The alpha parameter is true
- * if only alpha characters should be recognized; otherwise, programming
- * language identifier characters such as '_' are also recognized.
+ * if only alpha characters and the apostrophe should be recognized;
+ * otherwise, programming language identifier characters such as '_'
+ * are also recognized.
  */
 void
 getcursorword (char *buffer, int size, int alpha)

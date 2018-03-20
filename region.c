@@ -65,7 +65,7 @@ setsize (REGION *rp, long size)
  * get an ABORT status, because I might add a "if regions is big,
  * ask before clobberring" flag.
  */
-static int
+int
 getregion (REGION *rp)
 {
   register LINE *flp;

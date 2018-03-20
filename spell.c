@@ -32,44 +32,23 @@ static char repl[NPAT];		/* string to replace word */
 static char buf[256];		/* line buffer for input from ispell */
 static const char *guesses[10];	/* guesses returned by ispell */
 static int nguesses;		/* number of guesses */
+static LINE *clp;		/* saved line pointer           */
+static int cbo;			/* offset into the saved line   */
+static int nrepl;		/* number of replacements performed */
 
 /*
- * Return TRUE if the character at dot
- * is a letter.
+ * Return TRUE if the character at dot is a letter or an
+ * apostrophe (as in "doesn't", for example).
  */
 static int
 inalpha (void)
 {
+  int c;
+
   if (curwp->w_dot.o == wllength (curwp->w_dot.p))
     return (FALSE);
-  if (ISALPHA (wlgetc (curwp->w_dot.p, curwp->w_dot.o)) != FALSE)
-    return (TRUE);
-  return (FALSE);
-}
-
-/*
- * Run ispell on the entire buffer.
- */
-int
-spellcheck (int f, int n, int k)
-{
-  const char *args[3];
-
-  /* Save the file if it's been changed.
-   */
-  if ((curbp->b_flag & BFCHG) != 0)
-    if (filesave (f, n, KRANDOM) == FALSE)
-      return FALSE;
-
-  /* Run ispell on the file.
-   */
-  args[0] = "ispell";
-  args[1] = curbp->b_fname;
-  args[2] = NULL;
-  if (spawn ("ispell", args) == FALSE)
-    return FALSE;
-
-  return readin (curbp->b_fname);
+  c = wlgetc (curwp->w_dot.p, curwp->w_dot.o);
+  return c == '\'' || ISALPHA (c);
 }
 
 /*
@@ -98,22 +77,21 @@ open_ispell (void)
 }
 
 /*
- * Replace the string 'old' with 'new' at dot. We have
- * to move forward past the old word because lreplace expects
+ * Replace the string 'word' with 'repl' at dot.  The dot
+ * must be past the end of the old word, because lreplace expects
  * dot to be after, not before, the string being replaced.
  */
 static int
-replace (const char *old, const char *new)
+replace (void)
 {
-  int oldlen = uslen ((const uchar *) old);
+  int oldlen = uslen ((const uchar *) word);
   int status;
 
-  while (inalpha ())
-    {
-      if ((status = forwchar (TRUE, 1, KRANDOM)) != TRUE)
-	return status;
-    }
-  return lreplace (oldlen, new, FALSE);
+  curwp->w_savep = clp;
+  status = lreplace (oldlen, repl, FALSE);
+  ++nrepl;
+  clp = curwp->w_savep;
+  return status;
 }
 
 /*
@@ -189,10 +167,7 @@ getrepl (const char *prompt)
 	  break;
 	}
     }
-  if (status == TRUE)
-    eprintf ("%s replaced with %s", word, repl);
-  else
-    eprintf ("No replacement done");
+  eerase ();
   return status;
 }
 
@@ -200,15 +175,18 @@ getrepl (const char *prompt)
 /*
  * Ask ispell to check a word, and if it is not correct,
  * prompt the user with the suggestions from ispell.
+ * If info is TRUE, print status messages on the echo line
+ * whether a replacement was performed.
  */
 static int
-ask_ispell (void)
+ask_ispell (int info)
 {
   char *s;
   char prompt[256];
   int status;
   int chars;
   int i;
+  const char *fmt;
 
   fputs (word, ispell_output);
   fputc ('\n', ispell_output);
@@ -236,25 +214,31 @@ ask_ispell (void)
       switch (buf[0])
         {
 	case '*':
-	  eprintf ("%s is spelled correctly", word);
+	  if (info)
+	    eprintf ("%s is spelled correctly", word);
+	  status = TRUE;
+	  break;
+	case '+':
+	  if (info)
+	    eprintf ("%s found via root %s", word, &buf[2]);
 	  status = TRUE;
 	  break;
 	case '#':
-	  if ((status = ereply ("No matches. Replace with: ", repl, sizeof (repl))) != TRUE)
-	    break;
-	  status = replace (word, repl);
-	  break;
 	case '&':
 	case '?':
+	  if (buf[0] == '#')
+	    fmt = " %*s %*d%n";
+	  else
+	    fmt = " %*s %*d %*d: %n";
 	  s = &buf[1];
-	  if (sscanf (s, "%*s %*d %*d: %n", &chars) != 0)
+	  if (sscanf (s, fmt, &chars) != 0)
 	    break;
 	  s += chars;
 
 	  /* Break up the guesses line into individual words.
 	   */
 	  nguesses = 0;
-	  for (i = 0; i < 10; i++)
+	  for (i = 0; i < 10 && *s != '\0'; i++)
 	    {
 	      guesses[i] = s;
 	      nguesses = i + 1;
@@ -269,11 +253,22 @@ ask_ispell (void)
 		break;
 	      ++s;
 	    }
-	  strcpy (prompt, "SPC=ignore,A=accept,R=replace,Q=quit");
+	  strcpy (prompt, word);
+	  strcat (prompt, ": SPC=ignore,A=accept,R=replace,Q=quit");
 	  for (i = 0; i < nguesses; i++)
 	    {
 	      char n[2];
 
+	      /* If the prompt exceeds the window width, truncate
+	       * the number of guesses.  This is a horrible hack
+	       * but I can't see a good way to display a long list
+	       * of guesses on a single line.
+	       */
+	      if (strlen (prompt) + strlen (guesses[i]) + 3 > ncol)
+		{
+		  nguesses = i - 1;
+		  break;
+		}
 	      n[0] = i + '0';
 	      n[1] = '\0';
 	      strcat (prompt, ",");
@@ -281,9 +276,15 @@ ask_ispell (void)
 	      strcat (prompt, "=");
 	      strcat (prompt, guesses[i]);
 	    }
-	  if ((status = getrepl (prompt)) != TRUE)
-	    break;
-	  status = replace (word, repl);
+	  if ((status = getrepl (prompt)) == TRUE)
+	    status = replace ();
+	  if (info)
+	    {
+	      if (status == TRUE)
+		eprintf ("%s replaced with %s", word, repl);
+	      else
+		eprintf ("No replacement done");
+	    }
 	  break;
 	default:
 	  eprintf ("Unrecognized ispell response: %s", buf);
@@ -294,12 +295,14 @@ ask_ispell (void)
 }
 
 /*
- * Run ispell on the word under the cursor, or
- * if there is no word there, prompt for the word.
+ * Check the word under the cursor for spelling,
+ * and prompt the user for a replacement.
  */
 int
-spellword (int f, int n, int k)
+checkword (REGION *r)
 {
+  int status;
+
   if (open_ispell () == FALSE)
     {
       eprintf ("Unable to open a pipe to ispell");
@@ -317,8 +320,95 @@ spellword (int f, int n, int k)
       return FALSE;
     }
 
+  /* Move past the word, because lreplace expects that.
+   */
+  while (inalpha ())
+    {
+      if ((status = forwchar (TRUE, 1, KRANDOM)) != TRUE)
+	return status;
+
+      /* If we're keeping track of a region size, decrement
+       * the size for each character we move past.
+       */
+      if (r != NULL)
+	r->r_size--;
+    }
+
   /* Ask ispell for the correct spelling, and prompt user
    * for a replacement.
    */
-  return ask_ispell ();
+  return ask_ispell (r == NULL);
+}
+
+/*
+ * Run ispell on the word under the cursor, or
+ * if there is no word there, prompt for the word.
+ */
+int
+spellword (int f, int n, int k)
+{
+  return checkword (NULL);
+}
+
+/*
+ * Run ispell on the current marked region.
+ */
+int
+spellregion (int f, int n, int k)
+{
+  REGION r;
+  int status;
+  int len;
+
+  if ((status = getregion (&r)) != TRUE)
+    return status;
+
+  /* Save the current location.
+   */
+  clp = curwp->w_dot.p;
+  cbo = curwp->w_dot.o;
+
+  /* Scan through the region looking for words, and spell-check
+   * each found word.
+   */
+  curwp->w_dot = r.r_pos;
+  nrepl = 0;
+  while (r.r_size > 0)
+    {
+      /* Find start of word.
+       */
+      while (r.r_size > 0)
+	{
+	  if (inalpha ())
+	    break;
+	  if (forwchar (TRUE, 1, KRANDOM) != TRUE)
+	    break;
+	  r.r_size--;
+	}
+
+      /* If we're not in a word, we must have reached the end
+       * of the region or buffer, so terminate the outer loop.
+       */
+      if (!inalpha ())
+	break;
+
+      /* Spell-check the current word.
+       */
+      if ((status = checkword (&r)) == ABORT)
+	break;
+    }
+  eprintf ("%d replacement%s done.", nrepl, nrepl == 1 ? "" : "s");
+
+  /* Restore the current location.
+   */
+  curwp->w_dot.p = clp;
+  len = wllength (clp);
+  if (cbo > len)
+    curwp->w_dot.o = len;
+  else
+    curwp->w_dot.o = cbo;
+  curwp->w_flag |= WFHARD;
+  if (!inprof)
+    update ();
+  return TRUE;
 }

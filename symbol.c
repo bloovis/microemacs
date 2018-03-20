@@ -220,7 +220,7 @@ KEY key[] = {
   {KCTLX | 'F',		readprofile,	"read-profile"},
   {KCTLX | 'G',		gotoline,	"goto-line"},
   {KCTLX | 'H',		checkheap,	"check-heap"},
-  {KCTLX | 'I',		spellcheck,	"spell-check"},
+  {KCTLX | 'I',		spellregion,	"spell-region"},
   {KCTLX | 'K',		killbuffer,	"kill-buffer"},
   {KCTLX | 'M',		railsmodel,	"rails-model"},
   {KCTLX | 'N',		nextwind,	"forw-window"},

@@ -1230,7 +1230,7 @@ C-X C-U
     The uppercase region command converts all of the characters
     between dot and mark into upper case.
 
-# Searching
+# Searching and Spelling
 
 \index{Searching}
 Search commands move though the buffer, in either the forward or the reverse
@@ -1458,6 +1458,33 @@ M-/
     Similar to **reg-query-replace**, except that the user is prompted
     to confirm each replacement, as in **query-replace**.
 
+C-X I
+
+:   **spell-region**\index{C-X I}\index{spell-region}
+
+    This command uses `ispell` to spell-check the current region
+    (the text between the mark and the dot).  At each misspelled
+    word, MicroEMACS prompts for an action:
+
+    * **q** or **C-G** aborts the spell checking.
+
+    * **Space** ignores the misspelled word
+
+    * **a** ignores the misspelled word and adds it to ispell's list of
+    words to ignore in the future.
+
+    * **0** to **9** replaces the misspelled word with one of up to ten
+    suggestions; the suggestions are shown in the prompt on the echo line.
+
+    * **r** prompts for a string to replace the word.
+
+M-\$
+
+:   **spell-word**\index{M-\$}\index{spell-word}
+
+    Similar to **spell-region**, except that it checks only the word under
+    the cursor.
+
 # Files
 
 \index{Files}
@@ -1541,13 +1568,6 @@ C-X C-W
     then it writes the contents of the current buffer to that file. The
     "changed" flag for the current buffer is reset, and the supplied file
     name becomes the associated file name for the current buffer.
-
-C-X I
-
-:   **spell-check**\index{C-X I}\index{spell-check}
-
-    This command saves the current buffer to a file and runs `ispell` on the file.
-    When `ispell` exits, MicroEMACS  reads in the (possibly modified) file).
 
 # Keyboard Macros
 

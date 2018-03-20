@@ -793,6 +793,8 @@ int lowerregion (int f, int n, int k);	/* Lower case region.           */
 int upperregion (int f, int n, int k);	/* Upper case region.           */
 int indentregion (int f, int n, int k);	/* Shift region indentation.    */
 
+int getregion (REGION *rp);		/* Get current region bounds.	*/
+
 /*
  * Defined "ring.c".
  */
@@ -821,14 +823,13 @@ int foldcase (int f, int n, int k);	/* Set casefold flag            */
 /*
  * Defined by "spell.c".
  */
-int spellword (int f, int n, int k);	/* Spell-check cursor word	*/
-
+int spellword (int f, int n, int k);	/* Spell-check cursor word.	*/
+int spellregion (int f, int n, int k);	/* Spell-check marked region.	*/
 
 /*
  * Defined by "spawn.c".
  */
 int spawncli (int f, int n, int k);	/* Run CLI in a subjob.         */
-int spellcheck (int f, int n, int k);	/* Run ispell in a subjob.      */
 
 int spawn (char *program,		/* Spawn a program.		*/
 	   const char *args[]);
