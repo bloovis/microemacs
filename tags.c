@@ -387,7 +387,7 @@ preptag (const char *string)
  * and the apostrophe should be recognized; otherwise, programming
  * language identifier characters such as '_' are also recognized.
  */
-static int
+int
 inwordpos (struct LINE *linep, int doto, int alpha)
 {
   int c;

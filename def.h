@@ -871,6 +871,8 @@ int searchtag (int f, int n, int (*prep)(const char *string),
 void getcursorword (char *buffer,	/* Get word under cursor.	*/
 		    int size,
 		    int alpha);
+int inwordpos (struct LINE *linep,	/* Word char at pos?		*/
+	       int doto, int alpha);
 
 /*
  * Defined by "tty.c".

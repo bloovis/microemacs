@@ -43,12 +43,7 @@ static int nrepl;		/* number of replacements performed */
 static int
 inalpha (void)
 {
-  int c;
-
-  if (curwp->w_dot.o == wllength (curwp->w_dot.p))
-    return (FALSE);
-  c = wlgetc (curwp->w_dot.p, curwp->w_dot.o);
-  return c == '\'' || ISALPHA (c);
+  return inwordpos (curwp->w_dot.p, curwp->w_dot.o, TRUE);
 }
 
 /*
@@ -68,7 +63,7 @@ open_ispell (void)
   if (openpipe ("ispell", args, &ispell_input, &ispell_output) == FALSE)
     return FALSE;
 
-  /* Read the prompt string from ispell.
+  /* Read the identification message from ispell.
    */
   if (fgets (buf, sizeof (buf), ispell_input) == NULL)
     return FALSE;
@@ -176,7 +171,7 @@ getrepl (const char *prompt)
  * Ask ispell to check a word, and if it is not correct,
  * prompt the user with the suggestions from ispell.
  * If info is TRUE, print status messages on the echo line
- * whether a replacement was performed.
+ * about the replacement that was performed, if any.
  */
 static int
 ask_ispell (int info)
@@ -226,6 +221,10 @@ ask_ispell (int info)
 	case '#':
 	case '&':
 	case '?':
+	  /* Ignore the first part of the response, which gives
+	   * the original word, an offset, and possibly the
+	   * number of guesses.
+	   */
 	  if (buf[0] == '#')
 	    fmt = " %*s %*d%n";
 	  else
@@ -235,7 +234,8 @@ ask_ispell (int info)
 	    break;
 	  s += chars;
 
-	  /* Break up the guesses line into individual words.
+	  /* The rest of the response contains guesses separated by commas.
+	   * Break up the guesses into individual words.
 	   */
 	  nguesses = 0;
 	  for (i = 0; i < 10 && *s != '\0'; i++)
@@ -253,6 +253,10 @@ ask_ispell (int info)
 		break;
 	      ++s;
 	    }
+
+	  /* Construct a prompt string that includes as many guesses
+	   * as will fit on one line.
+	   */
 	  strcpy (prompt, word);
 	  strcat (prompt, ": SPC=ignore,A=accept,R=replace,Q=quit");
 	  for (i = 0; i < nguesses; i++)
@@ -276,6 +280,10 @@ ask_ispell (int info)
 	      strcat (prompt, "=");
 	      strcat (prompt, guesses[i]);
 	    }
+
+	  /* Prompt for a replacement word, and do the replacement
+	   * if the user specifies one.
+	   */
 	  if ((status = getrepl (prompt)) == TRUE)
 	    status = replace ();
 	  if (info)
