@@ -120,9 +120,9 @@ upperword (int f, int n, int k)
       while (inword () != FALSE)
 	{
 	  c = wlgetc (curwp->w_dot.p, curwp->w_dot.o);
-	  if (ISLOWER (c) != FALSE)
+	  if (CISLOWER (c) != FALSE)
 	    {
-	      c = TOUPPER (c);
+	      c = CTOUPPER (c);
 	      lputc (curwp->w_dot, c);
 	      lchange (WFHARD);
 	    }
@@ -159,9 +159,9 @@ lowerword (int f, int n, int k)
       while (inword () != FALSE)
 	{
 	  c = wlgetc (curwp->w_dot.p, curwp->w_dot.o);
-	  if (ISUPPER (c) != FALSE)
+	  if (CISUPPER (c) != FALSE)
 	    {
-	      c = TOLOWER (c);
+	      c = CTOLOWER (c);
 	      lputc (curwp->w_dot, c);
 	      lchange (WFHARD);
 	    }
@@ -199,9 +199,9 @@ capword (int f, int n, int k)
       if (inword () != FALSE)
 	{
 	  c = lgetc (curwp->w_dot.p, curwp->w_dot.o);
-	  if (ISLOWER (c) != FALSE)
+	  if (CISLOWER (c) != FALSE)
 	    {
-	      c = TOUPPER (c);
+	      c = CTOUPPER (c);
 	      lputc (curwp->w_dot, c);
 	      lchange (WFHARD);
 	    }
@@ -210,9 +210,9 @@ capword (int f, int n, int k)
 	  while (inword () != FALSE)
 	    {
 	      c = lgetc (curwp->w_dot.p, curwp->w_dot.o);
-	      if (ISUPPER (c) != FALSE)
+	      if (CISUPPER (c) != FALSE)
 		{
-		  c = TOLOWER (c);
+		  c = CTOLOWER (c);
 		  lputc (curwp->w_dot, c);
 		  lchange (WFHARD);
 		}
@@ -322,7 +322,7 @@ inword (void)
 {
   if (curwp->w_dot.o == wllength (curwp->w_dot.p))
     return (FALSE);
-  if (ISWORD (wlgetc (curwp->w_dot.p, curwp->w_dot.o)) != FALSE)
+  if (CISWORD (wlgetc (curwp->w_dot.p, curwp->w_dot.o)) != FALSE)
     return (TRUE);
   return (FALSE);
 }

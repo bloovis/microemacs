@@ -651,13 +651,13 @@ lreplace (
   backchar (TRUE, plen, KRANDOM);
   rtype = LOWER;
   c = wlgetc (curwp->w_dot.p, curwp->w_dot.o);
-  if (ISUPPER (c) != FALSE && f == FALSE)
+  if (CISUPPER (c) != FALSE && f == FALSE)
     {
       rtype = UPPER | LOWER;
       if (curwp->w_dot.o + 1 < wllength (curwp->w_dot.p))
 	{
 	  c = wlgetc (curwp->w_dot.p, curwp->w_dot.o + 1);
-	  if (ISUPPER (c) != FALSE)
+	  if (CISUPPER (c) != FALSE)
 	    {
 	      rtype = UPPER;
 	    }
@@ -692,8 +692,8 @@ lreplace (
     {
       c = ugetc ((const uchar *) st, 0, &clen);
       st += clen;
-      if ((rtype & UPPER) != 0 && ISLOWER (c) != 0)
-	c = TOUPPER (c);
+      if ((rtype & UPPER) != 0 && CISLOWER (c) != 0)
+	c = CTOUPPER (c);
       if (rtype == (UPPER | LOWER))
 	rtype = LOWER;
       if (c == '\n')

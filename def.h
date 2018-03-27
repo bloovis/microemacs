@@ -263,15 +263,15 @@ typedef unsigned char uchar;
  * as function calls that do the right thing for Unicode.
  */
 
-#define ISWORD(c)	(cisword((c)))
-#define ISALPHA(c)	(cisalpha((c)))
-#define ISCTRL(c)	(cisctrl((c)))
-#define ISUPPER(c)	(cisupper((c)))
-#define ISLOWER(c)	(cislower((c)))
-#define ISEOSP(c)	(ciseosp((c)))
-#define TOUPPER(c)	(ctoupper((c)))
-#define TOLOWER(c)	(ctolower((c)))
-#define	EQ(c1,c2)	(ceq((c1),(c2)))
+#define CISWORD(c)	(cisword((c)))
+#define CISALPHA(c)	(cisalpha((c)))
+#define CISCTRL(c)	(cisctrl((c)))
+#define CISUPPER(c)	(cisupper((c)))
+#define CISLOWER(c)	(cislower((c)))
+#define CISEOSP(c)	(ciseosp((c)))
+#define CTOUPPER(c)	(ctoupper((c)))
+#define CTOLOWER(c)	(ctolower((c)))
+#define	CEQ(c1,c2)	(ceq((c1),(c2)))
 
 /*
  * Kinds of undo information.
@@ -819,6 +819,11 @@ int regqueryrepl (int f, int n, int k);	/* Regexp query replace         */
 int regrepl (int f, int n, int k);	/* Regexp replace with no query */
 int searchparen (int f, int n, int k);	/* Search for matching paren    */
 int foldcase (int f, int n, int k);	/* Set casefold flag            */
+
+/*
+ * Defined by "ruby.c".
+ */
+int rubystring (int f, int n, int k);	/* Execute a ruby string	*/
 
 /*
  * Defined by "spell.c".

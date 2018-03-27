@@ -41,6 +41,14 @@ AC_ARG_WITH(ntconsole,
 [  --with-ntconsole        Use NT-specific console I/O instead of generic UNIX I/O],
 [ttydir=tty/nt])
 
+AC_ARG_WITH(ruby,
+[  --with-ruby             Add Ruby scripting support],
+[EXTRA_OBJS="$EXTRA_OBJS ruby.o rubyapi.o"
+CFLAGS_RUBY="`pkg-config --cflags ruby` -DUSE_RUBY=1"
+LIBS="$LIBS -ldl"],
+[CFLAGS_RUBY=""
+])
+
 # Set the default compiler switches based on the --enable-debug option
 
 AC_ARG_ENABLE(debug,
@@ -56,5 +64,6 @@ AC_SUBST(LIBS)
 AC_SUBST(CFLAGS_DEBUG)
 AC_SUBST(CFLAGS_DEFAULT)
 AC_SUBST(CFLAGS_OPTIMIZE)
+AC_SUBST(CFLAGS_RUBY)
 
 AC_OUTPUT(Makefile)

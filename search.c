@@ -332,7 +332,7 @@ forwsrch (void)
 	  if (pat[0] != '\n')
 	    goto fail;
 	}
-      else if (!EQ (wlgetc (clp, cbo++), ugetc (pat, 0, NULL)))
+      else if (!CEQ (wlgetc (clp, cbo++), ugetc (pat, 0, NULL)))
 	goto fail;
       tlp = clp;
       tbo = cbo;
@@ -346,7 +346,7 @@ forwsrch (void)
 	      if (ugetc (pat, pp, NULL) != '\n')
 		goto fail;
 	    }
-	  else if (!EQ (wlgetc (tlp, tbo++), ugetc (pat, pp, NULL)))
+	  else if (!CEQ (wlgetc (tlp, tbo++), ugetc (pat, pp, NULL)))
 	    goto fail;
 	}
       curwp->w_dot.p = tlp;
@@ -395,7 +395,7 @@ backsrch (void)
 	  if (ugetc (pat, epp, NULL) != '\n')
 	    goto fail;
 	}
-      else if (!EQ (wlgetc (clp, --cbo), ugetc (pat, epp, NULL)))
+      else if (!CEQ (wlgetc (clp, --cbo), ugetc (pat, epp, NULL)))
 	goto fail;
       tlp = clp;
       tbo = cbo;
@@ -410,7 +410,7 @@ backsrch (void)
 	      if (ugetc (pat, --pp, NULL) != '\n')
 		goto fail;
 	    }
-	  else if (!EQ ((wlgetc (tlp, --tbo)), ugetc (pat, --pp, NULL)))
+	  else if (!CEQ ((wlgetc (tlp, --tbo)), ugetc (pat, --pp, NULL)))
 	    goto fail;
 	}
       curwp->w_dot.p = tlp;
@@ -794,7 +794,7 @@ isearch (int dir)
 	  goto addchar;
 
 	default:
-	  if (ISCTRL (c) != FALSE)
+	  if (CISCTRL (c) != FALSE)
 	    {
 	      ungetinp (c);	/* push back input */
 	      curwp->w_flag |= WFMOVE;
@@ -1323,7 +1323,7 @@ searchparen (int f, int n, int k)
       ch = (cbo < len) ? lgetc (clp, cbo) : '\n';
       if (!searchignore (ch, forward))
 	{
-	  if (EQ (ch, chdec))
+	  if (CEQ (ch, chdec))
 	    {
 	      if (count-- == 0)
 		{		/* We've found it   */
@@ -1333,7 +1333,7 @@ searchparen (int f, int n, int k)
 		  return (TRUE);
 		}
 	    }
-	  else if (EQ (ch, chinc))
+	  else if (CEQ (ch, chinc))
 	    count++;
 	}
     }

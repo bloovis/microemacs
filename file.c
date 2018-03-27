@@ -543,7 +543,7 @@ expand (const char *text, int *len)
     {
       if ((c = *text++ & 0xff) == '\t')
 	ncols = tabsize - (col % tabsize);
-      else if (ISCTRL (c) != FALSE)
+      else if (CISCTRL (c) != FALSE)
 	ncols = 2;
       else
 	ncols = 1;

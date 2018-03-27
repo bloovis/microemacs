@@ -661,7 +661,7 @@ eread (const char *fp, char *buf, int nbuf, int flag, va_list ap)
 	      ettputc (' ');
 	      ettputc ('\b');
 	      --ttcol;
-	      if (ISCTRL (buf[--cpos]) != FALSE)
+	      if (CISCTRL (buf[--cpos]) != FALSE)
 		{
 		  ettputc ('\b');
 		  ettputc (' ');
@@ -704,7 +704,7 @@ eread (const char *fp, char *buf, int nbuf, int flag, va_list ap)
 	      ettputc (' ');
 	      ettputc ('\b');
 	      --ttcol;
-	      if (ISCTRL (buf[--cpos]) != FALSE)
+	      if (CISCTRL (buf[--cpos]) != FALSE)
 		{
 		  ettputc ('\b');
 		  ettputc (' ');
@@ -911,7 +911,7 @@ eputc (int c)
 {
   if (ttcol < ncol)
     {
-      if (ISCTRL (c) != FALSE)
+      if (CISCTRL (c) != FALSE)
 	{
 	  eputc ('^');
 	  c ^= 0x40;

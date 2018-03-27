@@ -621,6 +621,7 @@ ac_includes_default="\
 
 ac_subst_vars='LTLIBOBJS
 LIBOBJS
+CFLAGS_RUBY
 CFLAGS_OPTIMIZE
 CFLAGS_DEFAULT
 CFLAGS_DEBUG
@@ -695,6 +696,7 @@ enable_option_checking
 with_linux
 with_termcap
 with_ntconsole
+with_ruby
 enable_debug
 '
       ac_precious_vars='build_alias
@@ -1337,6 +1339,7 @@ Optional Packages:
   --with-linux            Use Linux-specific instead of generic UNIX I/O
   --with-termcap          Use termcap instead of ncurses for screen I/O
   --with-ntconsole        Use NT-specific console I/O instead of generic UNIX I/O
+  --with-ruby             Add Ruby scripting support
 
 Some influential environment variables:
   CC          C compiler command
@@ -3399,6 +3402,18 @@ if test "${with_ntconsole+set}" = set; then :
 fi
 
 
+
+# Check whether --with-ruby was given.
+if test "${with_ruby+set}" = set; then :
+  withval=$with_ruby; EXTRA_OBJS="$EXTRA_OBJS ruby.o rubyapi.o"
+CFLAGS_RUBY="`pkg-config --cflags ruby` -DUSE_RUBY=1"
+LIBS="$LIBS -ldl"
+else
+  CFLAGS_RUBY=""
+
+fi
+
+
 # Set the default compiler switches based on the --enable-debug option
 
 # Check whether --enable-debug was given.
@@ -3407,6 +3422,7 @@ if test "${enable_debug+set}" = set; then :
 else
   CFLAGS_DEFAULT=CFLAGS_OPTIMIZE
 fi
+
 
 
 

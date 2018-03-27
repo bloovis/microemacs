@@ -396,9 +396,9 @@ inwordpos (struct LINE *linep, int doto, int alpha)
     return FALSE;
   c = wlgetc (linep, doto);
   if (alpha)
-    return c == '\'' || ISALPHA (c);
+    return c == '\'' || CISALPHA (c);
   else
-    return ISWORD (c) && c != '\'';
+    return CISWORD (c) && c != '\'';
 }
 
 /*
@@ -569,11 +569,11 @@ uncamel(const char *s)
   for (i = 0, j = 0; j < sizeof(buf); i++)
     {
       char c = s[i];
-      if (ISUPPER(c))
+      if (CISUPPER(c))
 	{
 	  if (j > 0)
 	    buf[j++] = '_';
-	  buf[j++] = TOLOWER(c);
+	  buf[j++] = CTOLOWER(c);
 	}
       else
 	buf[j++] = c;

@@ -269,7 +269,7 @@ vtputc (int c)
     vttext[ncol - 1] = '$';
   else if (c == '\t')
     vtputs (spaces, tabsize - (vtcol % tabsize));
-  else if (ISCTRL (c) != FALSE)
+  else if (CISCTRL (c) != FALSE)
     {
       vtputc ('^');
       vtputc (c ^ 0x40);
@@ -307,7 +307,7 @@ vtputs (const uchar *s, int n)
 	}
       else if (c == '\t')
 	vtputs (spaces, tabsize - (vtcol % tabsize));
-      else if (c < 0x80 && ISCTRL (c) != FALSE)
+      else if (c < 0x80 && CISCTRL (c) != FALSE)
 	{
 	  vtputc ('^');
 	  vtputc (c ^ 0x40);
@@ -399,7 +399,7 @@ update (void)
       s += ulen;
       if (c == '\t')
 	curcol += (tabsize - curcol % tabsize) - 1;
-      else if (c < 0x80 && ISCTRL (c) != FALSE)
+      else if (c < 0x80 && CISCTRL (c) != FALSE)
 	++curcol;
       ++curcol;
     }

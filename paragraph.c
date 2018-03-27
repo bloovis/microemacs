@@ -237,7 +237,7 @@ fillpara (int f, int n, int k)
 	  if ((eolflag || curwp->w_dot.o == wllength (curwp->w_dot.p)
 	       || (c = wlgetc (curwp->w_dot.p, curwp->w_dot.o)) == ' '
 	       || c == '\t')
-	      && ISEOSP (wbuf[wordlen - 1]) && wordlen < MAXWORD - 1)
+	      && CISEOSP (wbuf[wordlen - 1]) && wordlen < MAXWORD - 1)
 	    wbuf[wordlen++] = ' ';
 
 	  /* at a word break with a word waiting
@@ -333,7 +333,7 @@ fillword (int f, int n, int k)
       c = lgetc (curwp->w_dot.p, i);
       if (c == '\t')
 	col += (tabsize - col % tabsize) - 1;
-      else if (ISCTRL (c) != FALSE)
+      else if (CISCTRL (c) != FALSE)
 	++col;
     }
   if (curwp->w_dot.o != wllength (curwp->w_dot.p))

@@ -183,7 +183,7 @@ getgoal (LINE *dlp)
       newcol = col;
       if (c == '\t')
 	newcol += tabsize - newcol % tabsize - 1;
-      else if (c < 0x80 && ISCTRL (c) != FALSE)
+      else if (c < 0x80 && CISCTRL (c) != FALSE)
 	++newcol;
       ++newcol;
       if (newcol > curgoal)

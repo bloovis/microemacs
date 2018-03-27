@@ -18,3 +18,5 @@ junk*
 *.out
 *.tex
 *.toc
+autom4te.cache
+doc/xe*

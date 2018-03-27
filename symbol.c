@@ -292,6 +292,9 @@ KEY key[] = {
   {-1,			nextcscope,	"next-cscope"},
 #endif
   {-1,			mouseevent,	"mouse-event"},
+#if USE_RUBY
+  {-1,			rubystring,	"ruby-string"},
+#endif
   {-1,			jeffexit,	"jeff-exit"},
 };
 

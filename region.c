@@ -237,13 +237,13 @@ lowerregion (int f, int n, int k)
       else
 	{
 	  c = wlgetc (linep, loffs);
-	  if (ISUPPER (c) != FALSE)
+	  if (CISUPPER (c) != FALSE)
 	    {
 	      POS pos;
 
 	      pos.p = linep;
 	      pos.o = loffs;
-	      lputc (pos, TOLOWER (c));
+	      lputc (pos, CTOLOWER (c));
 	    }
 	  ++loffs;
 	}
@@ -285,13 +285,13 @@ upperregion (int f, int n, int k)
       else
 	{
 	  c = wlgetc (linep, loffs);
-	  if (ISLOWER (c) != FALSE)
+	  if (CISLOWER (c) != FALSE)
 	    {
 	      POS pos;
 
 	      pos.p = linep;
 	      pos.o = loffs;
-	      lputc (pos, TOUPPER (c));
+	      lputc (pos, CTOUPPER (c));
 	    }
 	  ++loffs;
 	}

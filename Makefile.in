@@ -16,7 +16,8 @@ INC		= -I$(srcdir) -I$(SYS) -I$(TTY)
 CC		= @CC@
 CFLAGS_DEBUG	= @CFLAGS_DEBUG@
 CFLAGS_OPTIMIZE	= @CFLAGS_OPTIMIZE@
-CFLAGS		= $(@CFLAGS_DEFAULT@) @DEFS@ @DEFINES@ $(INC) -Wall
+CFLAGS_RUBY     = @CFLAGS_RUBY@
+CFLAGS		= $(@CFLAGS_DEFAULT@) $(CFLAGS_RUBY) @DEFS@ @DEFINES@ $(INC) -Wall
 
 LD		= @CC@
 LDFLAGS		= @LDFLAGS@
@@ -104,6 +105,14 @@ Makefile: Makefile.in config.status
 
 config.status: configure
 	./config.status --recheck
+
+# Construct rubyapi.o by reading API table from ruby.c
+
+rubyapi.o : rubyapi.S
+	$(CC) -c rubyapi.S
+
+rubyapi.S : $(srcdir)/makeapi.rb $(srcdir)/ruby.c
+	$(srcdir)/makeapi.rb < $(srcdir)/ruby.c > rubyapi.S
 
 # Include compiler-generated dependency files
 

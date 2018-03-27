@@ -177,7 +177,7 @@ getcolpos (void)
       c = wlgetc (curwp->w_dot.p, i);
       if (c == '\t')
 	col += (tabsize - col % tabsize) - 1;
-      else if (c < 0x80 && ISCTRL (c) != FALSE)
+      else if (c < 0x80 && CISCTRL (c) != FALSE)
 	++col;
       ++col;
     }

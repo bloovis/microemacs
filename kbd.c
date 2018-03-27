@@ -113,8 +113,8 @@ getctl (void)
   register int c;
 
   c = getinp ();
-  if (ISLOWER (c) != FALSE)
-    c = TOUPPER (c);
+  if (CISLOWER (c) != FALSE)
+    c = CTOUPPER (c);
   if (c >= 0x00 && c <= 0x1F)	/* Relocate control.    */
     c = KCTRL | (c + '@');
   return (c);
@@ -373,14 +373,14 @@ eqtoken (
     return (FALSE);
   for (i = pindex; *s; s++, i++)
     {
-      if (!EQ (ptoken[i], *s))
+      if (!CEQ (ptoken[i], *s))
 	{			/* chars don't match?   */
 	  c1 = ptoken[i];	/* fold case            */
 	  if (c1 >= 'a' && c1 <= 'z')
-	    c1 = TOUPPER (c1);
+	    c1 = CTOUPPER (c1);
 	  c2 = *s;
 	  if (c2 >= 'a' && c2 <= 'z')
-	    c2 = TOUPPER (c2);
+	    c2 = CTOUPPER (c2);
 	  if (c1 != c2)
 	    return (FALSE);	/* they don't match     */
 	}
