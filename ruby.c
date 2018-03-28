@@ -43,14 +43,32 @@ const char *fnames[] =
   /* End of API names */
 };
 
+/* C functions callable from Ruby. */
+
+static VALUE
+my_echo (VALUE self, VALUE arg1)
+{
+  VALUE ret;
+
+  if (RB_TYPE_P(arg1, T_STRING))
+    eprintf ("%s", StringValueCStr(arg1));
+  else
+    eprintf ("Arg type to echo is not string");
+  ret = INT2NUM (0);
+  return ret;
+}
+
+
 /* Load the ruby library and initialize the pointers to the APIs.
  * Return TRUE on success, or FALSE on failure.
  */
 static int
 loadruby (void)
 {
-  int i;
+  int i, status;
 
+  if (ruby_handle != NULL)
+    return TRUE;
   ruby_handle = dlopen("libruby-2.3.so", RTLD_LAZY);
   if (ruby_handle == NULL)
     {
@@ -70,32 +88,6 @@ loadruby (void)
 	  /* printf("Address of %s is %p\n", fnames[i], ruby_fptrs[i]); */
 	}
     }
-  return TRUE;
-}
-
-static VALUE
-my_echo (VALUE self, VALUE arg1)
-{
-  VALUE ret;
-
-  if (RB_TYPE_P(arg1, T_STRING))
-    eprintf ("%s", StringValueCStr(arg1));
-  else
-    eprintf ("Arg type to echo is not string");
-  ret = INT2NUM (0);
-  return ret;
-}
-
-int
-rubystring (int f, int n, int k)
-{
-  int status;
-  int state;
-  VALUE result;
-
-  if ((status = loadruby ()) != TRUE)
-    return status;
-
   if ((status = ruby_setup ()) != 0)
     {
       eprintf ("ruby_setup returned %d", status);
@@ -105,23 +97,49 @@ rubystring (int f, int n, int k)
   /* Define a global function called "echo". */
   rb_define_global_function("echo", my_echo, 1);
 
-  /* Ruby goes here */
-  result = rb_eval_string_protect("echo 'Hello, world!'", &state);
-  if (state)
-  {
-    /* handle exception */
-    eprintf ("rb_eval_string_protect returned an exception");
-  }
+  return TRUE;
+}
+
+#if 0
+static void
+unloadruby (void)
+{
+  int status;
 
   /* destruct the VM */
   status = ruby_cleanup(0);
   if (status != 0)
     eprintf ("ruby_cleanup returned %d", status);
+}
+#endif
 
-  /* Check the return code from echo */
-  status = NUM2INT (result);
-  if (status != 0)
-    eprintf ("my_echo returned %d", status);
+int
+rubystring (int f, int n, int k)
+{
+  int status;
+  int state;
+  VALUE result;
+  char line[NCOL];
+
+  if ((status = loadruby ()) != TRUE)
+    return status;
+
+  /* Ruby goes here */
+  if ((status = ereply ("Ruby code: ", line, sizeof (line))) != TRUE)
+    return status;
+  result = rb_eval_string_protect(line, &state);
+  if (state)
+    {
+      /* handle exception */
+      eprintf ("rb_eval_string_protect returned an exception");
+    }
+  else
+    {
+      /* Check the return code from echo */
+      status = NUM2INT (result);
+      if (status != 0)
+	eprintf ("ruby code returned %d", status);
+    }
 
   return TRUE;
 }
