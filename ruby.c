@@ -40,23 +40,154 @@ const char *fnames[] =
   "rb_string_value_cstr",
   "rb_fix2int",
   "rb_num2int",
+  "rb_errinfo",
+  "rb_set_errinfo",
+  "rb_intern2",
+  "rb_funcall",
   /* End of API names */
 };
 
 /* C functions callable from Ruby. */
 
+/*
+ * Look up an underscore-ized symbol in the symbol table.
+ * Underscores in the symbol name are converted to dashes
+ * before the lookup is performed.
+ */
+static SYMBOL *
+rubylookup (const char *s)
+{
+  char *s1 = malloc (strlen (s) + 1);
+  char *p;
+  char c;
+  SYMBOL *sp;
+
+  if (s1 == NULL)
+    {
+      eprintf ("Out of memory in ruby.c");
+      return NULL;
+    }
+  for (p = s1; (c = *s) != '\0'; ++p, ++s)
+    {
+      if (c == '_')
+	*p = '-';
+      else
+	*p = c;
+    }
+  *p = '\0';
+  sp = symlookup (s1);
+  free (s1);
+  return sp;
+}
+
+
+/*
+ * Check if the string c is is actual MicroEMACS command.
+ */
 static VALUE
-my_echo (VALUE self, VALUE arg1)
+my_iscmd (VALUE self, VALUE c)
 {
   VALUE ret;
+  const char *name;
 
-  if (RB_TYPE_P(arg1, T_STRING))
-    eprintf ("%s", StringValueCStr(arg1));
-  else
-    eprintf ("Arg type to echo is not string");
-  ret = INT2NUM (0);
+  ret = Qfalse;
+  if (RB_TYPE_P(c, T_STRING))
+    {
+      name = StringValueCStr(c);
+      if (rubylookup (name) != NULL)
+	ret = Qtrue;
+    }
   return ret;
 }
+
+/*
+ * Run a MicroEMACS command.
+ *
+ * FIXME: pass n, f, k, and optional strings.
+ */
+static VALUE
+my_cmd (VALUE self, VALUE c, VALUE f, VALUE n, VALUE k, VALUE s)
+{
+  VALUE ret = Qtrue;
+  const char *name;
+  int flag;
+  int narg;
+  int key;
+  SYMBOL *sp;
+
+  if (RB_TYPE_P(c, T_STRING))
+    name = StringValueCStr (c);
+  else
+    {
+      eprintf ("command name must be a string");
+      ret = Qfalse;
+    }
+
+  if (FIXNUM_P(f))
+    flag = FIX2INT (f);
+  else
+    {
+      eprintf ("flag must be a fixnum");
+      ret = Qfalse;
+    }
+
+  if (FIXNUM_P(n))
+    narg = FIX2INT (n);
+  else
+    {
+      eprintf ("numeric argument must be a fixnum");
+      ret = Qfalse;
+    }
+
+  if (FIXNUM_P(k))
+    key = FIX2INT (k);
+  else
+    {
+      eprintf ("key must be a fixnum");
+      ret = Qfalse;
+    }
+
+  if (!RB_TYPE_P(s, T_ARRAY))
+    {
+      eprintf ("strings must be an array");
+      ret = Qfalse;
+    }
+
+  /* If all parameters look OK, run the command.
+   */
+  if (ret == Qtrue)
+    {
+      int cret = FALSE;
+
+      /* fprintf (stdout, "my_cmd: name = %s\n", name); */
+      if ((sp = rubylookup (name)) != NULL)
+	{
+	  if (sp->s_macro)
+	    {
+	      if (kbdmip != NULL || kbdmop != NULL)
+		{
+		  eprintf ("Not now");
+		  cret = FALSE;
+		}
+	      else
+		cret = domacro (sp->s_macro, 1);
+	    }
+	  else
+	    cret = sp->s_funcp (flag, narg, key);
+	}
+      else
+	{
+	  eprintf ("Unknown command %s", name);
+	  cret = FALSE;
+	}
+      if (cret == TRUE)
+	ret = Qtrue;
+      else
+	ret = Qfalse;
+    }
+  return ret;
+}
+
 
 
 /* Load the ruby library and initialize the pointers to the APIs.
@@ -94,8 +225,10 @@ loadruby (void)
       return FALSE;
     }
 
-  /* Define a global function called "echo". */
-  rb_define_global_function("echo", my_echo, 1);
+  /* Define global functions that can be called from ruby.
+   */
+  rb_define_global_function("cmd", my_cmd, 5);
+  rb_define_global_function("iscmd", my_iscmd, 1);
 
   return TRUE;
 }
@@ -118,7 +251,6 @@ rubystring (int f, int n, int k)
 {
   int status;
   int state;
-  VALUE result;
   char line[NCOL];
 
   if ((status = loadruby ()) != TRUE)
@@ -127,19 +259,17 @@ rubystring (int f, int n, int k)
   /* Ruby goes here */
   if ((status = ereply ("Ruby code: ", line, sizeof (line))) != TRUE)
     return status;
-  result = rb_eval_string_protect(line, &state);
+  rb_eval_string_protect(line, &state);
   if (state)
     {
       /* handle exception */
-      eprintf ("rb_eval_string_protect returned an exception");
+      VALUE exception = rb_errinfo ();	/* get last exception */
+      if (RTEST(exception))
+	{
+	  VALUE msg = rb_funcall (exception, rb_intern("to_s"), 0);
+	  eprintf ("ruby exception: %s", StringValueCStr (msg));
+	}
+      rb_set_errinfo (Qnil);		/* clear last exception */
     }
-  else
-    {
-      /* Check the return code from echo */
-      status = NUM2INT (result);
-      if (status != 0)
-	eprintf ("ruby code returned %d", status);
-    }
-
   return TRUE;
 }
