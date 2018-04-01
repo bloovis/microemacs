@@ -1,5 +1,13 @@
 # Class to encapsulate a MicroEMACS key code.
 
+# MicroEMACS functions return a trinary value.  We have
+# to use an "E" prefix to avoid conflicts with Ruby's
+# builtin constants.
+
+EFALSE = 0
+ETRUE  = 1
+EABORT = 2
+
 # Trap SIGINT so we can cleanly cause Ruby to
 # exit instead of killing MicroEMACS.
 

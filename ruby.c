@@ -101,18 +101,21 @@ my_iscmd (VALUE self, VALUE c)
 }
 
 /*
- * Run a MicroEMACS command.
+ * Run a MicroEMACS command.  Return its result code
+ * as a FIXNUM (0 = FALSE, 1 = TRUE, 2 = ABORT).
  *
- * FIXME: pass n, f, k, and optional strings.
+ * FIXME: pass optional strings so that they can be used
+ * by eread.
  */
 static VALUE
 my_cmd (VALUE self, VALUE c, VALUE f, VALUE n, VALUE k, VALUE s)
 {
-  VALUE ret = Qtrue;
+  VALUE ret;
   const char *name;
   int flag;
   int narg;
   int key;
+  int cret = TRUE;
   SYMBOL *sp;
 
   if (RB_TYPE_P(c, T_STRING))
@@ -120,7 +123,7 @@ my_cmd (VALUE self, VALUE c, VALUE f, VALUE n, VALUE k, VALUE s)
   else
     {
       eprintf ("command name must be a string");
-      ret = Qfalse;
+      cret = FALSE;
     }
 
   if (FIXNUM_P(f))
@@ -128,7 +131,7 @@ my_cmd (VALUE self, VALUE c, VALUE f, VALUE n, VALUE k, VALUE s)
   else
     {
       eprintf ("flag must be a fixnum");
-      ret = Qfalse;
+      cret = FALSE;
     }
 
   if (FIXNUM_P(n))
@@ -136,7 +139,7 @@ my_cmd (VALUE self, VALUE c, VALUE f, VALUE n, VALUE k, VALUE s)
   else
     {
       eprintf ("numeric argument must be a fixnum");
-      ret = Qfalse;
+      cret = FALSE;
     }
 
   if (FIXNUM_P(k))
@@ -144,20 +147,20 @@ my_cmd (VALUE self, VALUE c, VALUE f, VALUE n, VALUE k, VALUE s)
   else
     {
       eprintf ("key must be a fixnum");
-      ret = Qfalse;
+      cret = FALSE;
     }
 
   if (!RB_TYPE_P(s, T_ARRAY))
     {
       eprintf ("strings must be an array");
-      ret = Qfalse;
+      cret = FALSE;
     }
 
   /* If all parameters look OK, run the command.
    */
-  if (ret == Qtrue)
+  if (cret == TRUE)
     {
-      int cret = FALSE;
+     cret = FALSE;
 
       /* fprintf (stdout, "my_cmd: name = %s\n", name); */
       if ((sp = rubylookup (name)) != NULL)
@@ -180,11 +183,8 @@ my_cmd (VALUE self, VALUE c, VALUE f, VALUE n, VALUE k, VALUE s)
 	  eprintf ("Unknown command %s", name);
 	  cret = FALSE;
 	}
-      if (cret == TRUE)
-	ret = Qtrue;
-      else
-	ret = Qfalse;
     }
+  ret = INT2NUM (cret);
   return ret;
 }
 
