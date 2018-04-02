@@ -144,13 +144,13 @@ freeundo (UNDO *up)
 /*
  * Calculate the zero-based line number for a given line pointer.
  */
-static int
+int
 lineno (const LINE *lp)
 {
   LINE *clp;
   int nline;
 
-  clp = lforw (curbp->b_linep);	/* Collect the data.    */
+  clp = lforw (curbp->b_linep);
   nline = 0;
   for (;;)
     {

@@ -200,12 +200,15 @@ getgoal (LINE *dlp)
  * If the number of lines to move is less
  * than zero, call the backward line function to
  * actually do it. The last command controls how
- * the goal column is set.
+ * the goal column is set.  Return TRUE if the
+ * move was actually performed; FALSE otherwise
+ * (e.g., if we were already on the last line).
  */
 int
 forwline (int f, int n, int k)
 {
   register LINE *dlp;
+  int ret;
 
   if (n < 0)
     return (backline (f, -n, KRANDOM));
@@ -213,12 +216,16 @@ forwline (int f, int n, int k)
     setgoal ();
   thisflag |= CFCPCN;
   dlp = curwp->w_dot.p;
+  ret = FALSE;
   while (n-- && lforw (dlp) != curbp->b_linep)
-    dlp = lforw (dlp);
+    {
+      dlp = lforw (dlp);
+      ret = TRUE;
+    }
   curwp->w_dot.p = dlp;
   curwp->w_dot.o = getgoal (dlp);
   curwp->w_flag |= WFMOVE;
-  return (TRUE);
+  return ret;
 }
 
 /*
@@ -226,12 +233,15 @@ forwline (int f, int n, int k)
  * goes backwards. The scheme is exactly the same.
  * Check for arguments that are less than zero and
  * call your alternate. Figure out the new line and
- * call "movedot" to perform the motion.
+ * call "movedot" to perform the motion.  Return TRUE if the
+ * move was actually performed; FALSE otherwise
+ * (e.g., if we were already on the first line).
  */
 int
 backline (int f, int n, int k)
 {
   register LINE *dlp;
+  int ret;
 
   if (n < 0)
     return (forwline (f, -n, KRANDOM));
@@ -239,12 +249,16 @@ backline (int f, int n, int k)
     setgoal ();
   thisflag |= CFCPCN;
   dlp = curwp->w_dot.p;
+  ret = FALSE;
   while (n-- && lback (dlp) != curbp->b_linep)
-    dlp = lback (dlp);
+    {
+      dlp = lback (dlp);
+      ret = TRUE;
+    }
   curwp->w_dot.p = dlp;
   curwp->w_dot.o = getgoal (dlp);
   curwp->w_flag |= WFMOVE;
-  return (TRUE);
+  return ret;
 }
 
 /*

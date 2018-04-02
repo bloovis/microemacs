@@ -45,6 +45,7 @@ const char *fnames[] =
   "rb_intern2",
   "rb_funcall",
   "rb_str_new",
+  "rb_str_new_static",
   /* End of API names */
 };
 
@@ -206,18 +207,72 @@ my_cmd (VALUE self, VALUE c, VALUE f, VALUE n, VALUE k, VALUE s)
 }
 
 /*
- * Get the current line.
+ * Get the current line's text.
  */
 static VALUE
 my_getline (VALUE self)
 {
   VALUE ret;
+  VALUE utf8;
 
   ret = rb_str_new ((char *) lgets (curwp->w_dot.p), llength (curwp->w_dot.p));
+  utf8 = rb_str_new_cstr("utf-8");
+  rb_funcall (ret, rb_intern ("force_encoding"), 1, utf8);
   return ret;
 }
 
-/* Load the ruby library and initialize the pointers to the APIs.
+/*
+ * Get the current line number, 1 based so that it can
+ * be used with goto-line, and for compatibility with
+ * display-position.
+ */
+static VALUE
+my_lineno (VALUE self)
+{
+  VALUE ret;
+
+  ret = INT2NUM (lineno (curwp->w_dot.p) + 1);
+  return ret;
+}
+
+/*
+ * Get the current column number, 1 based for compatibility
+ * with display-position.
+ */
+static VALUE
+my_column (VALUE self)
+{
+  VALUE ret;
+
+  ret = INT2NUM (curwp->w_dot.o + 1);
+  return ret;
+}
+
+/*
+ * Insert a string at the current location.
+ */
+static VALUE
+my_insert (VALUE self, VALUE s)
+{
+  VALUE ret;
+  int cret;
+
+  if (!RB_TYPE_P(s, T_STRING))
+    {
+      eprintf ("insert parameter must be a string");
+      cret = FALSE;
+    }
+  else
+    {
+      char *cs = StringValueCStr (s);
+      cret = linsert (strlen (cs), 0, cs);
+    }
+  ret = INT2NUM (cret);
+  return ret;
+}
+
+/*
+ * Load the ruby library and initialize the pointers to the APIs.
  * Return TRUE on success, or FALSE on failure.
  */
 static int
@@ -257,6 +312,9 @@ loadruby (void)
   rb_define_global_function("cmd", my_cmd, 5);
   rb_define_global_function("iscmd", my_iscmd, 1);
   rb_define_global_function("getline", my_getline, 0);
+  rb_define_global_function("lineno", my_lineno, 0);
+  rb_define_global_function("column", my_column, 0);
+  rb_define_global_function("insert", my_insert, 1);
   return TRUE;
 }
 
@@ -273,6 +331,11 @@ unloadruby (void)
 }
 #endif
 
+/*
+ * Prompt for a string, and evaluate the string using the
+ * Ruby interpreter.  Return TRUE if the string was evaluated
+ * successfully, and FALSE if an exception occurred.
+ */
 int
 rubystring (int f, int n, int k)
 {
@@ -283,20 +346,21 @@ rubystring (int f, int n, int k)
   if ((status = loadruby ()) != TRUE)
     return status;
 
-  /* Ruby goes here */
   if ((status = ereply ("Ruby code: ", line, sizeof (line))) != TRUE)
     return status;
   rb_eval_string_protect(line, &state);
   if (state)
     {
-      /* handle exception */
-      VALUE exception = rb_errinfo ();	/* get last exception */
+      /* Get the exception string and display it on the echo line.
+       */
+      VALUE exception = rb_errinfo ();
       if (RTEST(exception))
 	{
 	  VALUE msg = rb_funcall (exception, rb_intern("to_s"), 0);
 	  eprintf ("ruby exception: %s", StringValueCStr (msg));
 	}
       rb_set_errinfo (Qnil);		/* clear last exception */
+      return FALSE;
     }
   return TRUE;
 }
