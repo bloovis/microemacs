@@ -90,6 +90,17 @@ char choicebuf[NCOL + 1];	/* Line buffer for displaying   */
 				/*  autocompletion choices      */
 
 /*
+ * The reply queue contains strings to be returned by eread
+ * instead of reading a string from the console.  The Ruby
+ * extension places strings here so that commands can be
+ * invoked with string parameters without prompting the user.
+ */
+#define NQUEUE 10
+static char *replyq[NQUEUE];	/* queue of 10 strings		*/
+static int replyq_index;	/* index of next string to get	*/
+static int replyq_size;		/* index of next string to put	*/
+
+/*
  * External functions.
  */
 char *symsearch ();		/* symbol.c */
@@ -518,6 +529,60 @@ nextname (
 }
 
 /*
+ * Add another string to the reply queue.  A copy is made of the string
+ * so that the caller's string, which is owned by the Ruby extension,
+ * can be freed independently.  Return TRUE if success, FALSE otherwise
+ * (e.g., if the queue is full).
+ */
+int
+replyq_put (const char *s)
+{
+  char *copy;
+
+  if (replyq_size == NQUEUE)
+    {
+      eprintf ("Reply queue is full!");
+      return FALSE;
+    }
+  copy = strdup (s);
+  replyq[replyq_size] = copy;
+  ++replyq_size;
+  return TRUE;
+}
+
+/*
+ * Clear the reply queue.
+ */
+void
+replyq_clear (void)
+{
+  int i;
+
+  for (i = replyq_index; i < replyq_size; i++)
+    free (replyq[i]);
+  replyq_size = replyq_index = 0;
+}
+
+/*
+ * Get the next string from the reply queue, and store it
+ * in the specified buffer.  Return a pointer to the buffer
+ * if success, or NULL if the reply queue was empty.
+ */
+static
+char * replyq_get (char *buf, int nbuf)
+{
+  char *s;
+
+  if (replyq_index == replyq_size)
+    return NULL;
+  s = replyq[replyq_index];
+  ++replyq_index;
+  strncpy (buf, s, nbuf);
+  free (s);
+  return buf;
+}
+
+/*
  * This is the general "read input from the
  * echo line" routine. The basic idea is that the prompt
  * string "prompt" is written to the echo line, and a one
@@ -541,6 +606,8 @@ eread (const char *fp, char *buf, int nbuf, int flag, va_list ap)
   uchar ubuf[6];
   int ulen;
 
+  if (replyq_get (buf, nbuf) != NULL)
+    return TRUE;
   cpos = 0;
   if (kbdmop != NULL)
     {				/* In a macro.          */

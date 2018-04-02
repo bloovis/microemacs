@@ -155,6 +155,22 @@ my_cmd (VALUE self, VALUE c, VALUE f, VALUE n, VALUE k, VALUE s)
       eprintf ("strings must be an array");
       cret = FALSE;
     }
+  else
+    {
+      /* Collect the strings in the array and add
+       * them to the reply queue for eread.
+       */
+      int ci;
+      VALUE len = rb_funcall (s, rb_intern("length"), 0);
+      int clen = FIX2INT (len);
+      for (ci = 0; ci < clen; ci++)
+	{
+	  VALUE i = LONG2FIX (ci);
+	  VALUE str = rb_funcall (s, rb_intern ("slice"), 1, i);
+	  char *cstr = StringValueCStr (str);
+	  replyq_put (cstr);
+	}
+    }
 
   /* If all parameters look OK, run the command.
    */

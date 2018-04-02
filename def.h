@@ -659,6 +659,9 @@ void eputc (int c);			/* Put a character to screen.	*/
 void eputs (const char *s);		/* Put a string to screen.	*/
 void eerase (void);			/* Erase the echo line.		*/ 
 
+int replyq_put (const char *s);		/* Add string to reply queue.	*/
+void replyq_clear (void);		/* Clear the reply queue.	*/
+
 /*
  * Defined by "extend.c".
  */
