@@ -44,6 +44,7 @@ const char *fnames[] =
   "rb_set_errinfo",
   "rb_intern2",
   "rb_funcall",
+  "rb_str_new",
   /* End of API names */
 };
 
@@ -204,7 +205,17 @@ my_cmd (VALUE self, VALUE c, VALUE f, VALUE n, VALUE k, VALUE s)
   return ret;
 }
 
+/*
+ * Get the current line.
+ */
+static VALUE
+my_getline (VALUE self)
+{
+  VALUE ret;
 
+  ret = rb_str_new ((char *) lgets (curwp->w_dot.p), llength (curwp->w_dot.p));
+  return ret;
+}
 
 /* Load the ruby library and initialize the pointers to the APIs.
  * Return TRUE on success, or FALSE on failure.
@@ -245,7 +256,7 @@ loadruby (void)
    */
   rb_define_global_function("cmd", my_cmd, 5);
   rb_define_global_function("iscmd", my_iscmd, 1);
-
+  rb_define_global_function("getline", my_getline, 0);
   return TRUE;
 }
 
