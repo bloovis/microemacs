@@ -20,6 +20,7 @@
 #include	"def.h"
 
 #include	<dlfcn.h>
+#include	<unistd.h>
 #include	<ruby.h>
 
 static void *ruby_handle;
@@ -276,13 +277,42 @@ my_insert (VALUE self, VALUE s)
 }
 
 /*
- * Load the ruby library and initialize the pointers to the APIs.
- * Return TRUE on success, or FALSE on failure.
+ * Run the Ruby code in the passed-in string.  Return TRUE
+ * if successful, or FALSE otherwise.
+ */
+static int
+runruby (const char * line)
+{
+  int state;
+
+  rb_eval_string_protect(line, &state);
+  if (state)
+    {
+      /* Get the exception string and display it on the echo line.
+       */
+      VALUE exception = rb_errinfo ();
+      if (RTEST(exception))
+	{
+	  VALUE msg = rb_funcall (exception, rb_intern("to_s"), 0);
+	  eprintf ("ruby exception: %s", StringValueCStr (msg));
+	}
+      rb_set_errinfo (Qnil);		/* clear last exception */
+      return FALSE;
+    }
+  return TRUE;
+}
+
+/*
+ * Load the ruby library, initialize the pointers to the APIs,
+ * define some C helper functions, and load the Ruby helper code
+ * in pe.rb. Return TRUE on success, or FALSE on failure.
  */
 static int
 loadruby (void)
 {
-  int i, status;
+  int i, status, len;
+  static char cmd[1024];
+  char *path;
 
   if (ruby_handle != NULL)
     return TRUE;
@@ -319,6 +349,41 @@ loadruby (void)
   rb_define_global_function("lineno", my_lineno, 0);
   rb_define_global_function("column", my_column, 0);
   rb_define_global_function("insert", my_insert, 1);
+
+  /* Construct the ruby statement:
+   *  load '<PATH>/pe.rb'
+   * where <PATH> is the directory name of the pe executable.
+   */
+   strcpy (cmd, "load '");
+   len = strlen (cmd);
+   path = cmd + len;
+
+   /* Get the full path of the pe executable.  Replace pe with pe.rb,
+    * the Ruby helper file, and load that file.
+    */
+   if ((len = readlink ("/proc/self/exe", path, sizeof (cmd) - len)) != -1)
+   {
+     char *p;
+
+     /* Zap the final slash in the pathname.
+      */
+     path[len] = '\0';
+     p = path + strlen (path);
+     while (p >= path)
+       {
+	 --p;
+	 if (*p == '/')
+	   break;
+       }
+     *p = '\0';
+
+     /* Terminate the command with the name of the Ruby helper file and
+      * a matching single quote, then run the resulting command.
+      */
+     strcat (cmd, "/pe.rb'");
+     return runruby (cmd);
+   }
+
   return TRUE;
 }
 
@@ -344,27 +409,11 @@ int
 rubystring (int f, int n, int k)
 {
   int status;
-  int state;
   char line[NCOL];
 
   if ((status = loadruby ()) != TRUE)
     return status;
-
   if ((status = ereply ("Ruby code: ", line, sizeof (line))) != TRUE)
     return status;
-  rb_eval_string_protect(line, &state);
-  if (state)
-    {
-      /* Get the exception string and display it on the echo line.
-       */
-      VALUE exception = rb_errinfo ();
-      if (RTEST(exception))
-	{
-	  VALUE msg = rb_funcall (exception, rb_intern("to_s"), 0);
-	  eprintf ("ruby exception: %s", StringValueCStr (msg));
-	}
-      rb_set_errinfo (Qnil);		/* clear last exception */
-      return FALSE;
-    }
-  return TRUE;
+  return runruby (line);
 }
