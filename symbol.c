@@ -319,12 +319,11 @@ static BINDING *binding[NSHASH];	/* Key bindings.                */
  * bucket number. This is done by adding all of the characters
  * together, and taking the sum mod NSHASH. The string probably
  * should not contain any GR characters; if it does the "*cp"
- * may get a nagative number on some machines, and the "%"
+ * may get a negative number on some machines, and the "%"
  * will return a negative number!
  */
-int
-symhash (cp)
-     register char *cp;
+static int
+symhash (const char *cp)
 {
   register int c;
   register int n;
@@ -470,6 +469,17 @@ keymapinit ()
 }
 
 /*
+ * Add a symbol to the appropriate hash chain.
+ */
+static void
+addsym (SYMBOL *sp)
+{
+  int hash = symhash (sp->s_name);
+  sp->s_symp = symbol[hash];
+  symbol[hash] = sp;
+}
+
+/*
  * Create a new builtin function "name"
  * with function "funcp". If the "new" is a real
  * key, bind it as a side effect. All errors
@@ -482,17 +492,14 @@ keyadd (
      char *name)
 {
   register SYMBOL *sp;
-  register int hash;
 
   if ((sp = (SYMBOL *) malloc (sizeof (SYMBOL))) == NULL)
     abort ();
-  hash = symhash (name);
-  sp->s_symp = symbol[hash];
-  symbol[hash] = sp;
   sp->s_nkey = 0;
   sp->s_name = name;
   sp->s_funcp = funcp;
   sp->s_macro = NULL;
+  addsym (sp);			/* Add symbol to hash chain.	*/
   if (new >= 0)
     {				/* Bind this key.       */
       if (getbinding (new) != NULL)
@@ -557,9 +564,7 @@ namemacro (int f, int n, int k)
 {
   register SYMBOL *sp;		/* Symbol name pointer. */
   register int *mp;		/* Macro pointer.       */
-  register char *cp;		/* Character pointer.   */
   char xname[NXNAME];		/* Symbol name.         */
-  register int hash;		/* Hash of symbol name. */
   register int msize;		/* Size of macro.       */
   register int s;		/* Status code.         */
 
@@ -604,24 +609,17 @@ namemacro (int f, int n, int k)
 	  return (FALSE);
 	}
 
-      /* Allocate space to store the symbol name, then copy it.
+      /* Copy the symbol name and add the symbol to the hash chain.
        */
-      if ((cp = (char *) malloc (strlen (xname) + 1)) == NULL)
+      if ((sp->s_name = strdup (xname)) == NULL)
 	{
 	  eprintf ("Out of memory.");
 	  free (mp);
 	  free (sp);
 	  return (FALSE);
 	}
-      strcpy (cp, xname);
-      sp->s_name = cp;
       sp->s_nkey = 0;
-
-      /* Add the symbol to the appropriate hash chain.
-       */
-      hash = symhash (xname);
-      sp->s_symp = symbol[hash];
-      symbol[hash] = sp;
+      addsym (sp);
     }
   else
     {				/* Symbol exists.       */

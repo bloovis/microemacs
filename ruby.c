@@ -59,25 +59,29 @@ const char *fnames[] =
 static SYMBOL *
 rubylookup (const char *s)
 {
-  char *s1 = malloc (strlen (s) + 1);
+  static SYMBOL *sp;
   char *p;
   char c;
-  SYMBOL *sp;
+  char *s1 = strdup (s);
 
+  /* Make a copy of s with '_' replaced with '-'.
+   */
   if (s1 == NULL)
     {
-      eprintf ("Out of memory in ruby.c");
+      eprintf ("Out of memory in rubylookup!");
       return NULL;
     }
-  for (p = s1; (c = *s) != '\0'; ++p, ++s)
+  for (p = s1; (c = *p) != '\0'; ++p)
     {
       if (c == '_')
 	*p = '-';
-      else
-	*p = c;
     }
-  *p = '\0';
-  sp = symlookup (s1);
+
+  /* If the previous symbol we found is the same, just
+   * return that, instead of searching for it again.
+   */
+  if (sp == NULL || strcmp (s1, sp->s_name) != 0)
+    sp = symlookup (s1);
   free (s1);
   return sp;
 }
