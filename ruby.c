@@ -118,9 +118,9 @@ static VALUE
 my_cmd (VALUE self, VALUE c, VALUE f, VALUE n, VALUE k, VALUE s)
 {
   VALUE ret;
-  const char *name;
-  int flag;
-  int narg;
+  const char *name = "";
+  int flag = 0;
+  int narg = 1;
   int key;
   int cret = TRUE;
   SYMBOL *sp;
