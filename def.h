@@ -301,7 +301,7 @@ typedef struct SYMBOL
 {
   struct SYMBOL *s_symp;	/* Hash chain.			*/
   short s_nkey;			/* Count of keys bound here.    */
-  char *s_name;			/* Name.                        */
+  const char *s_name;		/* Name.                        */
   int (*s_funcp) ();		/* Function.                    */
   int *s_macro;			/* Macro definition.            */
 }
@@ -609,6 +609,10 @@ int bclear (BUFFER *bp);		/* Blow away all text in buffer	*/
 int anycb (void);			/* Look for changed buffers.	*/
 int addline (const char *text);		/* Append text to list buffer.	*/
 void addwind (EWINDOW *wp, int n);	/* Bump ref. count for window.	*/
+const char * bufsearch (		/* Find buffer with partial name. */
+     const char *bname,
+     int cpos,
+     const char *prev);
 
 /*
  * Defined by "cinfo.c".
@@ -708,8 +712,11 @@ int ffpread (char *cp);			/* Read byte from profile	*/
 int ffpclose (void);			/* Close profile		*/
 void adjustcase (char *fn);		/* Adjust case of filename.	*/
 char * fftilde (char *arg);		/* Expand ~ in filename.	*/
-int fbackupfile (const char *fname);
-					/* Rename file to backup.	*/
+int fbackupfile (const char *fname);	/* Rename file to backup.	*/
+char *ffsearch (const char *name,	/* Find matching filename.	*/
+		int cpos,
+		const char *prev);
+int ffisdir (char *name, int cpos);	/* name[0..cpos-1] is dir?	*/
 
 /*
  * Defined by "kbd.c".
@@ -851,14 +858,20 @@ int openpipe (const char *program,	/* Open a two-way pipe.		*/
  */
 int namemacro (int f, int n, int k);	/* Assign a name to cur. macro  */
 
-extern void keymapinit ();
-extern void keyadd ();
-extern void keydup ();
+void keymapinit ();
+void keyadd (int new,		/* Add a function, bind to key	*/
+	     int (*funcp) (),
+	     const char *name);
+void keydup (int new,		/* Bind key to existing func.	*/
+	     const char *name);
 SYMBOL *symlookup (const char *cp);	/* Symbol table lookup		*/
 int getbindingforcmd (const char *s);	/* Find key bound to cmd. name	*/
 SYMBOL *getbinding (int key);		/* Get symbol bound to key	*/
 void setbinding (int key, SYMBOL *sym);	/* Set symbol bound to key	*/
 int wallchart (int f, int n, int k);	/* Make wall chart.             */
+const char * symsearch (const char *sname, /* Search for symbol.	*/
+			int cpos,
+			const char *prev);
 
 /*
  * Defined by "tags.c".

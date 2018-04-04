@@ -489,7 +489,7 @@ void
 keyadd (
      int new,
      int (*funcp) (),
-     char *name)
+     const char *name)
 {
   register SYMBOL *sp;
 
@@ -514,9 +514,7 @@ keyadd (
  * or the key is already bound, abort.
  */
 void
-keydup (new, name)
-     register int new;
-     char *name;
+keydup (int new, const char *name)
 {
   register SYMBOL *sp;
 
@@ -643,15 +641,15 @@ namemacro (int f, int n, int k)
  * of the first symbol that matches the partial name, or NULL
  * if no match can be found.
  */
-char *
-symsearch (sname, cpos, prev)
-     char *sname;		/* partial symbol name to match         */
-     int cpos;			/* number of characters in symbol name  */
-     char *prev;		/* NULL if starting from beginning      */
+const char *
+symsearch (
+     const char *sname,		/* partial symbol name to match         */
+     int cpos,			/* number of characters in symbol name  */
+     const char *prev)		/* NULL if starting from beginning      */
 {
   static int h;
   static SYMBOL *sp;
-  char *name;
+  const char *name;
 
   if (prev == NULL)
     {				/* restart search at beginning?         */
@@ -735,7 +733,7 @@ wallchart (int f, int n, int k)
   register int key;
   register SYMBOL *sp;
   register char *cp1;
-  register char *cp2;
+  const char *cp2;
   char buf[64];
   BINDING *bp;
   int hash;

@@ -101,18 +101,6 @@ static int replyq_index;	/* index of next string to get	*/
 static int replyq_size;		/* index of next string to put	*/
 
 /*
- * External functions.
- */
-char *symsearch ();		/* symbol.c */
-char *ffsearch ();		/* fileio.c */
-int ffisdir ();			/* fileio.c */
-char *bufsearch ();		/* buffer.c */
-
-/*
- * Forward declarations.
- */
-
-/*
  * Special versions of the "tt" routines in ttyio.c that don't don't
  * do anything if the "noecho" variable is set.  This prevents echo
  * line activity from showing on the screen while we are
@@ -511,7 +499,7 @@ getxtra (const char *sp1, const char *sp2, int cpos)
 /*
  * Find the next matching file or command name.
  */
-static char *
+const static char *
 nextname (
      const char *buf,		/* name to match */
      int cpos,			/* no. of characters to match */
@@ -595,7 +583,7 @@ int
 eread (const char *fp, char *buf, int nbuf, int flag, va_list ap)
 {
   register int cpos;
-  register char *np1;
+  const char *np1;
   register char *np2;
   register int i;
   register int c;

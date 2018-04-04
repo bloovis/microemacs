@@ -361,9 +361,9 @@ ffputjou (char c)
  */
 char *
 ffsearch (
-     char *name,		/* filename to search for */
+     const char *name,		/* filename to search for */
      int cpos,			/* number of characters in name to match */
-     char *prev)		/* previous matching name */
+     const char *prev)		/* previous matching name */
 {
   struct dirent *ff;
   static DIR *dirp;
@@ -411,9 +411,9 @@ ffsearch (
  * to a directory or not.  Return TRUE if it is a directory.
  */
 int
-ffisdir (name, cpos)
-     char *name;		/* filename to check */
-     int cpos;			/* number of characters in name to check */
+ffisdir (
+     char *name,		/* filename to check */
+     int cpos)			/* number of characters in name to check */
 {
   struct stat stbuf;
   int c, ret;

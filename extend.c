@@ -181,7 +181,7 @@ outchar (char c)
  * Write a null-terminated string to the save buffer.
  */
 static int
-outbuf (char *s)
+outbuf (const char *s)
 {
   register char c;
 

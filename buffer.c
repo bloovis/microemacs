@@ -470,11 +470,11 @@ bfind (const char *bname, int cflag)
  * of the first buffer that matches the partial name, or NULL
  * if no match can be found.
  */
-char *
+const char *
 bufsearch (
-     char *bname,		/* partial buffer name to match         */
+     const char *bname,		/* partial buffer name to match         */
      int cpos,			/* number of characters in buffer name  */
-     char *prev)		/* NULL if starting from beginning      */
+     const char *prev)		/* NULL if starting from beginning      */
 {
   static BUFFER *bp;
   char *name;
