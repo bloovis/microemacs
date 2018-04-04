@@ -462,6 +462,14 @@ rubycommand (int f, int n, int k)
   /* Add a symbol with a null function pointer, which
    * indicates that this is a Ruby function.
    */
-  keyadd (-1, NULL, name);
-  return TRUE;
+  if (symlookup (name) != NULL)
+    {
+      eprintf ("%s is already defined.", name);
+      return FALSE;
+    }
+  else
+    {
+      keyadd (-1, NULL, name);
+      return TRUE;
+    }
 }
