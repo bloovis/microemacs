@@ -304,6 +304,10 @@ execute (int c, int f, int n)
       thisflag = 0;
       if (sp->s_macro)
 	status = domacro (sp->s_macro, n);
+#if USE_RUBY
+      else if (sp->s_funcp == NULL)
+	status = rubycall (sp->s_name, f, n);
+#endif
       else
 	status = (*sp->s_funcp) (f, n, c);
       lastflag = thisflag;

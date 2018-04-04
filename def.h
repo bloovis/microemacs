@@ -833,7 +833,11 @@ int foldcase (int f, int n, int k);	/* Set casefold flag            */
 /*
  * Defined by "ruby.c".
  */
-int rubystring (int f, int n, int k);	/* Execute a ruby string	*/
+int rubystring (int f, int n, int k);	/* Execute a Ruby string.	*/
+int rubycommand (int f, int n, int k);	/* Define a Ruby command.	*/
+
+int rubycall (const char *name, int f,	/* Call a Ruby command.		*/
+	      int n);
 
 /*
  * Defined by "spell.c".

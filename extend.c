@@ -106,6 +106,10 @@ extend (int f, int n, int k)
 	    }
 	  return (domacro (sp->s_macro, n));
 	}
+#if USE_RUBY
+      else if (sp->s_funcp == NULL)
+	return rubycall (sp->s_name, f, n);
+#endif
       else
 	return ((*sp->s_funcp) (f, n, KRANDOM));
     }

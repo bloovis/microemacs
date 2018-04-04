@@ -21,6 +21,8 @@
 
 #include	<dlfcn.h>
 #include	<unistd.h>
+
+#define RUBY_DONT_SUBST
 #include	<ruby.h>
 
 static void *ruby_handle;
@@ -401,6 +403,22 @@ unloadruby (void)
 #endif
 
 /*
+ * Call a Ruby command function with the specified numeric argument n,
+ * or nil if f is FALSE.
+ */
+int
+rubycall (const char *name, int f, int n)
+{
+  char cmd[80];
+
+  if (f == TRUE)
+    snprintf(cmd, sizeof (cmd), "%s(%d)", name, n);
+  else
+    snprintf(cmd, sizeof (cmd), "%s(nil)", name);
+  return runruby (cmd);
+}
+
+/*
  * Prompt for a string, and evaluate the string using the
  * Ruby interpreter.  Return TRUE if the string was evaluated
  * successfully, and FALSE if an exception occurred.
@@ -416,4 +434,34 @@ rubystring (int f, int n, int k)
   if ((status = ereply ("Ruby code: ", line, sizeof (line))) != TRUE)
     return status;
   return runruby (line);
+}
+
+/*
+ * Define a new MicroEMACS command that invokes a Ruby function.
+ * The Ruby function takes a single parameter, which
+ * is the numeric argument to the command, or nil
+ * if there is no argument.
+ */
+int
+rubycommand (int f, int n, int k)
+{
+  char line[NCOL];
+  char *name;
+  int status;
+
+  if ((status = loadruby ()) != TRUE)
+    return status;
+  if ((status = ereply ("Ruby function: ", line, sizeof (line))) != TRUE)
+    return status;
+  if ((name = strdup (line)) == NULL)
+    {
+      eprintf ("Out of memory in rubycommand!");
+      return FALSE;
+    }
+
+  /* Add a symbol with a null function pointer, which
+   * indicates that this is a Ruby function.
+   */
+  keyadd (-1, NULL, name);
+  return TRUE;
 }

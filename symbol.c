@@ -294,6 +294,7 @@ KEY key[] = {
   {-1,			mouseevent,	"mouse-event"},
 #if USE_RUBY
   {-1,			rubystring,	"ruby-string"},
+  {-1,			rubycommand,	"ruby-command"},
 #endif
   {-1,			jeffexit,	"jeff-exit"},
 };
