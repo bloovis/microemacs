@@ -110,6 +110,49 @@ my_iscmd (VALUE self, VALUE c)
 }
 
 /*
+ * Helper function for Ruby bindtokey.  The first
+ * parameter is a string containing the command
+ * name, and the second parameter is the numeric
+ * keycode.
+ */
+static VALUE
+my_bindtokey(VALUE self, VALUE c, VALUE k)
+{
+  VALUE ret;
+  const char *name = NULL;
+  SYMBOL *sp = NULL;
+  int key = KRANDOM;
+  int cret = TRUE;
+
+  if (RB_TYPE_P (c, T_STRING))
+    {
+      name = StringValueCStr (c);
+      if ((sp = rubylookup (name)) == NULL)
+	{
+	  eprintf ("%s: no such command", name);
+	  cret = FALSE;
+	}
+    }
+  else
+    {
+      eprintf ("command name must be a string");
+      cret = FALSE;
+    }
+  if (FIXNUM_P (k))
+    key = FIX2INT (k);
+  else
+    {
+      eprintf ("key must be a fixnum");
+      cret = FALSE;
+    }
+  if (cret == TRUE)
+    setbinding (key, sp);
+
+  ret = INT2NUM (cret);
+  return ret;
+}
+
+/*
  * Run a MicroEMACS command.  Return its result code
  * as a FIXNUM (0 = FALSE, 1 = TRUE, 2 = ABORT).
  *
@@ -351,6 +394,7 @@ loadruby (void)
   rb_define_global_function("lineno", my_lineno, 0);
   rb_define_global_function("column", my_column, 0);
   rb_define_global_function("insert", my_insert, 1);
+  rb_define_global_function("cbindtokey", my_bindtokey, 2);
 
   /* Construct the ruby statement:
    *  load '<PATH>/pe.rb'
