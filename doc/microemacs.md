@@ -446,6 +446,9 @@ The echo line supports autocompletion\index{autocompletion}.  If you are enterin
 a command name, a filename, or a buffer name, you can use the
 `Space` or `Tab` keys to tell MicroEMACS to complete as
 much of the entry as possible, based on what you have entered so far.
+If you are entering a filename, pressing `Control-S` will fill in
+the directory part of the current buffer's filename, making it easier
+to find a file in the same directory.
 Pressing the `?` or `Control-D` keys will open a new temporary window containing
 the possible list of choices.
 
@@ -2128,7 +2131,7 @@ name.
     **C-S**).  The
     last character in the response string must be a carriage return
     (written as \\r).
-			 
+
 2.  **Key name:** the name of a MicroEMACS key
     surrounded by brackets [].
     Key names use the conventions established in this manual.  Examples:
@@ -2248,6 +2251,207 @@ processing (or at any other time) with the following command.
         replace-string "CDOS\r" "FlexOS\r"
 
     Note the required carriage return (\\r) at the end of the string.
+
+# Ruby Extensions
+\index{Ruby}
+
+It is possible to extend MicroEMACS by writing commands in Ruby.
+To add Ruby support, you must specify the `--with-ruby` flag to `configure` when you
+build MicroEMACS.  For example:
+
+    mkdir objruby
+    cd objruby
+    ../configure --with-ruby
+    make
+
+The resulting MicroEMACS is not linked directly with the Ruby runtime
+library.  Instead, it loads the Ruby library dynamically as needed.
+This allows you to copy MicroEMACS to a system where Ruby is not
+available, and it will still run, but without Ruby support.
+
+In order for Ruby commands to run correctly, you will need to
+copy a helper file called `pe.rb`, located in the source directory,
+to the same directory as the MicroEMACS executable (`pe`).  That will
+allow MicroEMACS to load the helper file automatically when needed.
+
+## An example
+
+Before delving into details about how to write commands in Ruby,
+let's look at an example.  Here is a file called `gcccerr.rb`
+that implements a command to parse gcc compiler errors and go to
+the relevant lines of code.  This is essentially a rewrite of
+the built-in **gcc-error**\index{gcc-error} command:
+
+    def gccerr(n)
+      keepgoing = true
+      while keepgoing
+        line = getline
+        if (line !~ /^In file included/ && line =~ /(.*):(\d+):(\d+): (.*)/)
+          file = $1
+          line = $2
+          col = $3
+          err = $4
+          forw_line
+          only_window
+          split_window
+          forw_window
+          file_visit file
+          goto_line line.to_i
+          forw_char col.to_i - 1
+          echo "#{err}"
+          return
+        end
+        keepgoing = forw_line == ETRUE
+      end
+      echo "No more gcc errors"
+    end
+
+    ruby_command "gccerr"
+    bindtokey "gccerr", meta('&')
+
+Some things to note about this example:
+
+* It defines a new command called **gccerr**.
+
+* Like all MicroEMACS commands written in Ruby, it takes a single parameter,
+  which is the optional numeric argument.
+
+* The new command invokes several built-in MicroEMACS functions, passing
+  numeric parameters in some cases.
+
+* You must replace dashes with underscores in command names when invoking MicroEMACS commands
+  from Ruby.
+
+* It uses the helper function `getline` to get the contents of the current line.
+
+* It checks the status of the **forw-line** command by comparing it with
+  the constant `ETRUE`, which corresponds to the constant `TRUE` in the
+  C source code of MicroEMACS.
+
+* After the definition of the command, there is code to tell MicroEMACS about
+  the new command, and to bind it to the `M-&` key.
+
+## Ruby-related commands
+
+MicroEMACS has several built-in commands related to Ruby extensions:
+
+**F6**
+
+:   **ruby-string**\index{F6}\index{ruby-string}
+
+    This command prompts you to enter a line of Ruby code.
+    MicroEMACS then passes the line to the Ruby interpreter.
+    If an exception occurs, MicroEMACS displays the exception message.
+    on the echo line.
+
+    One common use of this command is to load a file containing
+    Ruby code for a new command.  For example, to load the code for
+    the `gccerr` command described above, you could enter this command
+    to `ruby-string`:
+
+        load 'PATH/gccerr.rb'
+
+    where you would replace PATH with the actual directory containing
+    `gccerr.rb`.
+
+[unbound]
+
+:    **ruby-command**\index{ruby-command}
+
+    This command prompts you to enter the name of a Ruby function
+    that implements a new command.  MicroEMACS then enters
+    the command into its symbol table but does not bind it to a key;
+    you can use the `bind-to-key` command for that.  The `gccerr`
+    example above shows a use of this command.
+
+## Calling Built-in Commands from Ruby
+
+Ruby code can call built-in MicroEMACS commands (written in C) by
+invoking them as normal functions, but with the '-' characters
+in the names replaced by '_'.  For example, invoke the **forw-char**
+function by calling `forw_char`.
+
+You can pass an optional numeric parameter to a built-function.
+For example, to move the dot forward by 8 characters, use this code:
+
+    forw_char 8
+
+Some commands prompt the user for one or more strings.  You can
+supply these strings to a command by passing them as parameters.
+For example, to replace all occurrences of `Windows` to `Linux`
+in the current buffer, use this code:
+
+    replace_string "Windows", "Linux"
+
+Some built-in commands prompt the user for a keystroke.  Two examples
+are **help** and **bind-to-key**.  These commands will not work as
+expected when invoked from Ruby, because as of this writing there is not
+a way to pass keycodes as additional parameters to commands.
+
+Microemacs provides a `bindtokey` helper function to work around
+the problem with the **bind-to-key** command.  For example, the `gccerr.rb`
+code above used this helper to bind the **gccerr** command to
+the **M-&** key:
+
+    bindtokey "gccerr", meta('&')
+
+## Defining Commands in Ruby
+
+You can create a new command in Ruby by first defining a function
+that takes a single numeric parameter.  This parameter gives the
+numeric argument that the user typed as a prefix (using **C-U**).  If the
+user didn't specify a numeric argument, the parameter will be `nil`.
+
+Then use the **ruby-command** built-in command to inform
+MicroEMACS of the new command.
+
+Referring to the `gccerr.rb` example above, we can see that
+the code first defines a new command function:
+
+    def gccerr(n)
+      .. ruby code ...
+    end
+
+Then it tells MicroEMACS about the new command:
+
+    ruby_command "gccerr"
+
+Finally, it binds the new command to the **M-&** key:
+
+    bindtokey "gccerr", meta('&')
+
+### Keycodes
+
+All built-in commands in MicroEMACS take a keycode parameter, which
+specifies the key that invoked the command.  You can specify the keycode
+by passing it as a parameter when calling the command.
+As of this writing, the only command that looks at the keycode is **ins-self**.
+Given that fact, the following example inserts an 'x' character in to the current buffer:
+
+    ins_self key('x')
+
+The `bindtokey` helper function, described above, also takes a keycode parameter.
+
+Keycodes must be specified using one of the following helper functions.
+These helpers all take a single parameter, which is an ordinary ASCII character.
+
+* `key`: specifies an ordinary, unmodified character.  For example,
+  `key('c')` means the character 'c'.
+
+* `ctrl`: specifies a control character.  For example,
+  `ctrl('c')` means **C-C** (Control-C).
+
+* `meta`: specifies a meta character. For example,
+  `meta('c')` means **M-C** (Escape C).
+
+* `ctlx`: specifies a character with the `C-X` prefix.  For example,
+  `ctlx('c')` means **M-X C** (Control-X C).
+
+* `metactrl`: specifies a combination of `ctrl` and `meta`.  For example,
+  `metactrl('c')` means **M-C-C** (Escape Control-C).
+
+* `ctlxctrl`: specifies a combination of `ctlx` and `ctrl`.  For example,
+  `ctlxctrl('c')` means **C-X C-C** (Control-X Control-C).
 
 # UTF-8 and Unicode
 
