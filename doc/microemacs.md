@@ -2266,7 +2266,7 @@ build MicroEMACS.  For example:
 
 The resulting MicroEMACS is not linked directly with the Ruby runtime
 library.  Instead, it loads the Ruby library dynamically as needed.
-This allows you to copy MicroEMACS to a system where Ruby is not
+This allows you to copy the MicroEMACS executable (`pe`) to a system where Ruby is not
 available, and it will still run, but without Ruby support.
 
 In order for Ruby commands to run correctly, you will need to
@@ -2395,6 +2395,23 @@ the **M-&** key:
 
     bindtokey "gccerr", meta('&')
 
+Commands return a trinary value indicating success, failure, or abort.
+In Ruby, these values are:
+
+`ETRUE`
+
+:   The command succeeded.
+
+`EFALSE`
+
+:   The command failed.  For example, `forw_line` returns `EFALSE`
+    if the dot is already at the last line, as we can see in the
+    `gccerr` example above.
+
+`EABORT`
+
+:   The command was aborted by Control-G.
+
 ## Defining Commands in Ruby
 
 You can create a new command in Ruby by first defining a function
@@ -2420,10 +2437,39 @@ Finally, it binds the new command to the **M-&** key:
 
     bindtokey "gccerr", meta('&')
 
-### Keycodes
+### Helper Functions
 
+MicroEMACS provides several helper functions
+for use in Ruby commands.
+
+`getline`
+
+:   This function (which takes no parameters) returns a copy
+    of line containing the dot (the current editing location).
+
+`lineno`
+
+:   This function (which takes no parameters) returns the line number
+    (1-based) of the line containing the dot.
+
+`column`
+
+:   This function (which takes no parameters) returns the column
+    (1-based) of the dot.
+
+`insert(name)`
+
+:   This function inserts the `string` parameter at the dot.
+
+`bindtokey(name, key)`
+
+:   This function binds the command whose name is the string `name`
+    to the keycode `key`.  See below for the helper functions
+    that provide keycodes.
+
+MicroEMACS also provides several helpers for encoding keycodes.
 All built-in commands in MicroEMACS take a keycode parameter, which
-specifies the key that invoked the command.  You can specify the keycode
+contains the key that invoked the command.  You can specify the keycode
 by passing it as a parameter when calling the command.
 As of this writing, the only command that looks at the keycode is **ins-self**.
 Given that fact, the following example inserts an 'x' character in to the current buffer:
@@ -2442,7 +2488,7 @@ These helpers all take a single parameter, which is an ordinary ASCII character.
   `ctrl('c')` means **C-C** (Control-C).
 
 * `meta`: specifies a meta character. For example,
-  `meta('c')` means **M-C** (Escape C).
+  `meta('c')` means **M-C** (Escape C or Alt-C).
 
 * `ctlx`: specifies a character with the `C-X` prefix.  For example,
   `ctlx('c')` means **M-X C** (Control-X C).
