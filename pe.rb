@@ -1,5 +1,3 @@
-# Class to encapsulate a MicroEMACS key code.
-
 # MicroEMACS functions return a trinary value.  We have
 # to use an "E" prefix to avoid conflicts with Ruby's
 # builtin constants.
@@ -79,28 +77,21 @@ def ctlxctrl(c)
   Key.new(c, Key::CTLX | Key::CTRL)
 end
 
-# Invoke a MicroEMACS command:
+# Check if an unknown method is MicroEMACS function.  If so,
+# marshall its various arguments and call it; otherwise pass
+# the exception on, which typically aborts the currently
+# running Ruby program.
+#
+# In order to invoke a MicroEMACS command, method_missing
+# uses two C helper functions:
+#
+# iscmd(c) - returns true if the name c is a MicroEMACS command
+# cmd(c, f, n, k, s) - invoke a MicroEMACS command:
 #   c = name of command
 #   f = argument flag (0 if no argument present, 1 if argument present)
 #   n = argument (integer)
 #   k = keystroke (only looked at by selfinsert)
 #   s = array of strings to be fed to ereply
-
-#def cmd (c, f, n, k, strings)
-#  puts "cmd: c = #{c}, f = #{f}, n = #{n}, k = 0x#{k.to_s(16)}"
-#  strings.each do |s|
-#    puts "     string = #{s}"
-#  end
-#end
-
-#def iscmd?(m)
-#  [:forw_search, :self_insert, :replace_string, :forw_char].include? m
-#end
-
-# Check if an unknown method is MicroEMACS function.  If so,
-# marshall its various arguments and call it; otherwise pass
-# the exception on, which typically aborts the currently
-# running Ruby program.
 
 def method_missing(m, *args, &block)
   # puts "method_missing #{m}"
