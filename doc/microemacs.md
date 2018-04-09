@@ -2412,6 +2412,12 @@ In Ruby, these values are:
 
 :   The command was aborted by Control-G.
 
+The **echo** command is useful when debugging Ruby code.  It displays
+a string on the echo line, so you can use it to displaying debug
+messages.  For example, this code displays the current column:
+
+    echo "column is #{column}"
+
 ## Defining Commands in Ruby
 
 You can create a new command in Ruby by first defining a function
@@ -2450,16 +2456,19 @@ for use in Ruby commands.
 `lineno`
 
 :   This function (which takes no parameters) returns the line number
-    (1-based) of the line containing the dot.
+    of the line containing the dot.  The value is 1-based, so that it can
+    be used as a parameter to the **goto-line** function (`goto_line`
+    when called from Ruby).
 
 `column`
 
 :   This function (which takes no parameters) returns the column
-    (1-based) of the dot.
+    of the dot.  The value is 0-based, so that it can be used
+    as an index to the value returned by `getline`.
 
-`insert(name)`
+`insert(string)`
 
-:   This function inserts the `string` parameter at the dot.
+:   This function inserts the value of the `string` parameter at the dot.
 
 `bindtokey(name, key)`
 

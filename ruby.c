@@ -286,15 +286,16 @@ my_lineno (VALUE self)
 }
 
 /*
- * Get the current column number, 1 based for compatibility
- * with display-position.
+ * Get the current column number, 0 based so that
+ * it can be used as an index to the string
+ * returned by getline.
  */
 static VALUE
 my_column (VALUE self)
 {
   VALUE ret;
 
-  ret = INT2NUM (curwp->w_dot.o + 1);
+  ret = INT2NUM (curwp->w_dot.o);
   return ret;
 }
 
