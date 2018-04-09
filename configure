@@ -3406,7 +3406,7 @@ fi
 # Check whether --with-ruby was given.
 if test "${with_ruby+set}" = set; then :
   withval=$with_ruby; EXTRA_OBJS="$EXTRA_OBJS ruby.o rubyapi.o"
-CFLAGS_RUBY="`pkg-config --cflags ruby` -DUSE_RUBY=1"
+CFLAGS_RUBY="`pkg-config --cflags ruby` -DUSE_RUBY=1 -DLIBRUBY=`pkg-config --variable=LIBRUBY_SO ruby`"
 LIBS="$LIBS -ldl"
 else
   CFLAGS_RUBY=""

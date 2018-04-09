@@ -359,13 +359,14 @@ loadruby (void)
   int i, status, len;
   static char cmd[1024];
   char *path;
+  static const char *libruby = STRINGIFY(LIBRUBY);
 
   if (ruby_handle != NULL)
     return TRUE;
-  ruby_handle = dlopen("libruby-2.3.so", RTLD_LAZY);
+  ruby_handle = dlopen(libruby, RTLD_LAZY);
   if (ruby_handle == NULL)
     {
-      eprintf ("Unable to load ruby libraryn");
+      eprintf ("Unable to load %s", libruby);
       return FALSE;
     }
   for (i = 0; i < sizeof (fnames) / sizeof (fnames[0]); i++)

@@ -684,17 +684,13 @@ railsmodel(int f, int n, int k)
  * Visit the file and line mentioned in the next gcc error message in the
  * current buffer.
  */
-
-#define STRINGIZE(x) #x
-#define INT2STR(x) STRINGIZE(x)
-
 int
 gccerror (int f, int n, int k)
 {
   LINE *lp;
   BUFFER *bp;
   EWINDOW *wp;
-  static const char *fmt = "%" INT2STR(NFILEN) "[^:]:%d:%d: %n";
+  static const char *fmt = "%" STRINGIFY(NFILEN) "[^:]:%d:%d: %n";
   static const char *pfx = "In file included from";
   int pfxlen;
   char filename[NFILEN];

@@ -274,6 +274,12 @@ typedef unsigned char uchar;
 #define	CEQ(c1,c2)	(ceq((c1),(c2)))
 
 /*
+ * Macro for converting a preprocessor symbol to a string.
+ */
+#define STRINGIFY0(x) #x
+#define STRINGIFY(x) STRINGIFY0(x)
+
+/*
  * Kinds of undo information.
  */
 typedef enum UKIND
