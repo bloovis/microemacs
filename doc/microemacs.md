@@ -2285,20 +2285,24 @@ the built-in **gcc-error**\index{gcc-error} command:
     def gccerr(n)
       keepgoing = true
       while keepgoing
-        line = getline
-        if (line !~ /^In file included/ && line =~ /(.*):(\d+):(\d+): (.*)/)
+        l = $line
+        if (l !~ /^In file included/ && l =~ /(.*):(\d+):(\d+): (.*)/)
           file = $1
-          line = $2
+          lno = $2
           col = $3
           err = $4
-          forw_line
-          only_window
-          split_window
-          forw_window
-          file_visit file
-          goto_line line.to_i
-          forw_char col.to_i - 1
-          echo "#{err}"
+          if File.exist? file
+            forw_line
+            only_window
+            split_window
+            forw_window
+            file_visit file
+            goto_line lno.to_i
+            forw_char col.to_i - 1
+            echo "#{err}"
+          else
+            echo "File #{file} does not exist"
+          end
           return
         end
         keepgoing = forw_line == ETRUE
@@ -2307,7 +2311,7 @@ the built-in **gcc-error**\index{gcc-error} command:
     end
 
     ruby_command "gccerr"
-    bindtokey "gccerr", meta('&')
+    bind "gccerr", meta('&')
 
 Some things to note about this example:
 
@@ -2322,7 +2326,7 @@ Some things to note about this example:
 * You must replace dashes with underscores in command names when invoking MicroEMACS commands
   from Ruby.
 
-* It uses the helper function `getline` to get the contents of the current line.
+* It uses the global variable `$line` to get the contents of the current line.
 
 * It checks the status of the **forw-line** command by comparing it with
   the constant `ETRUE`, which corresponds to the constant `TRUE` in the
@@ -2388,12 +2392,12 @@ are **help** and **bind-to-key**.  These commands will not work as
 expected when invoked from Ruby, because as of this writing there is not
 a way to pass keycodes as additional parameters to commands.
 
-Microemacs provides a `bindtokey` helper function to work around
+Microemacs provides a `bind` helper function to work around
 the problem with the **bind-to-key** command.  For example, the `gccerr.rb`
 code above used this helper to bind the **gccerr** command to
 the **M-&** key:
 
-    bindtokey "gccerr", meta('&')
+    bind "gccerr", meta('&')
 
 Commands return a trinary value indicating success, failure, or abort.
 In Ruby, these values are:
@@ -2441,40 +2445,29 @@ Then it tells MicroEMACS about the new command:
 
 Finally, it binds the new command to the **M-&** key:
 
-    bindtokey "gccerr", meta('&')
+    bind "gccerr", meta('&')
 
 ### Helper Functions
 
 MicroEMACS provides several helper functions
 for use in Ruby commands.
 
-`getline`
-
-:   This function (which takes no parameters) returns a copy
-    of line containing the dot (the current editing location).
-
-`lineno`
-
-:   This function (which takes no parameters) returns the line number
-    of the line containing the dot.  The value is 1-based, so that it can
-    be used as a parameter to the **goto-line** function (`goto_line`
-    when called from Ruby).
-
-`column`
-
-:   This function (which takes no parameters) returns the column
-    of the dot.  The value is 0-based, so that it can be used
-    as an index to the value returned by `getline`.
-
 `insert(string)`
 
 :   This function inserts the value of the `string` parameter at the dot.
+    The string may contain newline characters, which are treated as
+    line breaks.
 
-`bindtokey(name, key)`
+`bind(name, key)`
 
 :   This function binds the command whose name is the string `name`
     to the keycode `key`.  See below for the helper functions
     that provide keycodes.
+
+`filename`
+
+:   This function returns the filename associated with the current
+    buffer.
 
 MicroEMACS also provides several helpers for encoding keycodes.
 All built-in commands in MicroEMACS take a keycode parameter, which
@@ -2507,6 +2500,36 @@ These helpers all take a single parameter, which is an ordinary ASCII character.
 
 * `ctlxctrl`: specifies a combination of `ctlx` and `ctrl`.  For example,
   `ctlxctrl('c')` means **C-X C-C** (Control-X Control-C).
+
+### Global variables
+
+MicroEMACS provides several global virtual variables that may be both read
+and written.
+
+`$line`
+
+:   This variable contains the current line (the line containing the dot).
+    Writing to this variable causes the current line to be replaced
+    with the specified string.
+
+`$char`
+
+:   This variable contains the character at the dot.  Writing to this variable
+    replaces the character at the dot with the specified string (which can
+    be of any length).
+
+`$lineno`
+
+:   This variable contains the line number of the line containing the dot.
+    The value is 1-based, for compatibility with the **goto-line** function.
+    Writing to this variable causes the dot to be moved to the specified line.
+
+`$offset`
+
+:   This variable contains the offset into the current line of the dot.
+    The value is 0-based, so that it can be used as an index into `$line`.
+    Writing to this variable move the dot to the specified offset within
+    the current line.
 
 # UTF-8 and Unicode
 
