@@ -508,29 +508,7 @@ undostep (UNDO *up)
 	case USTR:
 	  {
 	    const uchar *s = up->u.str.s;
-	    const uchar *end = s + up->u.str.n;
-	    status = TRUE;
-
-	    while (status == TRUE && s < end)
-	      {
-		const uchar *nl = memchr (s, '\n', end - s);
-		if (nl == NULL)
-		  {
-		    status = linsert (end - s, 0, (char *) s);
-		    s = end;
-		  }
-		else
-		  {
-		    if (nl != s)
-		      {
-			status = linsert (nl - s, 0, (char *) s);
-			if (status != TRUE)
-			  break;
-		      }
-		    status = lnewline ();
-		    s = nl + 1;
-		  }
-	      }
+	    status = insertwithnl ((const char *) s, up->u.str.n);
 	    break;
 	  }
 

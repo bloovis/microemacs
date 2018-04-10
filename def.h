@@ -739,8 +739,9 @@ void ekeyname (char *cp, int k);		/* Convert key code to name	*/
  */
 LINE * lalloc (int used);		/* Allocate line.		*/
 LINE * lallocx (int used);		/* Allocate line w/o round-up.	*/
-int linsert (int n, int c, char *s);
-					/* Insert char(s) at dot	*/
+int linsert (int n, int c, char *s);	/* Insert char(s) at dot	*/
+int insertwithnl (const char *s, int len);
+					/* Insert string with newlines.	*/
 void lputc (POS p, wchar_t c);		/* Replace char at p with c.	*/
 int lnewline (void);			/* Insert newline.		*/
 void lchange (int flag);		/* Change buffer flag.		*/

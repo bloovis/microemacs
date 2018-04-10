@@ -333,6 +333,41 @@ linsert (int n, int c, char *s)
 }
 
 /*
+ * Insert the string s containing len bytes,
+ * but treat \n characters properly, i.e., as the starts of
+ * new lines instead of raw characters.  Return TRUE
+ * if successful, or FALSE if an error occurs.
+ */
+int
+insertwithnl (const char *s, int len)
+{
+  int status = TRUE;
+  const char *end = s + len;
+
+  while (status == TRUE && s < end)
+    {
+      const char *nl = memchr (s, '\n', end - s);
+      if (nl == NULL)
+	{
+	  status = linsert (end - s, 0, (char *) s);
+	  s = end;
+	}
+      else
+	{
+	  if (nl != s)
+	    {
+	      status = linsert (nl - s, 0, (char *) s);
+	      if (status != TRUE)
+		break;
+	    }
+	  status = lnewline ();
+	  s = nl + 1;
+	}
+    }
+  return status;
+}
+
+/*
  * Adjust line position *pos to account for an insertion of a newline
  * at position *oldpos, where newlp is the new line that replaced the first
  * part of line pos.p.

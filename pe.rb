@@ -121,13 +121,13 @@ def method_missing(m, *args, &block)
   cmd(c, f, n, k, s)
 end
 
-# We have to define our own bindtokey instead
-# of using the command built into to MicroEMACS,
+# We have to define our own equivalent of bindtokey
+# instead of using the command built into to MicroEMACS,
 # because the latter prompts for a keystroke.
 # Parameters:
-#   name: String containing the function name
-#   key:  Key containing keycode
+#   name: string containing the function name
+#   key:  keycode
 
-def bindtokey(name, key)
-  cbindtokey(name, key.to_i)	# Call C helper function
+def bind(name, key)
+  cbind(name, key.to_i)	# Call C helper function
 end

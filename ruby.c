@@ -49,6 +49,9 @@ const char *fnames[] =
   "rb_funcall",
   "rb_str_new",
   "rb_str_new_static",
+  "rb_str_new_cstr",
+  "rb_define_virtual_variable",
+  "rb_string_value_ptr",
   /* End of API names */
 };
 
@@ -110,13 +113,14 @@ my_iscmd (VALUE self, VALUE c)
 }
 
 /*
- * Helper function for Ruby bindtokey.  The first
+ * Helper function for Ruby bind (equivalent to
+ * built-in command bind-to-key).  The first
  * parameter is a string containing the command
  * name, and the second parameter is the numeric
  * keycode.
  */
 static VALUE
-my_bindtokey(VALUE self, VALUE c, VALUE k)
+my_cbind (VALUE self, VALUE c, VALUE k)
 {
   VALUE ret;
   const char *name = NULL;
@@ -260,7 +264,7 @@ my_cmd (VALUE self, VALUE c, VALUE f, VALUE n, VALUE k, VALUE s)
  * Get the current line's text.
  */
 static VALUE
-my_getline (VALUE self)
+get_line (ID id)
 {
   VALUE ret;
   VALUE utf8;
@@ -272,12 +276,65 @@ my_getline (VALUE self)
 }
 
 /*
+ * Replace the current line with the new string.
+ */
+static void
+set_line (VALUE val, ID id)
+{
+  const char *str = StringValueCStr (val);
+  int linelen = wllength (curwp->w_dot.p);
+  curwp->w_dot.o = linelen;
+  lreplace (linelen, str, TRUE);
+}
+
+/*
+ * Get the character at the current position.  Return it
+ * as a one-character UTF-8 string.
+ */
+static VALUE
+get_char (VALUE self)
+{
+  VALUE ret;
+  VALUE utf8;
+  const uchar *s = wlgetcptr (curwp->w_dot.p, curwp->w_dot.o);
+  int bytes = unblen (s, 1);
+
+  ret = rb_str_new ((char *) s, bytes);
+  utf8 = rb_str_new_cstr("utf-8");
+  rb_funcall (ret, rb_intern ("force_encoding"), 1, utf8);
+  return ret;
+}
+
+/*
+ * Replace character at the current position with the new string.
+ */
+static void
+set_char (VALUE val, ID id)
+{
+  const char *str = StringValueCStr (val);
+  forwchar (TRUE, 1, KRANDOM);
+  lreplace (1, str, TRUE);
+}
+
+/*
+ * Get the current buffer's filename.
+ */
+static VALUE
+my_filename (VALUE self)
+{
+  VALUE ret;
+
+  ret = rb_str_new_cstr (curbp->b_fname);
+  return ret;
+}
+
+/*
  * Get the current line number, 1 based so that it can
  * be used with goto-line, and for compatibility with
  * display-position.
  */
 static VALUE
-my_lineno (VALUE self)
+get_lineno (ID id)
 {
   VALUE ret;
 
@@ -286,17 +343,54 @@ my_lineno (VALUE self)
 }
 
 /*
- * Get the current column number, 0 based so that
- * it can be used as an index to the string
- * returned by getline.
+ * Set the current line number, 1 based so that it can
+ * be used with goto-line.
+ */
+static void
+set_lineno (VALUE val, ID id)
+{
+  int lineno = NUM2INT (val);
+  gotoline (TRUE, lineno, KRANDOM);
+}
+
+/*
+ * Get the current line length in UTF-8 characters, not bytes.
  */
 static VALUE
-my_column (VALUE self)
+my_linelen (VALUE self)
+{
+  VALUE ret;
+
+  ret = INT2NUM (wllength (curwp->w_dot.p));
+  return ret;
+}
+
+/*
+ * Get the current offset into the current line.
+ */
+static VALUE
+get_offset (ID id)
 {
   VALUE ret;
 
   ret = INT2NUM (curwp->w_dot.o);
   return ret;
+}
+
+/*
+ * Set the offset into the current line.
+ */
+static void
+set_offset (VALUE val, ID id)
+{
+  int offset = NUM2INT (val);
+  if (offset > wllength (curwp->w_dot.p))
+    eprintf ("Offset too large");
+  else
+    {
+      curwp->w_dot.o = offset;
+      update ();
+    }
 }
 
 /*
@@ -315,8 +409,9 @@ my_insert (VALUE self, VALUE s)
     }
   else
     {
-      char *cs = StringValueCStr (s);
-      cret = linsert (strlen (cs), 0, cs);
+      char *cs = StringValuePtr (s);
+      int len = RSTRING_LEN (s);
+      cret = insertwithnl (cs, len);
     }
   ret = INT2NUM (cret);
   return ret;
@@ -349,7 +444,7 @@ runruby (const char * line)
 }
 
 /*
- * Load the ruby library, initialize the pointers to the APIs,
+ * Load the Ruby library, initialize the pointers to the APIs,
  * define some C helper functions, and load the Ruby helper code
  * in pe.rb. Return TRUE on success, or FALSE on failure.
  */
@@ -388,15 +483,22 @@ loadruby (void)
       return FALSE;
     }
 
-  /* Define global functions that can be called from ruby.
+  /* Define global functions that can be called from Ruby.
    */
   rb_define_global_function("cmd", my_cmd, 5);
   rb_define_global_function("iscmd", my_iscmd, 1);
-  rb_define_global_function("getline", my_getline, 0);
-  rb_define_global_function("lineno", my_lineno, 0);
-  rb_define_global_function("column", my_column, 0);
+  rb_define_global_function("filename", my_filename, 0);
+  rb_define_global_function("linelen", my_linelen, 0);
   rb_define_global_function("insert", my_insert, 1);
-  rb_define_global_function("cbindtokey", my_bindtokey, 2);
+  rb_define_global_function("cbind", my_cbind, 2);
+
+  /* Define some virtual global variables, along with
+   * their getters and setters.
+   */
+  rb_define_virtual_variable ("$lineno", get_lineno, set_lineno);
+  rb_define_virtual_variable ("$offset", get_offset, set_offset);
+  rb_define_virtual_variable ("$line", get_line, set_line);
+  rb_define_virtual_variable ("$char", get_char, set_char);
 
   /* Construct the ruby statement:
    *  load '<PATH>/pe.rb'
