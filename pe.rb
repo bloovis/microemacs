@@ -131,3 +131,6 @@ end
 def bind(name, key)
   cbind(name, key.to_i)	# Call C helper function
 end
+
+# Add the current directory to the load path.
+$LOAD_PATH.unshift('.')
