@@ -295,6 +295,7 @@ KEY key[] = {
 #if USE_RUBY
   {-1,			rubystring,	"ruby-string"},
   {-1,			rubycommand,	"ruby-command"},
+  {-1,			rubyload,	"ruby-load"},
 #endif
   {-1,			jeffexit,	"jeff-exit"},
 };

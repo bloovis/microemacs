@@ -52,6 +52,7 @@ const char *fnames[] =
   "rb_str_new_cstr",
   "rb_define_virtual_variable",
   "rb_string_value_ptr",
+  "rb_load_protect",
   /* End of API names */
 };
 
@@ -418,15 +419,13 @@ my_insert (VALUE self, VALUE s)
 }
 
 /*
- * Run the Ruby code in the passed-in string.  Return TRUE
- * if successful, or FALSE otherwise.
+ * Check if the last call to Ruby returned an exception.
+ * If so, display the exception string on the echo line
+ * and return FALSE.  Otherwise return TRUE.
  */
 static int
-runruby (const char * line)
+check_exception (int state)
 {
-  int state;
-
-  rb_eval_string_protect(line, &state);
   if (state)
     {
       /* Get the exception string and display it on the echo line.
@@ -444,6 +443,35 @@ runruby (const char * line)
 }
 
 /*
+ * Load the specified Ruby script.  Return TRUE if the file was loaded
+ * successfully.  If unsuccessful, display the exception information
+ * on the echo line and return FALSE.
+ */
+static int
+load_script (const char *path)
+{
+  VALUE script;
+  int state;
+
+  script = rb_str_new_cstr (path);
+  rb_load_protect(script, 0, &state);
+  return check_exception (state);
+}
+
+/*
+ * Run the Ruby code in the passed-in string.  Return TRUE
+ * if successful, or FALSE otherwise.
+ */
+static int
+runruby (const char * line)
+{
+  int state;
+
+  rb_eval_string_protect(line, &state);
+  return check_exception (state);
+}
+
+/*
  * Load the Ruby library, initialize the pointers to the APIs,
  * define some C helper functions, and load the Ruby helper code
  * in pe.rb. Return TRUE on success, or FALSE on failure.
@@ -452,8 +480,7 @@ static int
 loadruby (void)
 {
   int i, status, len;
-  static char cmd[1024];
-  char *path;
+  static char path[NFILEN];
   static const char *libruby = STRINGIFY(LIBRUBY);
 
   if (ruby_handle != NULL)
@@ -500,40 +527,30 @@ loadruby (void)
   rb_define_virtual_variable ("$line", get_line, set_line);
   rb_define_virtual_variable ("$char", get_char, set_char);
 
-  /* Construct the ruby statement:
-   *  load '<PATH>/pe.rb'
-   * where <PATH> is the directory name of the pe executable.
+  /* Get the full path of the pe executable.  Replace pe with pe.rb,
+   * the Ruby helper file, and load that file.
    */
-   strcpy (cmd, "load '");
-   len = strlen (cmd);
-   path = cmd + len;
+  if ((len = readlink ("/proc/self/exe", path, sizeof (path) - 1)) != -1)
+  {
+    char *p;
 
-   /* Get the full path of the pe executable.  Replace pe with pe.rb,
-    * the Ruby helper file, and load that file.
-    */
-   if ((len = readlink ("/proc/self/exe", path, sizeof (cmd) - len)) != -1)
-   {
-     char *p;
+    /* Find the final slash in the pathname, then replace
+     * what follows it with "pe.rb".
+     */
+    path[len] = '\0';
+    p = path + strlen (path);
+    while (p >= path)
+      {
+	--p;
+	if (*p == '/')
+	  break;
+      }
+    strcpy (p, "/pe.rb");
 
-     /* Zap the final slash in the pathname.
-      */
-     path[len] = '\0';
-     p = path + strlen (path);
-     while (p >= path)
-       {
-	 --p;
-	 if (*p == '/')
-	   break;
-       }
-     *p = '\0';
-
-     /* Terminate the command with the name of the Ruby helper file and
-      * a matching single quote, then run the resulting command.
-      */
-     strcat (cmd, "/pe.rb'");
-     return runruby (cmd);
-   }
-
+    /* Load the file into Ruby.
+     */
+    return load_script (path);
+  }
   return TRUE;
 }
 
@@ -582,6 +599,25 @@ rubystring (int f, int n, int k)
   if ((status = ereply ("Ruby code: ", line, sizeof (line))) != TRUE)
     return status;
   return runruby (line);
+}
+
+/*
+ * Prompt for a string containing the filename of a Ruby script,
+ * and load the script.  Return TRUE if the file was loaded
+ * successfully.  If unsuccessful, display the exception information
+ * on the echo line and return FALSE.
+ */
+int
+rubyload (int f, int n, int k)
+{
+  int status;
+  char line[NCOL];
+
+  if ((status = loadruby ()) != TRUE)
+    return status;
+  if ((status = ereply ("Ruby file to load: ", line, sizeof (line))) != TRUE)
+    return status;
+  return load_script (line);
 }
 
 /*
