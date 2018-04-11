@@ -419,6 +419,35 @@ my_insert (VALUE self, VALUE s)
 }
 
 /*
+ * Prompt the user and read back a reply, which is returned
+ * as a string.  If the user aborts the reply with Control-G,
+ * return nil.
+ */
+static VALUE
+my_reply (VALUE self, VALUE s)
+{
+  VALUE ret;
+  int cret;
+  char buf[NCOL];
+
+  if (!RB_TYPE_P(s, T_STRING))
+    {
+      eprintf ("reply parameter must be a string");
+      ret = Qnil;
+    }
+  else
+    {
+      char *prompt = StringValueCStr (s);
+      cret = ereply ("%s", buf, sizeof (buf), prompt);
+      if (cret == ABORT)
+	ret = Qnil;
+      else
+	ret = rb_str_new_cstr (buf);
+    }
+  return ret;
+}
+
+/*
  * Check if the last call to Ruby returned an exception.
  * If so, display the exception string on the echo line
  * and return FALSE.  Otherwise return TRUE.
@@ -518,6 +547,7 @@ loadruby (void)
   rb_define_global_function("linelen", my_linelen, 0);
   rb_define_global_function("insert", my_insert, 1);
   rb_define_global_function("cbind", my_cbind, 2);
+  rb_define_global_function("reply", my_reply, 1);
 
   /* Define some virtual global variables, along with
    * their getters and setters.
