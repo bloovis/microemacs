@@ -327,12 +327,23 @@ set_char (VALUE val, ID id)
  * Get the current buffer's filename.
  */
 static VALUE
-my_filename (VALUE self)
+get_filename (VALUE self)
 {
   VALUE ret;
 
   ret = rb_str_new_cstr (curbp->b_fname);
   return ret;
+}
+
+/*
+ * Set the current buffer's filename.
+ */
+static void
+set_filename (VALUE val, ID id)
+{
+  const char *str = StringValueCStr (val);
+  replyq_put (str);
+  filename (FALSE, 0, KRANDOM);
 }
 
 /*
@@ -585,7 +596,6 @@ loadruby (void)
    */
   rb_define_global_function("cmd", my_cmd, 5);
   rb_define_global_function("iscmd", my_iscmd, 1);
-  rb_define_global_function("filename", my_filename, 0);
   rb_define_global_function("linelen", my_linelen, 0);
   rb_define_global_function("insert", my_insert, 1);
   rb_define_global_function("cbind", my_cbind, 2);
@@ -598,6 +608,7 @@ loadruby (void)
   rb_define_virtual_variable ("$offset", get_offset, set_offset);
   rb_define_virtual_variable ("$line", get_line, set_line);
   rb_define_virtual_variable ("$char", get_char, set_char);
+  rb_define_virtual_variable ("$filename", get_filename, set_filename);
 
   /* Add two directories to the load path:
    * - the current directory

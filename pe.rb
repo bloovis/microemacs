@@ -26,7 +26,11 @@ class Key
   KRANDOM = 0x80
 
   def initialize(c, f)
-    @key = c.ord | f
+    if f != 0
+      @key = c.upcase.ord | f
+    else
+      @key = c.ord
+    end
   end
 
   def to_i

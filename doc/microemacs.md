@@ -2464,11 +2464,6 @@ for use in Ruby commands.
     to the keycode `key`.  See below for the helper functions
     that provide keycodes.
 
-`filename`
-
-:   This function returns the filename associated with the current
-    buffer.
-
 MicroEMACS also provides several helpers for encoding keycodes.
 All built-in commands in MicroEMACS take a keycode parameter, which
 contains the key that invoked the command.  You can specify the keycode
@@ -2530,6 +2525,11 @@ and written.
     The value is 0-based, so that it can be used as an index into `$line`.
     Writing to this variable move the dot to the specified offset within
     the current line.
+
+`$filename`
+
+:   This variable contains the current buffer's filename.  Writing to this
+    variable changes the current buffer's filename.
 
 # UTF-8 and Unicode
 
