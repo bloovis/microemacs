@@ -53,6 +53,8 @@ const char *fnames[] =
   "rb_define_virtual_variable",
   "rb_string_value_ptr",
   "rb_load_protect",
+  "ruby_init_loadpath",
+  "rb_gv_get",
   /* End of API names */
 };
 
@@ -161,8 +163,12 @@ my_cbind (VALUE self, VALUE c, VALUE k)
  * Run a MicroEMACS command.  Return its result code
  * as a FIXNUM (0 = FALSE, 1 = TRUE, 2 = ABORT).
  *
- * FIXME: pass optional strings so that they can be used
- * by eread.
+ * Parameters:
+ *   c = name of command
+ *   f = argument flag (0 if no argument present, 1 if argument present)
+ *   n = argument (integer)
+ *   k = keystroke (only looked at by selfinsert)
+ *   s = array of strings to be added to a queue of replies to eread
  */
 static VALUE
 my_cmd (VALUE self, VALUE c, VALUE f, VALUE n, VALUE k, VALUE s)
@@ -501,6 +507,36 @@ runruby (const char * line)
 }
 
 /*
+ * Get the directory containing the pe executable.
+ */
+static char *
+getexedir (void)
+{
+  int len;
+  static char path[NFILEN];
+  char *p;
+
+  if ((len = readlink ("/proc/self/exe", path, sizeof (path) - 1)) != -1)
+    {
+      p = path + len;
+      *p = '\0';
+      while (p >= path)
+        {
+          --p;
+          if (*p == '/')
+            {
+              *p = '\0';
+              break;
+            }
+        }
+    }
+  else
+    path[0] = '\0';
+  return path;
+}
+
+
+/*
  * Load the Ruby library, initialize the pointers to the APIs,
  * define some C helper functions, and load the Ruby helper code
  * in pe.rb. Return TRUE on success, or FALSE on failure.
@@ -508,8 +544,10 @@ runruby (const char * line)
 static int
 loadruby (void)
 {
-  int i, status, len;
-  static char path[NFILEN];
+  int i, status;
+  VALUE loadpath;
+  VALUE dot;
+  VALUE selfpath;
   static const char *libruby = STRINGIFY(LIBRUBY);
 
   if (ruby_handle != NULL)
@@ -539,6 +577,10 @@ loadruby (void)
       return FALSE;
     }
 
+  /* Initialize the load path for gems.
+   */
+  ruby_init_loadpath();
+
   /* Define global functions that can be called from Ruby.
    */
   rb_define_global_function("cmd", my_cmd, 5);
@@ -557,31 +599,22 @@ loadruby (void)
   rb_define_virtual_variable ("$line", get_line, set_line);
   rb_define_virtual_variable ("$char", get_char, set_char);
 
-  /* Get the full path of the pe executable.  Replace pe with pe.rb,
-   * the Ruby helper file, and load that file.
+  /* Add two directories to the load path:
+   * - the current directory
+   * - the directory containing the pe executable
+   * This allows pe.rb, and possible other scripts as well, to be loaded
+   * without specifying their full paths in the the most common cases.
    */
-  if ((len = readlink ("/proc/self/exe", path, sizeof (path) - 1)) != -1)
-  {
-    char *p;
+  loadpath = rb_gv_get("$LOAD_PATH");
+  dot = rb_str_new_cstr (".");
+  selfpath = rb_str_new_cstr (getexedir ());
+  rb_funcall (loadpath, rb_intern ("push"), 2, dot, selfpath);
 
-    /* Find the final slash in the pathname, then replace
-     * what follows it with "pe.rb".
-     */
-    path[len] = '\0';
-    p = path + strlen (path);
-    while (p >= path)
-      {
-	--p;
-	if (*p == '/')
-	  break;
-      }
-    strcpy (p, "/pe.rb");
-
-    /* Load the file into Ruby.
-     */
-    return load_script (path);
-  }
-  return TRUE;
+  /* Load the Ruby helper file, pe.rb.  It should be in either
+   * the same directory as the pe executable, or in the current
+   * directory.
+   */
+  return load_script ("pe.rb");
 }
 
 #if 0
