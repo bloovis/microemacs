@@ -303,9 +303,22 @@ get_char (VALUE self)
 {
   VALUE ret;
   VALUE utf8;
-  const uchar *s = wlgetcptr (curwp->w_dot.p, curwp->w_dot.o);
-  int bytes = unblen (s, 1);
+  const uchar *s;
+  int bytes;
+  LINE *lp;
 
+  lp = curwp->w_dot.p;
+  s = wlgetcptr (lp, curwp->w_dot.o);
+
+  /* If dot is at the end of the line, pretend that char is a newline.
+   */
+  if (s == lgets (lp) + llength (lp))
+    {
+      s = (const uchar *) "\n";
+      bytes = 1;
+    }
+  else
+    bytes = unblen (s, 1);
   ret = rb_str_new ((char *) s, bytes);
   utf8 = rb_str_new_cstr("utf-8");
   rb_funcall (ret, rb_intern ("force_encoding"), 1, utf8);
@@ -319,8 +332,12 @@ static void
 set_char (VALUE val, ID id)
 {
   const char *str = StringValueCStr (val);
-  forwchar (TRUE, 1, KRANDOM);
-  lreplace (1, str, TRUE);
+  if (forwchar (TRUE, 1, KRANDOM) == TRUE)
+    lreplace (1, str, TRUE);
+  else
+    /* We're at the end of the buffer.  Insert, don't replace.
+     */
+    linsert (strlen (str), 0, (char *) str);
 }
 
 /*
