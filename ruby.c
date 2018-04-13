@@ -535,22 +535,6 @@ check_exception (int state)
 }
 
 /*
- * Load the specified Ruby script.  Return TRUE if the file was loaded
- * successfully.  If unsuccessful, display the exception information
- * on the echo line and return FALSE.
- */
-static int
-load_script (const char *path)
-{
-  VALUE script;
-  int state;
-
-  script = rb_str_new_cstr (path);
-  rb_load_protect(script, 0, &state);
-  return check_exception (state);
-}
-
-/*
  * Run the Ruby code in the passed-in string.  Return TRUE
  * if successful, or FALSE otherwise.
  */
@@ -561,6 +545,24 @@ runruby (const char * line)
 
   rb_eval_string_protect(line, &state);
   return check_exception (state);
+}
+
+/*
+ * Load the specified Ruby script.  Return TRUE if the file was loaded
+ * successfully.  If unsuccessful, display the exception information
+ * on the echo line and return FALSE.
+ *
+ * Unfortunately, we can't use rb_load_protect here.  Despite its name,
+ * it doesn't seem to protect against exceptions;  it aborts
+ * with a segfault.  So we use a "load" statement instead.
+ */
+static int
+loadscript (const char *path)
+{
+  char line[NFILEN];
+
+  snprintf (line, sizeof (line), "load '%s'", path);
+  return runruby (line);
 }
 
 /*
@@ -599,7 +601,7 @@ getexedir (void)
  * in pe.rb. Return TRUE on success, or FALSE on failure.
  */
 static int
-loadruby (void)
+loadrubylib (void)
 {
   int i, status;
   VALUE loadpath;
@@ -671,12 +673,12 @@ loadruby (void)
    * the same directory as the pe executable, or in the current
    * directory.
    */
-  return load_script ("pe.rb");
+  return loadscript ("pe.rb");
 }
 
 #if 0
 static void
-unloadruby (void)
+unloadrubylib (void)
 {
   int status;
 
@@ -714,7 +716,7 @@ rubystring (int f, int n, int k)
   int status;
   char line[NCOL];
 
-  if ((status = loadruby ()) != TRUE)
+  if ((status = loadrubylib ()) != TRUE)
     return status;
   if ((status = ereply ("Ruby code: ", line, sizeof (line))) != TRUE)
     return status;
@@ -733,11 +735,11 @@ rubyload (int f, int n, int k)
   int status;
   char line[NCOL];
 
-  if ((status = loadruby ()) != TRUE)
+  if ((status = loadrubylib ()) != TRUE)
     return status;
   if ((status = ereply ("Ruby file to load: ", line, sizeof (line))) != TRUE)
     return status;
-  return load_script (line);
+  return loadscript (line);
 }
 
 /*
@@ -753,7 +755,7 @@ rubycommand (int f, int n, int k)
   char *name;
   int status;
 
-  if ((status = loadruby ()) != TRUE)
+  if ((status = loadrubylib ()) != TRUE)
     return status;
   if ((status = ereply ("Ruby function: ", line, sizeof (line))) != TRUE)
     return status;
