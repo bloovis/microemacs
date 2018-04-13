@@ -491,16 +491,45 @@ check_exception (int state)
 {
   if (state)
     {
-      /* Get the exception string and display it on the echo line.
+      /* Get the exception string and display it in the popup buffer.
        */
       VALUE exception = rb_errinfo ();
       if (RTEST(exception))
 	{
-	  VALUE msg = rb_funcall (exception, rb_intern("to_s"), 0);
-	  eprintf ("ruby exception: %s", StringValueCStr (msg));
+	  int s, ci, clen;
+	  VALUE msg;
+	  VALUE bt;
+	  VALUE len;
+
+	  /* Clear the popup buffer.
+	   */
+	  blistp->b_flag &= ~BFCHG;
+	  if ((s = bclear (blistp)) != TRUE)
+	    return FALSE;
+	  strcpy (blistp->b_fname, "");
+
+	  /* Write the exception string to the popup buffer.
+	   */
+	  msg = rb_funcall (exception, rb_intern("to_s"), 0);
+	  if (addline (StringValueCStr (msg)) == FALSE)
+	    return FALSE;
+
+	  /* Write the backtrace strings to the popup buffer.
+	   */
+	  bt = rb_funcall (exception, rb_intern("backtrace"), 0);
+	  len = rb_funcall (bt, rb_intern("length"), 0);
+	  clen = FIX2INT (len);
+	  for (ci = 0; ci < clen; ci++)
+	    {
+	      VALUE i = LONG2FIX (ci);
+	      VALUE str = rb_funcall (bt, rb_intern ("slice"), 1, i);
+	      if (addline (StringValueCStr (str)) == FALSE)
+		return FALSE;
+	    }
+	  rb_set_errinfo (Qnil);		/* clear last exception */
+	  return popblist ();
 	}
       rb_set_errinfo (Qnil);		/* clear last exception */
-      return FALSE;
     }
   return TRUE;
 }
