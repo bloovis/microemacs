@@ -478,3 +478,32 @@ fftilde (char *arg)
   strcat (buf, tail);
   return buf;
 }
+
+/*
+ * Get the directory containing the currently running pe executable.
+ */
+const char *
+ffexedir (void)
+{
+  int len;
+  static char path[NFILEN];
+  char *p;
+
+  if ((len = readlink ("/proc/self/exe", path, sizeof (path) - 1)) != -1)
+    {
+      p = path + len;
+      *p = '\0';
+      while (p >= path)
+        {
+          --p;
+          if (*p == '/')
+            {
+              *p = '\0';
+              break;
+            }
+        }
+    }
+  else
+    path[0] = '\0';
+  return path;
+}

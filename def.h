@@ -723,6 +723,7 @@ char *ffsearch (const char *name,	/* Find matching filename.	*/
 		int cpos,
 		const char *prev);
 int ffisdir (char *name, int cpos);	/* name[0..cpos-1] is dir?	*/
+const char * ffexedir (void);		/* Get dir of pe executable.	*/
 
 /*
  * Defined by "kbd.c".
@@ -844,9 +845,9 @@ int rubystring (int f, int n, int k);	/* Execute a Ruby string.	*/
 int rubycommand (int f, int n, int k);	/* Define a Ruby command.	*/
 int rubyload (int f, int n, int k);	/* Load a Ruby script.		*/
 
+int rubyinit (int quiet);		/* Initialize Ruby.		*/
 int rubycall (const char *name, int f,	/* Call a Ruby command.		*/
 	      int n);
-
 /*
  * Defined by "spell.c".
  */

@@ -570,55 +570,30 @@ loadscript (const char *path)
 }
 
 /*
- * Get the directory containing the pe executable.
- */
-static char *
-getexedir (void)
-{
-  int len;
-  static char path[NFILEN];
-  char *p;
-
-  if ((len = readlink ("/proc/self/exe", path, sizeof (path) - 1)) != -1)
-    {
-      p = path + len;
-      *p = '\0';
-      while (p >= path)
-        {
-          --p;
-          if (*p == '/')
-            {
-              *p = '\0';
-              break;
-            }
-        }
-    }
-  else
-    path[0] = '\0';
-  return path;
-}
-
-
-/*
  * Load the Ruby library, initialize the pointers to the APIs,
  * define some C helper functions, and load the Ruby helper code
  * in pe.rb. Return TRUE on success, or FALSE on failure.
+ * If quiet is TRUE, don't display an error message if the
+ * Ruby shared library can't be loaded.
  */
-static int
-loadrubylib (void)
+int
+rubyinit (int quiet)
 {
   int i, status;
   VALUE loadpath;
   VALUE dot;
-  VALUE selfpath;
   static const char *libruby = STRINGIFY(LIBRUBY);
+  static const char *global_pe_rb = "/etc/pe.rb";
+  const char *home_pe_rb;
+  static const char *local_pe_rb = "./.pe.rb";
 
   if (ruby_handle != NULL)
     return TRUE;
   ruby_handle = dlopen(libruby, RTLD_LAZY);
   if (ruby_handle == NULL)
     {
-      eprintf ("Unable to load %s", libruby);
+      if (quiet == TRUE)
+	eprintf ("Unable to load %s", libruby);
       return FALSE;
     }
   for (i = 0; i < sizeof (fnames) / sizeof (fnames[0]); i++)
@@ -662,22 +637,38 @@ loadrubylib (void)
   rb_define_virtual_variable ("$char", get_char, set_char);
   rb_define_virtual_variable ("$filename", get_filename, set_filename);
 
-  /* Add two directories to the load path:
-   * - the current directory
-   * - the directory containing the pe executable
-   * This allows pe.rb, and possible other scripts as well, to be loaded
-   * without specifying their full paths in the the most common cases.
+  /* Add the current directory to the Ruby load path.
+   * This allows the user to load other scripts without specifying
+   * full paths.
    */
   loadpath = rb_gv_get("$LOAD_PATH");
   dot = rb_str_new_cstr (".");
-  selfpath = rb_str_new_cstr (getexedir ());
-  rb_funcall (loadpath, rb_intern ("push"), 2, dot, selfpath);
+  rb_funcall (loadpath, rb_intern ("push"), 1, dot);
 
-  /* Load the Ruby helper file, pe.rb.  It should be in either
-   * the same directory as the pe executable, or in the current
-   * directory.
+  /* Load the Ruby helper file, pe.rb.  It should be in /etc.
+   * Give an error if it doesn't exist.
    */
-  return loadscript ("pe.rb");
+  if (access (global_pe_rb, R_OK) != F_OK)
+    {
+      eprintf ("The file %s does not exist; cannot initialize Ruby",
+               global_pe_rb);
+      return FALSE;
+    }
+  if (loadscript ("/etc/pe.rb") == FALSE)
+    return FALSE;
+
+  /* Construct the name of $HOME/.pe.rb and load that file.
+   * If it doesn't exist, try loading ./pe.rb.  But don't
+   * cause an error if either file doesn't exist, because
+   * they are optional.
+   */
+  home_pe_rb = fftilde ("~/.pe.rb");
+  if (access (home_pe_rb, R_OK) == F_OK)
+    return loadscript (home_pe_rb);
+  else if (access (local_pe_rb, R_OK) == F_OK)
+    return loadscript (local_pe_rb);
+  else
+    return TRUE;
 }
 
 #if 0
@@ -741,7 +732,7 @@ rubystring (int f, int n, int k)
   int status;
   char line[NCOL];
 
-  if ((status = loadrubylib ()) != TRUE)
+  if ((status = rubyinit (FALSE)) != TRUE)
     return status;
   if ((status = ereply ("Ruby code: ", line, sizeof (line))) != TRUE)
     return status;
@@ -760,7 +751,7 @@ rubyload (int f, int n, int k)
   int status;
   char line[NCOL];
 
-  if ((status = loadrubylib ()) != TRUE)
+  if ((status = rubyinit (FALSE)) != TRUE)
     return status;
   if ((status = ereply ("Ruby file to load: ", line, sizeof (line))) != TRUE)
     return status;
@@ -780,7 +771,7 @@ rubycommand (int f, int n, int k)
   char *name;
   int status;
 
-  if ((status = loadrubylib ()) != TRUE)
+  if ((status = rubyinit (FALSE)) != TRUE)
     return status;
   if ((status = ereply ("Ruby function: ", line, sizeof (line))) != TRUE)
     return status;

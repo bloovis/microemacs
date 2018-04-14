@@ -170,6 +170,9 @@ main (int argc, char *argv[])
     abort ();
   keymapinit ();		/* Symbols, bindings.   */
   upmapinit ();			/* Upper case map table */
+#if USE_RUBY
+  rubyinit (TRUE);		/* Attempt to load Ruby support	*/
+#endif
 
   for (n = 1; n < argc; n++)
     {				/* Read in files        */
