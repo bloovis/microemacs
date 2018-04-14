@@ -2263,16 +2263,30 @@ build MicroEMACS.  For example:
     cd objruby
     ../configure --with-ruby
     make
+    sudo make install # optional step
 
 The resulting MicroEMACS is not linked directly with the Ruby runtime
 library.  Instead, it loads the Ruby library dynamically as needed.
 This allows you to copy the MicroEMACS executable (`pe`) to a system where Ruby is not
 available, and it will still run, but without Ruby support.
 
+## Initialization
+
 In order for Ruby commands to run correctly, you will need to
-copy a helper file called `pe.rb`, located in the source directory,
-to the same directory as the MicroEMACS executable (`pe`).  That will
-allow MicroEMACS to load the helper file automatically when needed.
+copy a helper file called `pe.rb`, located in the `ruby` subdirectory
+of the source code, to `/etc`. Running `sudo make install` after
+building a Ruby-enabled MicroEMACS will perform the copy.
+MicroEMACS will attempt to load the helper file when it starts.
+If it cannot load the file, you will not be able to use the Ruby
+extensions.
+
+At startup, MicroEMACS will also attempt to load an initialization
+script that you have written.  It will first look for a file called `.pe.rb`
+(note the leading dot) in your home directory, and load that if found.  If it can't find `.pe.rb`
+in your home directory, it will look in your current directory.  This
+will allow you to define your own custom commands on a per-user or
+per-project basis, as appropriate.  The `ruby` subdirectory
+of the source code has examples that you can use or modify.
 
 ## An example
 
@@ -2300,18 +2314,20 @@ the built-in **gcc-error**\index{gcc-error} command:
             goto_line lno.to_i
             forw_char col.to_i - 1
             echo "#{err}"
+            return ETRUE
           else
             echo "File #{file} does not exist"
+            return EFALSE
           end
-          return
         end
         keepgoing = forw_line == ETRUE
       end
       echo "No more gcc errors"
+      return EFALSE
     end
 
     ruby_command "gccerr"
-    bind "gccerr", meta('&')
+    bind "gccerr", metactrl('e')
 
 Some things to note about this example:
 
@@ -2333,7 +2349,7 @@ Some things to note about this example:
   C source code of MicroEMACS.
 
 * After the definition of the command, there is code to tell MicroEMACS about
-  the new command, and to bind it to the `M-&` key.
+  the new command, and to bind it to the `M-C-E` key.
 
 ## Ruby-related commands
 
@@ -2395,9 +2411,9 @@ a way to pass keycodes as additional parameters to commands.
 Microemacs provides a `bind` helper function to work around
 the problem with the **bind-to-key** command.  For example, the `gccerr.rb`
 code above used this helper to bind the **gccerr** command to
-the **M-&** key:
+the **M-C-E** key:
 
-    bind "gccerr", meta('&')
+    bind "gccerr", metactrl('e')
 
 Commands return a trinary value indicating success, failure, or abort.
 In Ruby, these values are:
@@ -2443,9 +2459,9 @@ Then it tells MicroEMACS about the new command:
 
     ruby_command "gccerr"
 
-Finally, it binds the new command to the **M-&** key:
+Finally, it binds the new command to the **M-C-E** key:
 
-    bind "gccerr", meta('&')
+    bind "gccerr", metactrl('e')
 
 ### Helper Functions
 
@@ -2463,6 +2479,13 @@ for use in Ruby commands.
 :   This function binds the command whose name is the string `name`
     to the keycode `key`.  See below for the helper functions
     that provide keycodes.
+
+`reply(string)`
+
+:   This function prompts the user on the echo line with the specified
+    string, then reads an input line from the user.  It returns the input
+    line without a terminating newline, or nil if the user aborts
+    the input using Control-G.
 
 MicroEMACS also provides several helpers for encoding keycodes.
 All built-in commands in MicroEMACS take a keycode parameter, which
@@ -2523,7 +2546,7 @@ and written.
 
 :   This variable contains the offset into the current line of the dot.
     The value is 0-based, so that it can be used as an index into `$line`.
-    Writing to this variable move the dot to the specified offset within
+    Writing to this variable moves the dot to the specified offset within
     the current line.
 
 `$filename`

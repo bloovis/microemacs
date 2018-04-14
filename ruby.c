@@ -658,7 +658,7 @@ rubyinit (int quiet)
     return FALSE;
 
   /* Construct the name of $HOME/.pe.rb and load that file.
-   * If it doesn't exist, try loading ./pe.rb.  But don't
+   * If it doesn't exist, try loading ./.pe.rb.  But don't
    * cause an error if either file doesn't exist, because
    * they are optional.
    */
