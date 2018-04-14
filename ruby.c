@@ -55,6 +55,10 @@ const char *fnames[] =
   "rb_load_protect",
   "ruby_init_loadpath",
   "rb_gv_get",
+  "rb_intern",
+  "rb_mKernel",
+  "rb_id2sym",
+  "rb_cObject",
   /* End of API names */
 };
 
@@ -696,13 +700,34 @@ unloadrubylib (void)
 int
 rubycall (const char *name, int f, int n)
 {
-  char cmd[80];
+  VALUE parm;
+  VALUE ret;
+  ID name_id;
 
+  /* First check if the function call will actually succeed.  Global
+   * functions are actually private methods of Object, so we have
+   * to set the second parameter to respond_to? to true so that
+   * it will look for private methods.
+   */
+  name_id = rb_intern (name);
+  ret = rb_funcall (rb_cObject, rb_intern("respond_to?"), 2, ID2SYM (name_id), Qtrue);
+  if (ret == Qfalse)
+    {
+      eprintf ("%s is not a valid Ruby function", name);
+      return FALSE;
+    }
+
+  /* Now we can go ahead and call the function.
+   */
   if (f == TRUE)
-    snprintf(cmd, sizeof (cmd), "%s(%d)", name, n);
+    parm = INT2NUM (n);
   else
-    snprintf(cmd, sizeof (cmd), "%s(nil)", name);
-  return runruby (cmd);
+    parm = Qnil;
+  ret = rb_funcall (Qnil, name_id, 1, parm);
+  if (FIXNUM_P(ret))
+    return FIX2INT (ret);
+  else
+    return FALSE;
 }
 
 /*
