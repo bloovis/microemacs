@@ -2351,6 +2351,10 @@ Some things to note about this example:
 * After the definition of the command, there is code to tell MicroEMACS about
   the new command, and to bind it to the `M-C-E` key.
 
+* If you want MicroEMACS to load this script automatically when it starts,
+  rename it to `.pe.rb` and copy it either to your current directory or
+  your home directory.
+
 ## Ruby-related commands
 
 MicroEMACS has several built-in commands related to Ruby extensions:
@@ -2383,6 +2387,14 @@ MicroEMACS has several built-in commands related to Ruby extensions:
     the command into its symbol table but does not bind it to a key;
     you can use the `bind-to-key` command for that.  The `gccerr`
     example above shows a use of this command.
+
+[unbound]
+
+:   **ruby-load**\index{ruby-load}
+
+    This command prompts the user for the name of a Ruby script,
+    then loads that script.  This is shortcut that has the same
+    effect as using **ruby-string** and a `load` Ruby statement.
 
 ## Calling Built-in Commands from Ruby
 
@@ -2553,6 +2565,24 @@ and written.
 
 :   This variable contains the current buffer's filename.  Writing to this
     variable changes the current buffer's filename.
+
+## Exceptions
+
+If an exception occurs in Ruby code, MicroEMACS will open a temporary
+window containing the exception information, including a backtrace.
+
+Unfortunately, this mechanism is, as of this writing, not completely reliable.  There
+are some relatively rare situations where
+the Ruby interpreter crashes with a segfault.  In these cases, Ruby also prints complete
+exception information to the terminal, but the output is difficult to
+read because MicroEMACS puts the terminal into "raw" mode.
+If you need to see the exception information, you can restart MicroEMACS
+with stderr redirected to file:
+
+    pe 2>ruby.log
+
+Then, if you can reproduce the crash, the file `ruby.log` will contain
+the exception information.
 
 # UTF-8 and Unicode
 
