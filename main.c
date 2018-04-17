@@ -294,7 +294,6 @@ execute (int c, int f, int n)
 {
   register SYMBOL *sp;
   register int status;
-  int oldcasefold = casefold;
 
   /* If there is no binding for the key, assume it is
    * a Unicode character that should be self-inserted.
@@ -314,8 +313,6 @@ execute (int c, int f, int n)
       else
 	status = (*sp->s_funcp) (f, n, c);
       lastflag = thisflag;
-      if (casefold != oldcasefold)
-	eprintf ("casefold corrupted!");
       return (status);
     }
   eprintf ("Unknown command");

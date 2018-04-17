@@ -701,7 +701,6 @@ int
 filesave (int f, int n, int k)
 {
   register int s;
-  int oldcasefold = casefold;
 
   if ((curbp->b_flag & BFCHG) == 0)	/* Return, no changes.  */
     return (TRUE);
@@ -730,8 +729,6 @@ filesave (int f, int n, int k)
 #if	BACKUP
   curbp->b_flag &= ~BFBAK;	/* No backup.           */
 #endif
-  if (casefold != oldcasefold)
-    eprintf ("casefold corrupted!");
   return (s);
 }
 
