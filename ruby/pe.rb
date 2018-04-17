@@ -1,3 +1,6 @@
+# This is the helper file for Ruby support in MicroEMACS.
+# Copy it to /etc.
+
 # MicroEMACS functions return a trinary value.  We have
 # to use an "E" prefix to avoid conflicts with Ruby's
 # builtin constants.
@@ -10,8 +13,7 @@ EABORT = 2
 # exit instead of killing MicroEMACS.
 
 Signal.trap('INT') do
-   # puts "Got control-C"
-   raise "Received SIGINT signal"
+ raise "Received SIGINT signal"
 end
 
 # Encapsulate a keystroke in its own type so that
@@ -95,7 +97,7 @@ end
 #   f = argument flag (0 if no argument present, 1 if argument present)
 #   n = argument (integer)
 #   k = keystroke (only looked at by selfinsert)
-#   s = array of strings to be fed to ereply
+#   s = array of strings to be fed to eread
 
 def method_missing(m, *args, &block)
   # puts "method_missing #{m}"
