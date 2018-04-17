@@ -2270,6 +2270,10 @@ library.  Instead, it loads the Ruby library dynamically as needed.
 This allows you to copy the MicroEMACS executable (`pe`) to a system where Ruby is not
 available, and it will still run, but without Ruby support.
 
+A Ruby-enabled MicroEMACS will work only on a system that has the same
+version of Ruby as the build system.  You will need to rebuild it for
+each system that has a different version of Ruby.
+
 ## Initialization
 
 In order for Ruby commands to run correctly, you will need to
@@ -2583,6 +2587,23 @@ with stderr redirected to file:
 
 Then, if you can reproduce the crash, the file `ruby.log` will contain
 the exception information.
+
+## Aborting Ruby Commands
+
+If your Ruby code is taking too long to run, and you want to stop it,
+you will need to send it a signal from another terminal window.  In that
+window, find the ID of the process that is running MicroEMACS, using a
+command such as this:
+
+    ps -x | grep pe
+
+Then using the process ID that this command displays, kill the Ruby
+code using:
+
+    kill -SIGINT <id>
+
+The helper code in `pe.rb` catches this signal and raises an exception that
+aborts the errant Ruby code and return control to MicroEMACS.
 
 # UTF-8 and Unicode
 
