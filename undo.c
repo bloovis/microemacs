@@ -235,14 +235,6 @@ freegroup (UNDOGROUP *g)
    */
   free (g->undos);
 
-  /* Set the buffer change flag.
-   */
-  if (g->b_flag & BFCHG)
-    curbp->b_flag |= BFCHG;
-  else
-    curbp->b_flag &= ~BFCHG;
-  curwp->w_flag |= WFMODE;
-
   /* Finally, free up the group record.
    */
   free (g);
@@ -581,6 +573,14 @@ undo (int f, int n, int k)
       end = start;
       --start;
     }
+
+  /* Set the buffer change flag.
+   */
+  if (g->b_flag & BFCHG)
+    curbp->b_flag |= BFCHG;
+  else
+    curbp->b_flag &= ~BFCHG;
+  curwp->w_flag |= WFMODE;
 
   /* Pop this undo group from the list and free it up.
    */
