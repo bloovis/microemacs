@@ -114,6 +114,9 @@ main (int argc, char *argv[])
   register char *arg;
   char *proptr;
   int line = 0;
+#if USE_RUBY
+  int ruby_status;
+#endif
 
   proptr = NULLPTR;		/* profile name         */
   for (n = 1; n < argc; n++)
@@ -170,9 +173,6 @@ main (int argc, char *argv[])
     abort ();
   keymapinit ();		/* Symbols, bindings.   */
   upmapinit ();			/* Upper case map table */
-#if USE_RUBY
-  rubyinit (TRUE);		/* Attempt to load Ruby support	*/
-#endif
 
   for (n = 1; n < argc; n++)
     {				/* Read in files        */
@@ -216,11 +216,19 @@ main (int argc, char *argv[])
     }
   lastflag = 0;			/* Fake last flags.     */
 
+#if USE_RUBY
+  ruby_status = rubyinit (TRUE); /* Attempt to load Ruby support	*/
+#endif
+
   inprof = enoecho = (ffpopen (proptr) == FIOSUC);
   /* open default profile */
   if (!inprof && proptr != NULLPTR)	/* -p option failed?    */
     eprintf ("Unable to open profile %s", proptr);
+#if USE_RUBY
+  else if (ruby_status != FALSE)
+#else
   else
+#endif
     eprintf ("This is free software; use Esc Ctrl-V to see license information");
 
 loop:
