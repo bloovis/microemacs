@@ -29,6 +29,15 @@ static void *ruby_handle;
 void *ruby_fptrs[100];
 
 /*
+ * Structure for passing arguments to rb_funcall dispatcher.
+ */
+struct callargs
+{
+  ID id;			/* ID of command function */
+  VALUE parm;			/* numeric parameter to command */
+};
+
+/*
  * Do not change the comments in the following table.  They
  * are used by makeapi.rb script to generate the trampoline code
  * for the Ruby APIs.
@@ -59,6 +68,7 @@ const char *fnames[] =
   "rb_mKernel",
   "rb_id2sym",
   "rb_cObject",
+  "rb_protect",
   /* End of API names */
 };
 
@@ -534,6 +544,7 @@ check_exception (int state)
 	  return popblist ();
 	}
       rb_set_errinfo (Qnil);		/* clear last exception */
+      return FALSE;
     }
   return TRUE;
 }
@@ -685,40 +696,64 @@ unloadrubylib (void)
 #endif
 
 /*
+ * Helper function for rubycall.  This performs the actual
+ * call to the Ruby command.  It needs to have this function
+ * signature because rb_protect requires it, and we want
+ * to be able to catch any exceptions that occur during the call.
+ */
+static VALUE
+dispatch (VALUE arg)
+{
+  VALUE ret;
+  struct callargs *args = (struct callargs *) arg;
+
+  ret = rb_funcall (Qnil, args->id, 1, args->parm);
+  if (FIXNUM_P(ret))
+    return ret;
+  else
+    return INT2NUM (FALSE);
+}
+
+/*
  * Call a Ruby command function with the specified numeric argument n,
  * or nil if f is FALSE.
  */
 int
 rubycall (const char *name, int f, int n)
 {
-  VALUE parm;
   VALUE ret;
-  ID name_id;
+  struct callargs args;
+  int state;
 
   /* First check if the function call will actually succeed.  Global
    * functions are actually private methods of Object, so we have
    * to set the second parameter to respond_to? to true so that
    * it will look for private methods.
    */
-  name_id = rb_intern (name);
-  ret = rb_funcall (rb_cObject, rb_intern("respond_to?"), 2, ID2SYM (name_id), Qtrue);
+  args.id = rb_intern (name);
+  ret = rb_funcall (rb_cObject, rb_intern("respond_to?"), 2, ID2SYM (args.id), Qtrue);
   if (ret == Qfalse)
     {
       eprintf ("%s is not a valid Ruby function", name);
       return FALSE;
     }
 
-  /* Now we can go ahead and call the function.
+  /* Now we can go ahead and call the function inside a protected region.
    */
   if (f == TRUE)
-    parm = INT2NUM (n);
+    args.parm = INT2NUM (n);
   else
-    parm = Qnil;
-  ret = rb_funcall (Qnil, name_id, 1, parm);
-  if (FIXNUM_P(ret))
-    return FIX2INT (ret);
-  else
+    args.parm = Qnil;
+  ret = rb_protect (dispatch, (VALUE) &args, &state);
+  if (check_exception (state) == FALSE)
     return FALSE;
+  else
+    {
+      if (FIXNUM_P (ret))
+	return NUM2INT (ret);
+      else
+	return FALSE;
+    }
 }
 
 /*
