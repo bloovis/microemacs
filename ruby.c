@@ -69,6 +69,7 @@ const char *fnames[] =
   "rb_id2sym",
   "rb_cObject",
   "rb_protect",
+  "rb_load",
   /* End of API names */
 };
 
@@ -563,21 +564,37 @@ runruby (const char * line)
 }
 
 /*
+ * Helper function for loadscript.  This is a simple wrapper
+ * for rb_load, required because rb_protect requires a function
+ * that takes just one parameter, but rb_load takes two parameters.
+ */
+static VALUE
+loadhelper (VALUE arg)
+{
+  rb_load (arg, 0);
+  return Qnil;
+}
+
+/*
  * Load the specified Ruby script.  Return TRUE if the file was loaded
  * successfully.  If unsuccessful, display the exception information
  * on the echo line and return FALSE.
  *
  * Unfortunately, we can't use rb_load_protect here.  Despite its name,
  * it doesn't seem to protect against exceptions;  it aborts
- * with a segfault.  So we use a "load" statement instead.
+ * with a segfault.  So instead, we call a wrapper for rb_load
+ * from rb_protect, which allows us to catch any exceptions
+ * in the loaded file.
  */
 static int
 loadscript (const char *path)
 {
-  char line[NFILEN];
+  VALUE script;
+  int state;
 
-  snprintf (line, sizeof (line), "load '%s'", path);
-  return runruby (line);
+  script = rb_str_new_cstr (path);
+  rb_protect(loadhelper, script, &state);
+  return check_exception (state);
 }
 
 /*
