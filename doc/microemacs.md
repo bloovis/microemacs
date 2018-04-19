@@ -810,7 +810,8 @@ are self-inserting. They are inserted into the buffer at the current
 location of dot\index{Dot}, and dot moves 1 character to the right.
 
 The **Tab**\index{Tab} (or **C-I**\index{C-I}) key is also self-inserting.
-MicroEMACS has fixed tab settings at columns 9, 17, 25, and so on.
+By default, MicroEMACS has fixed tab settings at columns 9, 17, 25, and so on,
+but you can change the tab width using the **set-tab-size** command.
 
 Any self-inserting\index{ins-self} character can be given an
 argument\index{Argument}.
@@ -938,6 +939,31 @@ C-T
     before it.  Does nothing if the dot is at the beginning of the line.
     This command is supposedly useful for correcting common
     letter transpositions while entering new text.
+
+M-Tab
+
+:   **set-tab-size**\index{M-Tab}\index{set-tab-size}
+
+    Set the tab size to the value of the argument, which must be
+    a positive number greater than 1 (the default tab size is 8).
+    This only affects the how
+    MicroEMACS displays tabs on the screen; it does not affect
+    how tabs are saved when a file is written to disk.  To change
+    how MicroEMACS handles tabs when saving a file, see the
+    **set-save-tabs** command.
+
+M-I
+
+:  **set-save-tabs**\index{M-I}\index{set-save-tabs}
+
+    By default, MicroEMACS preserves tabs when it writes
+    a file to disk.  If you pass a zero argument to this
+    command, MicroEMACS will convert tabs to spaces when
+    writing a file; the number of spaces is determined
+    by the tab size (which you can set using **set-tab-size**).
+    If you pass a non-zero argument to this command,
+    MicroEMACS will revert back to the default behavior,
+    which is to preserve tabs.
 
 [unbound]
 
@@ -2570,6 +2596,11 @@ and written.
 :   This variable contains the current buffer's filename.  Writing to this
     variable changes the current buffer's filename.
 
+`$tabsize`
+
+:   This variable contains the current tab width.  Writing to this variable
+    sets the tab width, as in the **set-tab-size** command.
+
 ## Exceptions
 
 If an exception occurs in Ruby code, MicroEMACS will open a temporary
@@ -2816,6 +2847,14 @@ C-X C-O
 M-C-U
 
 :   unicode
+
+M-Tab
+
+:   set-tab-size
+
+M-I
+
+:   set-save-tabs
 
 *Little Moves*
 
