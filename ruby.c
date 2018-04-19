@@ -444,6 +444,27 @@ set_offset (VALUE val, ID id)
 }
 
 /*
+ * Get the current tab size.
+ */
+static VALUE
+get_tabsize (VALUE self)
+{
+  VALUE ret;
+
+  ret = INT2NUM (tabsize);
+  return ret;
+}
+
+/*
+ * Set the current tab size.
+ */
+static void
+set_tabsize (VALUE val, ID id)
+{
+  settabsize (TRUE, NUM2INT (val), KRANDOM);
+}
+
+/*
  * Insert a string at the current location.
  */
 static VALUE
@@ -664,6 +685,7 @@ rubyinit (int quiet)
   rb_define_virtual_variable ("$line", get_line, set_line);
   rb_define_virtual_variable ("$char", get_char, set_char);
   rb_define_virtual_variable ("$filename", get_filename, set_filename);
+  rb_define_virtual_variable ("$tabsize", get_tabsize, set_tabsize);
 
   /* Add the current directory to the Ruby load path.
    * This allows the user to load other scripts without specifying
