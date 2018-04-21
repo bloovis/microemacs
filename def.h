@@ -992,7 +992,32 @@ int lineno (const LINE *lp);		/* Get zero-based line number.	*/
 /*
  * Defined by "utf8.c".
  */
+#if 0
 int uclen (const uchar *s);		/* Length of UTF-8 character	*/
+#else
+static inline int
+uclen (const uchar *s)
+{
+  int n;
+  uchar c = *s;
+
+  if (c < 0x80)
+    n = 1;
+  if (c >= 0xc0 && c <= 0xdf)
+    n = 2;
+  else if (c >= 0xe0 && c <= 0xef)
+    n = 3;
+  else if (c >= 0xf0 && c <= 0xf7)
+    n = 4;
+  else if (c >= 0xf8 && c <= 0xfb)
+    n = 5;
+  else if (c >= 0xfc && c <= 0xfd)
+    n = 6;
+  else
+    n = 1;	/* error */
+  return n;
+}
+#endif
 const uchar * ugetcptr (const uchar *s, int n);
 					/* Addr of nth UTF-8 char in s	*/
 int uoffset (const uchar *s, int n);	/* Offset of nth UTF-8 char in s */

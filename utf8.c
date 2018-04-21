@@ -32,6 +32,7 @@ typedef unsigned char uchar;
 /*
  * Return the length in bytes of the UTF-8 character whose first byte is c.
  */
+#if 0
 int
 uclen (const uchar *s)
 {
@@ -54,7 +55,7 @@ uclen (const uchar *s)
     n = 1;	/* error */
   return n;
 }
-
+#endif
 
 /*
  * Return true if Unicode character c is a combining character,
