@@ -17,6 +17,15 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+/*
+ * To compile this file as a test program:
+ *
+ *   gcc -DTEST -Isys/unix -Itty/ncurses -g -o utf8 utf8.c
+ *
+ * Replace -g with -O to make an optimized version in which
+ * uclen (defined in def.h) is inlined.
+ */
+
 #include "def.h"
 #ifdef TEST
 #include <time.h>
