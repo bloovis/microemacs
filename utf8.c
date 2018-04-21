@@ -17,45 +17,14 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-/* #define TEST */
-
-#ifndef TEST
 #include "def.h"
-#else
-typedef unsigned char uchar;
+#ifdef TEST
+#include <time.h>
 #endif
 
 #include <wchar.h>
 #include <string.h>
 #include <stdio.h>
-
-/*
- * Return the length in bytes of the UTF-8 character whose first byte is c.
- */
-#if 0
-int
-uclen (const uchar *s)
-{
-  int n;
-  uchar c = *s;
-
-  if (c < 0x80)
-    n = 1;
-  if (c >= 0xc0 && c <= 0xdf)
-    n = 2;
-  else if (c >= 0xe0 && c <= 0xef)
-    n = 3;
-  else if (c >= 0xf0 && c <= 0xf7)
-    n = 4;
-  else if (c >= 0xf8 && c <= 0xfb)
-    n = 5;
-  else if (c >= 0xfc && c <= 0xfd)
-    n = 6;
-  else
-    n = 1;	/* error */
-  return n;
-}
-#endif
 
 /*
  * Return true if Unicode character c is a combining character,
@@ -95,7 +64,7 @@ uoffset (const uchar *s, int n)
   const uchar *start = s;
   while (n > 0)
     {
-      s += uclen (s);
+       s += uclen (s);
       --n;
     }
   return s - start;
@@ -154,7 +123,7 @@ unblen (const uchar *s, int n)
 /*
  * Get the nth UTF-8 character in s, return it
  * as a 32-bit unicode character.  If len is not NULL,
- * return the * length of the UTF-8 character to *len.
+ * return the length of the UTF-8 character to *len.
  */
 wchar_t
 ugetc (const uchar *s, int n, int *len)
@@ -282,6 +251,7 @@ uputc (wchar_t c, uchar *s)
  * Treat each hex number as a Unicode character, convert
  * it to UTF-8, and insert into the current buffer.
  */
+#ifndef TEST
 int
 unicode (int f, int n, int k)
 {
@@ -310,19 +280,25 @@ unicode (int f, int n, int k)
     }
   return TRUE;
 }
-
+#endif
 
 #ifdef TEST
 
 int
 main(int argc, char *argv[])
 {
-  static unsigned char s[] = { 'a', '=', 0xc3, 0xa4, ',', 'i', '=', 0xe2, 0x88, 0xab, ',',
+  static uchar s[] = { 'a', '=', 0xc3, 0xa4, ',', 'i', '=', 0xe2, 0x88, 0xab, ',',
+                      '+', '=', 0xf0, 0x90, 0x80, 0x8f, ',',
+		      'j', '=', 0xf0, 0x9f, 0x82, 0xab, '.',
+		      'a', '=', 0xc3, 0xa4, ',', 'i', '=', 0xe2, 0x88, 0xab, ',',
                       '+', '=', 0xf0, 0x90, 0x80, 0x8f, ',',
 		      'j', '=', 0xf0, 0x9f, 0x82, 0xab, '.', 0 };
 
   wchar_t c;
   int i, len;
+  double time_spent;
+  clock_t begin, end;
+  const uchar *p;
 
   printf("size of wchar_t is %ld\n", sizeof(c));
   printf("s is '%s'\n", s);
@@ -337,6 +313,12 @@ main(int argc, char *argv[])
       u = ugetc(s, i, &size);
       printf("char #%d in s in unicode is %x, size %d\n", i, u, size);
     }
+  begin = clock ();
+  for (i = 0; i < 10000000; i++)
+    p = ugetcptr (s, len);
+  end =- clock ();
+  time_spent = (double)(end - begin) / CLOCKS_PER_SEC;
+  printf ("Time spent in %d loops of ugetcptr is %f\n", i, time_spent);
   return 0;
 }
 

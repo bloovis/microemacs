@@ -992,9 +992,26 @@ int lineno (const LINE *lp);		/* Get zero-based line number.	*/
 /*
  * Defined by "utf8.c".
  */
-#if 0
-int uclen (const uchar *s);		/* Length of UTF-8 character	*/
-#else
+const uchar * ugetcptr (const uchar *s, int n);
+					/* Addr of nth UTF-8 char in s	*/
+int uoffset (const uchar *s, int n);	/* Offset of nth UTF-8 char in s */
+int uslen (const uchar *s);		/* # of UTF-8 chars in		*/
+					/*  null-terminated string s	*/
+int unslen (const uchar *s, int n);	/* # of UTF-8 chars in string s	*/
+					/*  of length n			*/
+int unblen (const uchar *s, int n);	/* # of bytes in next n UTF-8	*/
+					/*  chars in s			*/
+wchar_t ugetc (const uchar *s, int n, int *len);
+					/* Convert one UTF-8 character	*/
+					/*  to 32-bit Unicode		*/
+int ucombining (wchar_t c);		/* c is a combining char?	*/
+int uputc (wchar_t c, unsigned char *s);/* Convert Unicode to UTF-8	*/
+int unicode (int f, int n, int k);	/* Command to insert Unicode.	*/
+
+/*
+ * Return the number of bytes in the UTF-8 character pointed to by s.
+ * Inlining this function speeds up all UTF-8 functions by quite a bit.
+ */
 static inline int
 uclen (const uchar *s)
 {
@@ -1017,19 +1034,3 @@ uclen (const uchar *s)
     n = 1;	/* error */
   return n;
 }
-#endif
-const uchar * ugetcptr (const uchar *s, int n);
-					/* Addr of nth UTF-8 char in s	*/
-int uoffset (const uchar *s, int n);	/* Offset of nth UTF-8 char in s */
-int uslen (const uchar *s);		/* # of UTF-8 chars in		*/
-					/*  null-terminated string s	*/
-int unslen (const uchar *s, int n);	/* # of UTF-8 chars in string s	*/
-					/*  of length n			*/
-int unblen (const uchar *s, int n);	/* # of bytes in next n UTF-8	*/
-					/*  chars in s			*/
-wchar_t ugetc (const uchar *s, int n, int *len);
-					/* Convert one UTF-8 character	*/
-					/*  to 32-bit Unicode		*/
-int ucombining (wchar_t c);		/* c is a combining char?	*/
-int uputc (wchar_t c, unsigned char *s);/* Convert Unicode to UTF-8	*/
-int unicode (int f, int n, int k);	/* Command to insert Unicode.	*/
