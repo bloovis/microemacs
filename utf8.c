@@ -324,8 +324,9 @@ main(int argc, char *argv[])
     }
   begin = clock ();
   for (i = 0; i < 10000000; i++)
-    p = ugetcptr (s, len);
-  end =- clock ();
+    if ((p = ugetcptr (s, len)) == s)
+      printf ("Should never get here!\n");
+  end = clock ();
   time_spent = (double)(end - begin) / CLOCKS_PER_SEC;
   printf ("Time spent in %d loops of ugetcptr is %f\n", i, time_spent);
   return 0;
