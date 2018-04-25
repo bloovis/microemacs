@@ -935,6 +935,7 @@ void setttysize (void);
 void ttclose (void);
 int ttstat (void);
 int ttputc (int c);
+int ttinsertc (int c);
 void ttputs (const wchar_t *buf, int size);
 void ttflush (void);
 int ttgetc (void);

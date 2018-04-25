@@ -518,6 +518,27 @@ my_reply (VALUE self, VALUE s)
 }
 
 /*
+ * Helper function for check_exception that adds
+ * an array of lines to the popup buffer.
+ */
+static int
+add_lines (VALUE ary)
+{
+  int ci;
+  VALUE len = rb_funcall (ary, rb_intern("length"), 0);
+  int clen = FIX2INT (len);
+
+  for (ci = 0; ci < clen; ci++)
+    {
+      VALUE i = LONG2FIX (ci);
+      VALUE str = rb_funcall (ary, rb_intern ("slice"), 1, i);
+      if (addline (StringValueCStr (str)) == FALSE)
+	return FALSE;
+    }
+  return TRUE;
+}
+
+/*
  * Check if the last call to Ruby returned an exception.
  * If so, display the exception string on the echo line
  * and return FALSE.  Otherwise return TRUE.
@@ -532,37 +553,33 @@ check_exception (int state)
       VALUE exception = rb_errinfo ();
       if (RTEST(exception))
 	{
-	  int s, ci, clen;
 	  VALUE msg;
+	  VALUE msglines;
 	  VALUE bt;
-	  VALUE len;
 
 	  /* Clear the popup buffer.
 	   */
 	  blistp->b_flag &= ~BFCHG;
-	  if ((s = bclear (blistp)) != TRUE)
+	  if (bclear (blistp) != TRUE)
 	    return FALSE;
 	  strcpy (blistp->b_fname, "");
 
 	  /* Write the exception string to the popup buffer.
 	   */
 	  msg = rb_funcall (exception, rb_intern("to_s"), 0);
-	  if (addline (StringValueCStr (msg)) == FALSE)
+	  msglines = rb_funcall (msg, rb_intern("split"), 1, rb_str_new_cstr ("\n"));
+	  if (add_lines (msglines) == FALSE)
 	    return FALSE;
 
 	  /* Write the backtrace strings to the popup buffer.
 	   */
 	  bt = rb_funcall (exception, rb_intern("backtrace"), 0);
-	  len = rb_funcall (bt, rb_intern("length"), 0);
-	  clen = FIX2INT (len);
-	  for (ci = 0; ci < clen; ci++)
-	    {
-	      VALUE i = LONG2FIX (ci);
-	      VALUE str = rb_funcall (bt, rb_intern ("slice"), 1, i);
-	      if (addline (StringValueCStr (str)) == FALSE)
-		return FALSE;
-	    }
-	  rb_set_errinfo (Qnil);		/* clear last exception */
+	  if (add_lines (bt) == FALSE)
+	    return FALSE;
+
+	  /* Clear the exception and display the popup buffer.
+	   */
+	  rb_set_errinfo (Qnil);
 	  return popblist ();
 	}
       rb_set_errinfo (Qnil);		/* clear last exception */

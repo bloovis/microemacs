@@ -149,6 +149,23 @@ ttputc (int c)
 }
 
 /*
+ * Insert character in the display.  Characters to the right
+ * of the insertion point are moved one space to the right.
+ */
+int
+ttinsertc (int c)
+{
+  cchar_t wcval;
+  wchar_t wch[2];
+
+  wch[0] = c;
+  wch[1] = 0;
+  setcchar(&wcval, wch, 0, 0, NULL);
+  ins_wch (&wcval);
+  return c;
+}
+
+/*
  * Write multiple characters to the display.
  * Use this entry point to optimization on some systems.
  * Here we just call ttputc.

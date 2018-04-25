@@ -123,6 +123,13 @@ ettputc (int c)
 }
 
 static void
+ettinsertc (int c)
+{
+  if (!enoecho)
+    ttinsert (c);
+}
+
+static void
 etteeol (void)
 {
   if (!enoecho)
@@ -583,6 +590,7 @@ int
 eread (const char *fp, char *buf, int nbuf, int flag, va_list ap)
 {
   register int cpos;
+  int buflen;
   const char *np1;
   register char *np2;
   register int i;
@@ -596,7 +604,7 @@ eread (const char *fp, char *buf, int nbuf, int flag, va_list ap)
 
   if (replyq_get (buf, nbuf) != NULL)
     return TRUE;
-  cpos = 0;
+  cpos = buflen = 0;
   if (kbdmop != NULL)
     {				/* In a macro.          */
       while ((c = *kbdmop++) != '\0' && cpos < nbuf - 1)
