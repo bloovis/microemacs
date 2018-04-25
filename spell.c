@@ -30,7 +30,7 @@ static FILE *ispell_output;
 static char word[NPAT];		/* word to check for spelling */
 static char repl[NPAT];		/* string to replace word */
 static char buf[256];		/* line buffer for input from ispell */
-static const char *guesses[10];	/* guesses returned by ispell */
+static char *guesses[10];	/* guesses returned by ispell */
 static int nguesses;		/* number of guesses */
 static LINE *clp;		/* saved line pointer           */
 static int cbo;			/* offset into the saved line   */
@@ -87,6 +87,26 @@ replace (void)
   ++nrepl;
   clp = curwp->w_savep;
   return status;
+}
+
+/*
+ * Remove plus signs from a string.  This is useful for
+ * cleaning up ispell suggestions about suffixes.  For
+ * example, it will suggest "instinctual+ly" for
+ * "instinctually".
+ */
+static void
+remove_plusses (char *s)
+{
+  char c;
+
+  while ((c = *s) != '\0')
+    {
+      if (c == '+')
+	memmove (s, s + 1, strlen (s) + 1);
+      else
+	s++;
+    }
 }
 
 /*
@@ -154,6 +174,7 @@ getrepl (const char *prompt)
 	      int n = c - '0';
 	      if (n < nguesses)
 		{
+		  remove_plusses (guesses[n]);
 		  strncpy (repl, guesses[n], sizeof (repl));
 		  status = TRUE;
 		  done = TRUE;
@@ -165,7 +186,6 @@ getrepl (const char *prompt)
   eerase ();
   return status;
 }
-
 
 /*
  * Ask ispell to check a word, and if it is not correct,
