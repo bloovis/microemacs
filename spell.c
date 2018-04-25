@@ -90,23 +90,36 @@ replace (void)
 }
 
 /*
- * Remove plus signs from a string.  This is useful for
- * cleaning up ispell suggestions about suffixes.  For
- * example, it will suggest "instinctual+ly" for
- * "instinctually".
+ * Remove plus signs from a string, and remove suffixes preceded
+ * with minus signs.  This is useful for cleaning up ispell
+ * suggestions about suffixes.  For example, it will suggest
+ * "instinctual+ly" for "instinctually", and will suggest
+ * "instinctual-ism" for "instinctualism".
  */
 static void
-remove_plusses (char *s)
+cleanupguess (char *s)
 {
+  char *d = s;
   char c;
 
   while ((c = *s) != '\0')
     {
-      if (c == '+')
-	memmove (s, s + 1, strlen (s) + 1);
+      if (c == '-')
+	{
+	  ++s;
+	  while ((c = *s) != '\0' && c != '+')
+	    ++s;
+	}
+      else if (c == '+')
+	++s;
       else
-	s++;
+	{
+	  *d = *s;
+	  ++d;
+	  ++s;
+	}
     }
+  *d = '\0';
 }
 
 /*
@@ -174,7 +187,7 @@ getrepl (const char *prompt)
 	      int n = c - '0';
 	      if (n < nguesses)
 		{
-		  remove_plusses (guesses[n]);
+		  cleanupguess (guesses[n]);
 		  strncpy (repl, guesses[n], sizeof (repl));
 		  status = TRUE;
 		  done = TRUE;
