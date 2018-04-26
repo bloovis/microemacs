@@ -584,6 +584,17 @@ char * replyq_get (char *buf, int nbuf)
   return buf;
 }
 
+static int
+getcolumn (const char *buf, int cpos)
+{
+  int i, col;
+
+  for (i = col = 0; i < cpos; i++, col++)
+    if (CISCTRL (buf[i]))
+      ++col;
+  return col;
+}
+
 /*
  * This is the general "read input from the
  * echo line" routine. The basic idea is that the prompt
@@ -673,8 +684,7 @@ eread (const char *fp, char *buf, int nbuf, int flag, va_list ap)
 	      memmove (&buf[cpos + 1], &buf[cpos], buflen - cpos);
 	      buf[cpos++] = c;
 	      ++buflen;
-	      einsertc ('y');
-	      eputc (c);
+	      einsertc (c);
 	    }
 	  ettflush ();
 
@@ -698,32 +708,34 @@ eread (const char *fp, char *buf, int nbuf, int flag, va_list ap)
       switch (c)
 	{
         case 0x01:		/* Control-A, go to start */
-	  while (cpos > 0)
-	    {
-	      ettputc ('\b');
-	      --cpos;
-	    }
+	  ttmove (ttrow, ttcol - getcolumn (buf, cpos));
+	  cpos = 0;
 	  ettflush ();
 	  break;
+
 	case 0x02:		/* Control-B, move back */
 	  if (cpos > 0)
 	    {
-	      ettputc ('\b');
 	      --cpos;
+	      ttmove (ttrow, ttcol - (getcolumn (buf, cpos + 1) -
+				      getcolumn (buf, cpos)));
 	      ettflush ();
 	    }
 	  break;
 
 	case 0x05:		/* Control-E, go to end	*/
-	  while (cpos < buflen)
-	    eputc (buf[cpos++]);
+	  ttmove (ttrow, ttcol + (getcolumn (buf, buflen) -
+				  getcolumn (buf, cpos)));
+	  cpos = buflen;
 	  ettflush ();
 	  break;
 
 	case 0x06:		/* Control-F, move forward */
 	  if (cpos < buflen)
 	    {
-	      eputc (buf[cpos++]);
+	      ++cpos;
+	      ttmove (ttrow, ttcol + (getcolumn (buf, cpos) -
+				      getcolumn (buf, cpos - 1)));
 	      ettflush ();
 	    }
 	  break;
@@ -758,31 +770,26 @@ eread (const char *fp, char *buf, int nbuf, int flag, va_list ap)
 	  ettflush ();
 	  return (ABORT);
 
+	case 0x7F:		/* Rubout, erase.       */
+	case 0x08:		/* Backspace, erase.    */
+	  if (cpos == 0)
+	    break;
+	  --cpos;
+	  ttmove (ttrow, ttcol - (getcolumn (buf, cpos + 1) -
+				  getcolumn (buf, cpos)));
+	  /* drop into Control-D */
 	case 0x04:		/* Control-D, delete. */
 	  if (cpos == buflen)
 	    break;
-	  eputc (buf[cpos++]);
-	  /* Fall into Backspace */
-	case 0x7F:		/* Rubout, erase.       */
-	case 0x08:		/* Backspace, erase.    */
-	  if (cpos != 0)
-	    {
-	      ettputc ('\b');
-	      ettdelc ();
-	      --ttcol;
-	      if (CISCTRL (buf[--cpos]) != FALSE)
-		{
-		  ettputc ('\b');
-		  ettdelc ();
-		  --ttcol;
-		}
-	      memmove (&buf[cpos], &buf[cpos + 1], buflen - cpos);
-	      --buflen;
-	      ettflush ();
-	    }
+	  ettdelc ();
+	  if (CISCTRL (buf[cpos]))
+	    ettdelc ();
+	  memmove (&buf[cpos], &buf[cpos + 1], buflen - cpos);
+	  --buflen;
+	  ettflush ();
 	  break;
 
-	case 0x13:		/* Control-S, insert path */
+	case 0x13:		/* Control-S, insert path or pattern */
 	  cp0 = NULL;
 	  if (flag & EFFILE)
 	    {
@@ -819,19 +826,19 @@ eread (const char *fp, char *buf, int nbuf, int flag, va_list ap)
 	  break;
 
 	case 0x15:		/* C-U, kill line.      */
-	  while (cpos != 0)
-	    {
-	      ettputc ('\b');
-	      ettdelc ();
-	      --ttcol;
-	      if (CISCTRL (buf[--cpos]) != FALSE)
-		{
-		  ettputc ('\b');
-		  ettdelc ();
-		  --ttcol;
-		}
-	    }
-	  buflen = 0;
+	  if (buflen == 0)
+	    break;
+	  ttmove (ttrow, ttcol - getcolumn (buf, cpos));
+	  etteeol ();
+	  cpos = buflen = 0;
+	  ettflush ();
+	  break;
+
+	case 0x0b:		/* C-K, kill to end of line */
+	  if (cpos == buflen)
+	    break;
+	  etteeol ();
+	  buflen = cpos;
 	  ettflush ();
 	  break;
 
@@ -845,8 +852,7 @@ eread (const char *fp, char *buf, int nbuf, int flag, va_list ap)
 	      memcpy (&buf[cpos], ubuf, ulen);
 	      cpos += ulen;
 	      buflen += ulen;
-	      einsertc ('x');
-	      eputc (c);
+	      einsertc (c);
 	      ettflush ();
 	    }
 	}
@@ -1045,9 +1051,8 @@ eputc (int c)
 }
 
 /*
- * Insert a character. Watch for
- * control characters, and for the line
- * getting too long.
+ * Insert a character and move the cursor past it. Watch for
+ * control characters, and for the line getting too long.
  */
 void
 einsertc (int c)
@@ -1056,9 +1061,11 @@ einsertc (int c)
     {
       if (CISCTRL (c) != FALSE)
 	{
-	  ettinsertc ('^');
+	  einsertc ('^');
 	  c ^= 0x40;
 	}
       ettinsertc (c);
+      ++ttcol;
     }
+  ettmove (ttrow, ttcol);
 }
