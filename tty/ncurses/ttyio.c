@@ -166,6 +166,16 @@ ttinsertc (int c)
 }
 
 /*
+ * Delete character in the display.  Characters to the right
+ * of the deletion point are moved one space to the left.
+ */
+void
+ttdelc (void)
+{
+  delch ();
+}
+
+/*
  * Write multiple characters to the display.
  * Use this entry point to optimization on some systems.
  * Here we just call ttputc.

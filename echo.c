@@ -126,7 +126,14 @@ static void
 ettinsertc (int c)
 {
   if (!enoecho)
-    ttinsert (c);
+    ttinsertc (c);
+}
+
+static void
+ettdelc (void)
+{
+  if (!enoecho)
+    ttdelc ();
 }
 
 static void
@@ -662,8 +669,10 @@ eread (const char *fp, char *buf, int nbuf, int flag, va_list ap)
 	  for (i = 0; i < nxtra && cpos < nbuf - 1; ++i)
 	    {
 	      c = np2[cpos];
+	      memmove (&buf[cpos + 1], &buf[cpos], buflen - cpos);
 	      buf[cpos++] = c;
-	      eputc (c);
+	      ++buflen;
+	      einsertc (c);
 	    }
 	  ettflush ();
 
@@ -686,11 +695,42 @@ eread (const char *fp, char *buf, int nbuf, int flag, va_list ap)
 	}
       switch (c)
 	{
+        case 0x01:		/* Control-A, go to start */
+	  while (cpos > 0)
+	    {
+	      ettputc ('\b');
+	      --cpos;
+	    }
+	  ettflush ();
+	  break;
+	case 0x02:		/* Control-B, move back */
+	  if (cpos > 0)
+	    {
+	      ettputc ('\b');
+	      --cpos;
+	      ettflush ();
+	    }
+	  break;
+
+	case 0x05:		/* Control-E, go to end	*/
+	  while (cpos < buflen)
+	    eputc (buf[cpos++]);
+	  ettflush ();
+	  break;
+
+	case 0x06:		/* Control-F, move forward */
+	  if (cpos < buflen)
+	    {
+	      eputc (buf[cpos++]);
+	      ettflush ();
+	    }
+	  break;
+
 	case 0x0D:		/* Return, done.        */
 	  if ((flag & EFFILE) != 0)
-	    while (cpos > 0 && buf[cpos - 1] == ' ')
-	      cpos--;		/* Zap trailing spaces  */
-	  buf[cpos] = '\0';
+	    while (buflen > 0 && buf[buflen - 1] == ' ')
+	      buflen--;		/* Zap trailing spaces  */
+	  buf[buflen] = '\0';
 	  if (kbdmip != NULL)
 	    {
 	      if (kbdmip + cpos + 1 > &kbdm[NKBDM - 3])
@@ -716,21 +756,27 @@ eread (const char *fp, char *buf, int nbuf, int flag, va_list ap)
 	  ettflush ();
 	  return (ABORT);
 
+	case 0x04:		/* Control-D, delete. */
+	  if (cpos == buflen)
+	    break;
+	  eputc (buf[cpos++]);
+	  /* Fall into Backspace */
+
 	case 0x7F:		/* Rubout, erase.       */
 	case 0x08:		/* Backspace, erase.    */
 	  if (cpos != 0)
 	    {
 	      ettputc ('\b');
-	      ettputc (' ');
-	      ettputc ('\b');
+	      ettdelc ();
 	      --ttcol;
 	      if (CISCTRL (buf[--cpos]) != FALSE)
 		{
 		  ettputc ('\b');
-		  ettputc (' ');
-		  ettputc ('\b');
+		  ettdelc ();
 		  --ttcol;
 		}
+	      memmove (&buf[cpos], &buf[cpos + 1], buflen - cpos);
+	      --buflen;
 	      ettflush ();
 	    }
 	  break;
@@ -755,7 +801,11 @@ eread (const char *fp, char *buf, int nbuf, int flag, va_list ap)
 		)
 		--cp1;
 	      while (cp0 != cp1 && cpos < nbuf - 1)
-		eputc (buf[cpos++] = *cp0++);
+		{
+		  memmove (&buf[cpos + 1], &buf[cpos], buflen - cpos);
+		  einsertc (buf[cpos++] = *cp0++);
+		  ++buflen;
+		}
 	      ettflush ();
 	    }
 	  break;
@@ -764,17 +814,16 @@ eread (const char *fp, char *buf, int nbuf, int flag, va_list ap)
 	  while (cpos != 0)
 	    {
 	      ettputc ('\b');
-	      ettputc (' ');
-	      ettputc ('\b');
+	      ettdelc ();
 	      --ttcol;
 	      if (CISCTRL (buf[--cpos]) != FALSE)
 		{
 		  ettputc ('\b');
-		  ettputc (' ');
-		  ettputc ('\b');
+		  ettdelc ();
 		  --ttcol;
 		}
 	    }
+	  buflen = 0;
 	  ettflush ();
 	  break;
 
@@ -784,8 +833,11 @@ eread (const char *fp, char *buf, int nbuf, int flag, va_list ap)
 	  ulen = uputc (c, ubuf);
 	  if (cpos + ulen < nbuf)
 	    {
+	      memmove (&buf[cpos + ulen], &buf[cpos], buflen - cpos);
 	      memcpy (&buf[cpos], ubuf, ulen);
 	      cpos += ulen;
+	      buflen += ulen;
+	      einsertc (' ');
 	      eputc (c);
 	      ettflush ();
 	    }
@@ -984,3 +1036,22 @@ eputc (int c)
     }
 }
 
+/*
+ * Insert a character. Watch for
+ * control characters, and for the line
+ * getting too long.
+ */
+void
+einsertc (int c)
+{
+  if (ttcol < ncol)
+    {
+      if (CISCTRL (c) != FALSE)
+	{
+	  ettinsertc ('^');
+	  c ^= 0x40;
+	}
+      ettinsertc (c);
+      ++ttcol;
+    }
+}

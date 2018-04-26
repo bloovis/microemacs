@@ -666,6 +666,7 @@ int ereadv (const char *fp, char *buf, int nbuf, int flag, ...);
 					/* Read input from echo line.	*/
 int eyesno (const char *sp);		/* Ask "yes" or "no" question.	*/
 void eputc (int c);			/* Put a character to screen.	*/
+void einsertc (int c);			/* Insert a character on screen	*/
 void eputs (const char *s);		/* Put a string to screen.	*/
 void eerase (void);			/* Erase the echo line.		*/ 
 
@@ -936,6 +937,7 @@ void ttclose (void);
 int ttstat (void);
 int ttputc (int c);
 int ttinsertc (int c);
+void ttdelc (void);
 void ttputs (const wchar_t *buf, int size);
 void ttflush (void);
 int ttgetc (void);
