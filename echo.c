@@ -584,15 +584,33 @@ char * replyq_get (char *buf, int nbuf)
   return buf;
 }
 
-static int
-getcolumn (const char *buf, int cpos)
+/*
+ * Move the physical cursor to a new column in the
+ * echo line, based on old and new offsets into the line
+ * currently being entered.
+ */
+static void
+setcolumn (const char *buf, int oldcpos, int newcpos)
 {
-  int i, col;
+  int i = 0;
+  int col = 0;
+  int oldcol;
+  int newcol;
 
-  for (i = col = 0; i < cpos; i++, col++)
-    if (CISCTRL (buf[i]))
+  while (TRUE)
+    {
+      if (i == oldcpos)
+	oldcol = col;
+      if (i == newcpos)
+	newcol = col;
+      if (i >= oldcpos && i >= newcpos)
+	break;
       ++col;
-  return col;
+      if (CISCTRL (buf[i]))
+	++col;
+      ++i;
+    }
+  ttmove (ttrow, ttcol + newcol - oldcol);
 }
 
 /*
@@ -708,7 +726,7 @@ eread (const char *fp, char *buf, int nbuf, int flag, va_list ap)
       switch (c)
 	{
         case 0x01:		/* Control-A, go to start */
-	  ttmove (ttrow, ttcol - getcolumn (buf, cpos));
+	  setcolumn (buf, cpos, 0);
 	  cpos = 0;
 	  ettflush ();
 	  break;
@@ -716,16 +734,14 @@ eread (const char *fp, char *buf, int nbuf, int flag, va_list ap)
 	case 0x02:		/* Control-B, move back */
 	  if (cpos > 0)
 	    {
+	      setcolumn (buf, cpos, cpos - 1);
 	      --cpos;
-	      ttmove (ttrow, ttcol - (getcolumn (buf, cpos + 1) -
-				      getcolumn (buf, cpos)));
 	      ettflush ();
 	    }
 	  break;
 
 	case 0x05:		/* Control-E, go to end	*/
-	  ttmove (ttrow, ttcol + (getcolumn (buf, buflen) -
-				  getcolumn (buf, cpos)));
+	  setcolumn (buf, cpos, buflen);
 	  cpos = buflen;
 	  ettflush ();
 	  break;
@@ -733,9 +749,8 @@ eread (const char *fp, char *buf, int nbuf, int flag, va_list ap)
 	case 0x06:		/* Control-F, move forward */
 	  if (cpos < buflen)
 	    {
+	      setcolumn (buf, cpos, cpos + 1);
 	      ++cpos;
-	      ttmove (ttrow, ttcol + (getcolumn (buf, cpos) -
-				      getcolumn (buf, cpos - 1)));
 	      ettflush ();
 	    }
 	  break;
@@ -774,9 +789,8 @@ eread (const char *fp, char *buf, int nbuf, int flag, va_list ap)
 	case 0x08:		/* Backspace, erase.    */
 	  if (cpos == 0)
 	    break;
+	  setcolumn (buf, cpos, cpos - 1);
 	  --cpos;
-	  ttmove (ttrow, ttcol - (getcolumn (buf, cpos + 1) -
-				  getcolumn (buf, cpos)));
 	  /* drop into Control-D */
 	case 0x04:		/* Control-D, delete. */
 	  if (cpos == buflen)
@@ -828,7 +842,7 @@ eread (const char *fp, char *buf, int nbuf, int flag, va_list ap)
 	case 0x15:		/* C-U, kill line.      */
 	  if (buflen == 0)
 	    break;
-	  ttmove (ttrow, ttcol - getcolumn (buf, cpos));
+	  setcolumn (buf, cpos, 0);
 	  etteeol ();
 	  cpos = buflen = 0;
 	  ettflush ();
