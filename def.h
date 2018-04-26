@@ -194,6 +194,7 @@ typedef unsigned char uchar;
 #define EFCR	0x0004		/* Echo CR at end; last read.   */
 #define EFFILE  0x0008		/* Autocomplete filename.       */
 #define EFBUF   0x0010		/* Autocomplete buffer name.    */
+#define EFPAT   0x0010		/* Autocomplete search pattern. */
 
 /*
  * Keys are represented inside using a 32 bit

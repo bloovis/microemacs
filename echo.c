@@ -600,6 +600,7 @@ eread (const char *fp, char *buf, int nbuf, int flag, va_list ap)
   int buflen;
   const char *np1;
   register char *np2;
+  char *cp0, *cp1;
   register int i;
   register int c;
   register int nhits;
@@ -672,7 +673,8 @@ eread (const char *fp, char *buf, int nbuf, int flag, va_list ap)
 	      memmove (&buf[cpos + 1], &buf[cpos], buflen - cpos);
 	      buf[cpos++] = c;
 	      ++buflen;
-	      einsertc (c);
+	      einsertc ('y');
+	      eputc (c);
 	    }
 	  ettflush ();
 
@@ -761,7 +763,6 @@ eread (const char *fp, char *buf, int nbuf, int flag, va_list ap)
 	    break;
 	  eputc (buf[cpos++]);
 	  /* Fall into Backspace */
-
 	case 0x7F:		/* Rubout, erase.       */
 	case 0x08:		/* Backspace, erase.    */
 	  if (cpos != 0)
@@ -782,10 +783,9 @@ eread (const char *fp, char *buf, int nbuf, int flag, va_list ap)
 	  break;
 
 	case 0x13:		/* Control-S, insert path */
+	  cp0 = NULL;
 	  if (flag & EFFILE)
 	    {
-	      char *cp0, *cp1;
-
 	      cp0 = cp1 = &curbp->b_fname[0];
 	      cp1 += strlen (cp1);
 	      while (cp1 != cp0
@@ -800,10 +800,18 @@ eread (const char *fp, char *buf, int nbuf, int flag, va_list ap)
 #endif
 		)
 		--cp1;
+	    }
+	  else if (flag & EFPAT)
+	    {
+	      cp0 = (char *)pat;
+	      cp1 = cp0 + strlen (cp0);
+	    }
+	  if (cp0 != NULL)
+	    {
 	      while (cp0 != cp1 && cpos < nbuf - 1)
 		{
 		  memmove (&buf[cpos + 1], &buf[cpos], buflen - cpos);
-		  einsertc (buf[cpos++] = *cp0++);
+		  eputc (buf[cpos++] = *cp0++);
 		  ++buflen;
 		}
 	      ettflush ();
@@ -837,7 +845,7 @@ eread (const char *fp, char *buf, int nbuf, int flag, va_list ap)
 	      memcpy (&buf[cpos], ubuf, ulen);
 	      cpos += ulen;
 	      buflen += ulen;
-	      einsertc (' ');
+	      einsertc ('x');
 	      eputc (c);
 	      ettflush ();
 	    }
@@ -1052,6 +1060,5 @@ einsertc (int c)
 	  c ^= 0x40;
 	}
       ettinsertc (c);
-      ++ttcol;
     }
 }

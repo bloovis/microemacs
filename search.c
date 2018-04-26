@@ -132,7 +132,7 @@ readpattern (const char *prompt)
   register int s;
   char tpat[NPAT];
 
-  s = ereply ("%s [%s]: ", tpat, NPAT, prompt, pat);
+  s = ereplyf ("%s [%s]: ", tpat, NPAT, EFNEW | EFCR | EFPAT, prompt, pat);
   if (s == TRUE)		/* Specified            */
     strcpy ((char *) pat, tpat);
   else if (s == FALSE && pat[0] != 0)	/* CR, but old one      */
