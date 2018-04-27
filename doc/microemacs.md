@@ -435,9 +435,27 @@ The echo line is cleared by the next keystroke.
 The echo line is also used for asking and answering questions.
 After the
 prompt\index{Prompt}, you can type any characters you like. The reply is always
-terminated by a `Return`. Before you commit to the reply, you can delete
-characters by typing `Backspace` or `Rubout`, and you can delete the
-entire line by typing `Control-U`.
+terminated by a `Return`. Before you commit to the reply, you can edit the reply
+using the following characters:
+
+* `Backspace` or `Rubout`: delete the character to the left of the cursor.
+
+* `Control-A`: move the cursor to the beginning of the line.
+
+* `Control-B`: move the cursor one character to the left.
+
+* `Control-D`: delete the character under the cursor.
+
+* `Control-E`: move the cursor to end of the line.
+
+* `Control-F`: move the cursor one character to the right.
+
+* `Control-K`: delete from the cursor to the end of the line.
+
+* `Control-Q`: enter the next character literally into the line (useful for entering control characters).
+
+* `Control-U`: delete the entire line.
+
 You can also abort\index{Abort} the command in progress by typing `Control-G`.
 Command processors are designed to ask all questions before doing nasty
 things, so that you will never do damage by aborting a command.
@@ -451,6 +469,9 @@ the directory part of the current buffer's filename, making it easier
 to find a file in the same directory.
 Pressing the `?` or `Control-D` keys will open a new temporary window containing
 the possible list of choices.
+
+If you are entering a search string, pressing `Control-S` will fill in
+the previous search string.
 
 ## Command Arguments
 
