@@ -1024,7 +1024,7 @@ uclen (const uchar *s)
 
   if (c < 0x80)
     n = 1;
-  if (c >= 0xc0 && c <= 0xdf)
+  else if (c >= 0xc0 && c <= 0xdf)
     n = 2;
   else if (c >= 0xe0 && c <= 0xef)
     n = 3;
