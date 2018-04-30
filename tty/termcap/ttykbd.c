@@ -241,8 +241,8 @@ getkbd (void)
 	    if (c == METACH)
 	      return (METACH);
 	    /* Else make c into a META character */
-	    if (ISLOWER (c) != FALSE)
-	      c = TOUPPER (c);
+	    if (CISLOWER (c) != FALSE)
+	      c = CTOUPPER (c);
 	    if (c >= 0x00 && c <= 0x1F)
 	      c = KCTRL | (c + '@');
 	    return (KMETA | c);
@@ -397,8 +397,12 @@ ttykeymapinit (void)
   keydup (KF1, "file-save");
   keydup (KF2, "file-visit");
   keydup (KF3, "quit");
-  keydup (KF4, "display-bindings");
+  keydup (KF4, "undo");
+#if USE_RUBY
+  keydup(KF6,		"ruby-string");
+#else
   keydup (KF5, "display-buffers");
+#endif
   keydup (KF6, "forw-window");
   keydup (KF7, "forw-buffer");
   keydup (KF8, "search-again");

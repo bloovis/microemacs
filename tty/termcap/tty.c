@@ -133,7 +133,7 @@ ttinit (void)
   if (mouse && (strncmp (tv_stype, "xterm", 5) == 0))
     {
       xterm_mouse = TRUE;
-      ttputs ("\033[?9h", 5);
+      ttputs (L"\033[?9h", 5);
     }
 
   if ((tgetent (tcbuf, tv_stype)) != 1)
@@ -290,7 +290,7 @@ tttidy (void)
   /* Disable xterm mouse event reporting.
    */
   if (xterm_mouse)
-      ttputs ("\033[?9l", 5);
+      ttputs (L"\033[?9l", 5);
 }
 
 /*
@@ -567,6 +567,29 @@ setttysize (void)
   ncol = tgetnum ("co");
 }
 #endif
+
+/*
+ * Insert character in the display.  Characters to the right
+ * of the insertion point are moved one space to the right.
+ */
+int
+ttinsertc (int c)
+{
+  putpad (IM);
+  ttputc (c);
+  putpad (EI);
+  return c;
+}
+
+/*
+ * Delete character in the display.  Characters to the right
+ * of the deletion point are moved one space to the left.
+ */
+void
+ttdelc (void)
+{
+  putpad (DC);
+}
 
 static int cci;
 

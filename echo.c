@@ -594,8 +594,8 @@ setcolumn (const char *buf, int oldcpos, int newcpos)
 {
   int i = 0;
   int col = 0;
-  int oldcol;
-  int newcol;
+  int oldcol = 0;
+  int newcol = 0;
 
   while (TRUE)
     {

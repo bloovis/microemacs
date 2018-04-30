@@ -236,9 +236,18 @@ ttstat (void)
 int
 ttputc (int c)
 {
-  if (nobuf >= NOBUF)
-    ttflush ();
-  obuf[nobuf++] = c;
+  static uchar buf[6];
+  int i, len;
+
+  /* Convert Unicode to UTF-8 and output each byte.
+   */
+  len = uputc (c, buf);
+  for (i = 0; i < len; i++)
+    {
+      if (nobuf >= NOBUF)
+	ttflush ();
+      obuf[nobuf++] = buf[i];
+    }
   return c;
 }
 
@@ -248,7 +257,7 @@ ttputc (int c)
  * Here we just call ttputc.
  */
 void
-ttputs (const char *buf, int size)
+ttputs (const wchar_t *buf, int size)
 {
   while (size--)
     ttputc (*buf++);
@@ -262,29 +271,37 @@ ttflush (void)
 {
   if (nobuf != 0)
     {
-      write (1, obuf, nobuf);
+      if (write (1, obuf, nobuf) != nobuf)
+	fprintf (stderr, "Write error!\n");
       nobuf = 0;
     }
 }
 
 /*
- * Read character from terminal.
- * All 8 bits are returned, so that you can use
- * a multi-national terminal.
+ * Read character from terminal.  Read
+ * UTF-8 input and convert it to Unicode.
  */
 int
 ttgetc (void)
 {
-  char buf[1];
-  int ret;
+  uchar buf[6];
+  int i, ret, len;
 
-/* fprintf(stderr,"ttgetc\n"); */
-  while ((ret = read (0, &buf[0], 1)) != 1)
+  if ((ret = read (0, &buf[0], 1)) != 1)
     {
-/* fprintf(stderr,"read returned %d, errno = %d\n", ret, errno); */
+      /* fprintf(stderr,"read returned %d, errno = %d\n", ret, errno); */
+      return 0;
     }
-/* fprintf(stderr,"ttgetc returning 0x%x\n", buf[0] & 0xff); */
-  return (buf[0] & 0xFF);
+  len = uclen (buf);
+  for (i = 1; i < len; i++)
+    {
+      if ((ret = read (0, &buf[i], 1)) != 1)
+	{
+	  /* fprintf(stderr,"read returned %d, errno = %d\n", ret, errno); */
+	  break;
+	}
+    }
+  return ugetc (buf, 0, NULL);
 }
 
 /*

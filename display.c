@@ -632,11 +632,11 @@ uline (int row, VIDEO *vvp, VIDEO *pvp)
   ttcolor (vvp->v_color);
   putline (row + 1, 1, (const wchar_t *) &vvp->v_text[0]);
 #else
-  register uchar *cp1;
-  register uchar *cp2;
-  register uchar *cp3;
-  register uchar *cp4;
-  register uchar *cp5;
+  register wchar_t *cp1;
+  register wchar_t *cp2;
+  register wchar_t *cp3;
+  register wchar_t *cp4;
+  register wchar_t *cp5;
   register int nbflag;
 
   if (vvp->v_color != pvp->v_color)
@@ -756,7 +756,7 @@ hash (VIDEO *vp)
 {
   register int i;
   register int n;
-  register uchar *s;
+  register wchar_t *s;
 
   if ((vp->v_flag & VFHBAD) != 0)
     {				/* Hash bad.            */
