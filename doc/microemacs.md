@@ -2416,9 +2416,6 @@ MicroEMACS has several built-in commands related to Ruby extensions:
 
     This command prompts you to enter a line of Ruby code.
     MicroEMACS then passes the line to the Ruby interpreter.
-    If an exception occurs, MicroEMACS displays the exception message.
-    on the echo line.
-
     One common use of this command is to load a file containing
     Ruby code for a new command.  For example, to load the code for
     the `gccerr` command described above, you could enter this command
@@ -2576,7 +2573,7 @@ These helpers all take a single parameter, which is an ordinary ASCII character.
 * `ctlx`: specifies a character with the `C-X` prefix.  For example,
   `ctlx('c')` means **M-X C** (Control-X C).
 
-* `metactrl`: specifies a combination of `ctrl` and `meta`.  For example,
+* `metactrl`: specifies a combination of `meta` and `ctrl`.  For example,
   `metactrl('c')` means **M-C-C** (Escape Control-C).
 
 * `ctlxctrl`: specifies a combination of `ctlx` and `ctrl`.  For example,
@@ -2627,13 +2624,11 @@ and written.
 If an exception occurs in Ruby code, MicroEMACS will open a temporary
 window containing the exception information, including a backtrace.
 
-Unfortunately, this mechanism is, as of this writing, not completely reliable.  There
-are some relatively rare situations where
-the Ruby interpreter crashes with a segfault.  In these cases, Ruby also prints complete
-exception information to the terminal, but the output is difficult to
+In the unlikely event that the Ruby interpreter crashes with a segfault,
+it prints complete exception information to the terminal, but the output is difficult to
 read because MicroEMACS puts the terminal into "raw" mode.
 If you need to see the exception information, you can restart MicroEMACS
-with stderr redirected to file:
+with stderr redirected to a file:
 
     pe 2>ruby.log
 
@@ -2772,6 +2767,23 @@ To build MicroEMACs on Linux\index{Linux}, use these commands:
     cd obj
     ../configure
     make
+
+You can supply one or more optional parameters to the `configure` command:
+
+`--with-termcap`
+
+:   Use this option to make MicroEMACS use the **terminfo** / **termcap**\index{terminfo}\index{termcap} libraries for
+    screen management, instead of the default **ncursesw**\index{ncursesw}\index{ncurses} library.
+
+`--enable-debug`
+
+:   Use this option to compile and build MicroEMACS with debugging information, so that
+    it can be debugged with gdb.
+
+`--with-ruby`
+
+:   Use this option to build support for Ruby extensions into MicroEMACS.
+    See the [**Ruby Extensions**](#ruby-extensions) section above for more information
 
 ## Randomness
 

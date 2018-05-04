@@ -115,7 +115,7 @@ rubyapi.o : rubyapi.S
 	$(CC) -c rubyapi.S
 
 rubyapi.S : $(srcdir)/makeapi.rb $(srcdir)/ruby.c
-	$(srcdir)/makeapi.rb < $(srcdir)/ruby.c > rubyapi.S
+	gcc -E $(CFLAGS) $(srcdir)/ruby.c | $(srcdir)/makeapi.rb > rubyapi.S
 
 # Include compiler-generated dependency files
 
