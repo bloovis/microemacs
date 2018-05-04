@@ -38,20 +38,17 @@ struct callargs
 };
 
 /*
- * Do not change the comments in the following table.  They
+ * Do not change the first and last lines in the following table.  They
  * are used by makeapi.rb script to generate the trampoline code
  * for the Ruby APIs.
  */
-const char *fnames[] =
+const char *fnames[] =		/* Do not change this line */
 {
-  /* Start of API names */
   "ruby_setup",
   "ruby_cleanup",
   "rb_eval_string_protect",
   "rb_define_global_function",
   "rb_string_value_cstr",
-  "rb_fix2int",
-  "rb_num2int",
   "rb_errinfo",
   "rb_set_errinfo",
   "rb_intern2",
@@ -70,8 +67,14 @@ const char *fnames[] =
   "rb_cObject",
   "rb_protect",
   "rb_load",
-  /* End of API names */
-};
+#if __i386__
+  "rb_num2long",
+  "rb_int2big",
+#else
+  "rb_fix2int",
+  "rb_num2int",
+#endif
+};		/* Do not change this line */
 
 /* C functions callable from Ruby. */
 
