@@ -430,51 +430,6 @@ delwhite (int f, int n, int k)
 }
 
 /*
- * Insert a newline, then enough
- * tabs and spaces to duplicate the indentation
- * of the previous line. Assumes tabs are every eight
- * characters. Quite simple. Figure out the indentation
- * of the current line. Insert a newline by calling
- * the standard routine. Insert the indentation by
- * inserting the right number of tabs and spaces.
- * Return TRUE if all ok. Return FALSE if one
- * of the subcomands failed. Normally bound
- * to "C-J".
- */
-int
-indent (int f, int n, int k)
-{
-  register int nicol;
-  register int c;
-  register int i;
-  int nchars;
-
-  if (n < 0)
-    return (FALSE);
-  while (n--)
-    {
-      nicol = 0;
-      nchars = wllength (curwp->w_dot.p);
-      for (i = 0; i < nchars; ++i)
-	{
-	  c = lgetc (curwp->w_dot.p, i);
-	  if (c != ' ' && c != '\t')
-	    break;
-	  if (c == '\t')
-	    nicol += (tabsize - nicol % tabsize) - 1;
-	  ++nicol;
-	}
-      if (lnewline () == FALSE
-	  || ((i = nicol / tabsize) != 0
-	      && linsert (i, '\t', NULLPTR) == FALSE)
-	  || ((i = nicol % tabsize) != 0
-	      && linsert (i, ' ', NULLPTR) == FALSE))
-	return (FALSE);
-    }
-  return (TRUE);
-}
-
-/*
  * Return TRUE if the string appears in the current line at offset i.
  */
 
@@ -551,6 +506,35 @@ nlindent (int nicol, int nonwhitepos, int f)
       || ((i = nicol % tabsize) != 0 && linsert (i, ' ', NULLPTR) == FALSE))
     return (FALSE);
   return (TRUE);
+}
+
+/*
+ * Insert a newline, then enough
+ * tabs and spaces to duplicate the indentation
+ * of the previous line.  Use the current tab size to determine
+ * the indentation. Quite simple. Figure out the indentation
+ * of the current line. Insert a newline by calling
+ * the standard routine. Insert the indentation by
+ * inserting the right number of tabs and spaces.
+ * Return TRUE if all ok. Return FALSE if one
+ * of the subcomands failed. Normally bound
+ * to "C-J".
+ */
+int
+indent (int f, int n, int k)
+{
+  int nicol, i;
+
+  /* Find indentation of current line.
+   */
+  nicol = currentindent (&i);
+
+  /* Insert a newline followed by the correct number of
+   * tabs and spaces to get the desired indentation.
+   * Pass 0 as the second parameter so that nlindent
+   * won't truncate the current line if it is all whitespace.
+   */
+  return nlindent (nicol, 0, f);
 }
 
 /*
