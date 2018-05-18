@@ -524,11 +524,11 @@ my_reply (VALUE self, VALUE s)
  * Get an input character from the keyboard or profile.
  */
 static VALUE
-my_getinp (VALUE self)
+my_getkey (VALUE self)
 {
   VALUE ret;
 
-  ret = INT2NUM (getinp ());
+  ret = INT2NUM (getkey ());
   return ret;
 }
 
@@ -708,7 +708,7 @@ rubyinit (int quiet)
   rb_define_global_function("insert", my_insert, 1);
   rb_define_global_function("cbind", my_cbind, 2);
   rb_define_global_function("reply", my_reply, 1);
-  rb_define_global_function("getinp", my_getinp, 0);
+  rb_define_global_function("cgetkey", my_getkey, 0);
 
   /* Define some virtual global variables, along with
    * their getters and setters.

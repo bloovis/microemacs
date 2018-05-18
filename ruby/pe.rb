@@ -25,18 +25,47 @@ class Key
   CTRL = 0x10000000
   META = 0x20000000
   CTLX = 0x40000000
+  CHARMASK = 0x10ffff
   KRANDOM = 0x80
 
-  def initialize(c, f)
-    if f != 0
-      @key = c.upcase.ord | f
+  def initialize(c, f=0)
+    if c.class == String
+      if f != 0
+	@key = c.upcase.ord | f
+      else
+	@key = c.ord
+      end
     else
-      @key = c.ord
+      @key = c | f
     end
   end
 
   def to_i
     @key
+  end
+
+  def char
+    (@key & CHARMASK).chr('UTF-8')
+  end
+
+  def ctrl?
+    (@key & CTRL) != 0
+  end
+
+  def meta?
+    (@key & META) != 0
+  end
+
+  def ctlx?
+    (@key & CTLX) != 0
+  end
+
+  def normal?
+    (@key & (CTRL | META | CTLX)) == 0
+  end
+
+  def ==(k)
+    self.to_i == k.to_i
   end
 
   def to_s
@@ -50,17 +79,17 @@ class Key
     if (@key & CTRL) != 0
       s << "C-"
     end
-    if (@key & (CTLX | META | CTRL) != 0)
-      s << (@key & 0x10ffff).chr.upcase
+    if self.normal?
+      s << self.char
     else
-      s << (@key & 0x10ffff).chr
+      s << self.char.upcase
     end
   end
 
 end
 
 def key(c)
-  Key.new(c, 0)
+  Key.new(c)
 end
 
 def ctrl(c)
@@ -81,6 +110,12 @@ end
 
 def ctlxctrl(c)
   Key.new(c, Key::CTLX | Key::CTRL)
+end
+
+# Get a keystroke from the user, return it packaged in a Key object.
+
+def getkey
+  return Key.new(cgetkey, 0)
 end
 
 # Check if an unknown method is MicroEMACS function.  If so,
