@@ -377,8 +377,6 @@ fillword (int f, int n, int k)
 int
 setfillcol (int f, int n, int k)
 {
-  extern int getcolpos ();
-
   fillcol = ((f == FALSE) ? getcolpos () : n);
   if (kbdmop == NULL)
     eprintf ("[Fill column set to %d]", fillcol);
