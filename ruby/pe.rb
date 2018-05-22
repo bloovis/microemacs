@@ -172,3 +172,6 @@ end
 def bind(name, key)
   cbind(name, key.to_i)	# Call C helper function
 end
+
+# Set the default encoding for strings.
+Encoding.default_internal = 'UTF-8'
