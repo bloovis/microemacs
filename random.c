@@ -392,6 +392,7 @@ deblank (int f, int n, int k)
     return (TRUE);
   curwp->w_dot.p = lforw (lp1);
   curwp->w_dot.o = 0;
+  saveundo (UMOVE, &curwp->w_dot);
   return (ldelete (nld, FALSE));
 }
 
@@ -425,6 +426,7 @@ delwhite (int f, int n, int k)
 
   /* Delete all the whitespace found, then insert a single space.
    */
+  saveundo (UMOVE, &curwp->w_dot);
   ldelete ((col - curwp->w_dot.o), FALSE);
   return linsert (1, ' ', NULLPTR);
 }
