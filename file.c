@@ -509,14 +509,14 @@ makename (char *bname, const char *fname)
 /*
  * Update the mode lines for all windows viewing the current buffer.
  */
-static void
+void
 updatemode (void)
 {
   register EWINDOW *wp;
 
   ALLWIND (wp)			/* Update mode lines.   */
     if (wp->w_bufp == curbp)
-    wp->w_flag |= WFMODE;
+      wp->w_flag |= WFMODE;
 }
 
 

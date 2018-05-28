@@ -273,7 +273,11 @@ my_cmd (VALUE self, VALUE c, VALUE f, VALUE n, VALUE k, VALUE s)
 		cret = domacro (sp->s_macro, 1);
 	    }
 	  else
-	    cret = sp->s_funcp (flag, narg, key);
+	    {
+	      startsaveundo ();
+	      cret = sp->s_funcp (flag, narg, key);
+	      endsaveundo ();
+	    }
 	}
       else
 	{

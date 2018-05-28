@@ -580,7 +580,7 @@ undo (int f, int n, int k)
     curbp->b_flag |= BFCHG;
   else
     curbp->b_flag &= ~BFCHG;
-  curwp->w_flag |= WFMODE;
+  updatemode ();
 
   /* Pop this undo group from the list and free it up.
    */

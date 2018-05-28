@@ -704,7 +704,8 @@ int visit_file (char *fname);
 int checkreadonly (void);		/* Is current buffer readonly?	*/
 int readlines (LINE *lp2, int *statptr);
 					/* Read lines from file.	*/
- 
+void updatemode (void);			/* Update mode lines.		*/
+
 /*
  * Defined by "fileio.c".
  */
