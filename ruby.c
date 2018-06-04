@@ -297,10 +297,36 @@ get_line (ID id)
 {
   VALUE ret;
   VALUE utf8;
+  LINE *lp;
+  char *str;
+  int len;
 
-  ret = rb_str_new ((char *) lgets (curwp->w_dot.p), llength (curwp->w_dot.p));
+  /* Make a copy of the line with an extra space for a newline.
+   */
+  lp = curwp->w_dot.p;
+  len = llength (lp);
+  str = malloc (len + 1);
+  if (str == NULL)
+    {
+      eprintf ("Out of memory in get_line!");
+      return Qnil;
+    }
+  memcpy (str, lgets (lp), len);
+
+  /* Append a newline if this is not the last line.
+   */
+  if (lforw (lp) != curbp->b_linep)
+    {
+      str[len] = '\n';
+      ++len;
+    }
+
+  /* Make the copy of the line into a Ruby string, and free the copy.
+   */
+  ret = rb_str_new (str, len);
   utf8 = rb_str_new_cstr("utf-8");
   rb_funcall (ret, rb_intern ("force_encoding"), 1, utf8);
+  free (str);
   return ret;
 }
 
