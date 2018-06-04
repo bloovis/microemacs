@@ -331,15 +331,32 @@ get_line (ID id)
 }
 
 /*
- * Replace the current line with the new string.
+ * Replace the current line with the new string;
  */
 static void
 set_line (VALUE val, ID id)
 {
-  const char *str = StringValueCStr (val);
-  int linelen = wllength (curwp->w_dot.p);
-  curwp->w_dot.o = linelen;
-  lreplace (linelen, str, TRUE);
+  int len;
+  char *str;
+
+  /* Make a copy of the string, and zap any terminating
+   * newline.
+   */
+  str = strdup (StringValueCStr (val));
+  if (str == NULL)
+    {
+      eprintf ("Out of memory in set_line!");
+      return;
+    }
+  len = strlen (str);
+  if (len > 0 && str[len - 1] == '\n')
+    str[len - 1] = '\0';
+
+  /* Replace the line.
+   */
+  len = wllength (curwp->w_dot.p);
+  curwp->w_dot.o = len;
+  lreplace (len, str, TRUE);
 }
 
 /*
