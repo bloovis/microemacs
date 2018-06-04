@@ -1192,7 +1192,8 @@ and performing automatic word wrap\index{Word wrap}.
 
     This command sets the current fill column\index{Fill column} to its argument
     (remember that the argument is entered as `Control-U` and a
-    decimal number preceding the command).
+    decimal number preceding the command).  If no argument is present,
+    the column of the current location of the cursor (the dot) is used instead.
     The fill column is used by the **fill-paragraph**
     and **ins-self-with-wrap** commands.
     The default fill column is 70.
@@ -2494,9 +2495,9 @@ In Ruby, these values are:
 
 The **echo** command is useful when debugging Ruby code.  It displays
 a string on the echo line, so you can use it to displaying debug
-messages.  For example, this code displays the current column:
+messages.  For example, this code displays the current line number:
 
-    echo "column is #{column}"
+    echo "line number is #{$lineno}"
 
 ## Defining Commands in Ruby
 
@@ -2547,6 +2548,14 @@ for use in Ruby commands.
     line without a terminating newline, or nil if the user aborts
     the input using Control-G.
 
+`getkey`
+
+:   This function waits for the user to enter a keystroke, then returns
+    a **Key** object describing the keystroke.  See the next section
+    for a description of the **Key** object.
+
+### Keycodes
+
 MicroEMACS also provides several helpers for encoding keycodes.
 All built-in commands in MicroEMACS take a keycode parameter, which
 contains the key that invoked the command.  You can specify the keycode
@@ -2558,7 +2567,7 @@ Given that fact, the following example inserts an 'x' character in to the curren
 
 The `bindtokey` helper function, described above, also takes a keycode parameter.
 
-Keycodes must be specified using one of the following helper functions.
+Keycodes can be specified using one of the following helper functions.
 These helpers all take a single parameter, which is an ordinary ASCII character.
 
 * `key`: specifies an ordinary, unmodified character.  For example,
@@ -2579,6 +2588,45 @@ These helpers all take a single parameter, which is an ordinary ASCII character.
 * `ctlxctrl`: specifies a combination of `ctlx` and `ctrl`.  For example,
   `ctlxctrl('c')` means **C-X C-C** (Control-X Control-C).
 
+These helpers all return an object of the class **Key**.  This object contains the raw keycode
+as used internally by MicroEMACS, and provides methods for examining the keycode.
+Here are the **Key** methods:
+
+`ctrl?`
+
+:   Returns true if the key is a control key.
+
+
+`meta?`
+
+:   Returns true if the key is a meta key (i.e., has an Escape prefix).
+
+
+`ctlx?`
+
+:   Returns true if the key is a Control-X key (i.e., has a Control-X prefix).
+
+
+`normal?`
+
+:   Returns true if the key is a "normal" key (i.e., is not a control, meta,
+    or Control-X key).
+
+`to_i`
+
+:   Returns the key's raw keycode.
+
+`char`
+
+:   Returns the normal character portion of the keycode, without
+    any control, meta, or Control-X flags.  As an example, the
+    `char` of the Control-G keycode is the character 'G'.
+
+`to_s`
+
+:   Returns a human readable string for the keycode.  As an example,
+    the `to_s` of the Control-G keycode is 'C-G'.
+
 ### Global variables
 
 MicroEMACS provides several global virtual variables that may be both read
@@ -2586,9 +2634,12 @@ and written.
 
 `$line`
 
-:   This variable contains the current line (the line containing the dot).
-    Writing to this variable causes the current line to be replaced
-    with the specified string.
+:   This variable contains the current line (the line containing the dot),
+    with a newline character appended if this is not the last line in the
+    buffer.  Writing to this variable causes the current line to be replaced
+    with the specified string.  A newline at the end of the string is removed,
+    but newlines at other positions in the string are left unchanged and cause
+    line breaks.
 
 `$char`
 
