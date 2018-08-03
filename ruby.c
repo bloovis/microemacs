@@ -707,7 +707,7 @@ loadscript (const char *path)
 int
 rubyinit (int quiet)
 {
-  int i, status;
+  int i, status, namecount, fptrcount;
   VALUE loadpath;
   VALUE dot;
   static const char *libruby = STRINGIFY(LIBRUBY);
@@ -715,6 +715,18 @@ rubyinit (int quiet)
   const char *home_pe_rb;
   static const char *local_pe_rb = "./.pe.rb";
 
+  /* Make sure the API address table is big enough.
+   */
+  namecount = sizeof (fnames) / sizeof (fnames[0]);
+  fptrcount = sizeof (ruby_fptrs) / sizeof (ruby_fptrs[0]);
+  if (namecount >= fptrcount)
+    {
+      eprintf ("ruby_fptrs has %d entries but needs %d", fptrcount, namecount);
+      return FALSE;
+    }
+
+  /* Open the Ruby runtime library.
+   */
   if (ruby_handle != NULL)
     return TRUE;
   ruby_handle = dlopen(libruby, RTLD_LAZY);
@@ -724,7 +736,10 @@ rubyinit (int quiet)
 	eprintf ("Unable to load %s", libruby);
       return FALSE;
     }
-  for (i = 0; i < sizeof (fnames) / sizeof (fnames[0]); i++)
+
+  /* Query the addresses of our required Ruby API functions.
+   */
+  for (i = 0; i < namecount; i++)
     {
       ruby_fptrs[i] = dlsym (ruby_handle, fnames[i]);
       if (ruby_fptrs[i] == NULL)
