@@ -72,7 +72,6 @@ getregion (REGION *rp)
   register LINE *blp;
   register long fsize;		/* Long now.            */
   register long bsize;
-  const uchar *cptr;
 
   if (curwp->w_mark.p == NULL)
     {
@@ -98,9 +97,8 @@ getregion (REGION *rp)
   /* Get region size, which is number of characters, not number of bytes. */
   blp = curwp->w_dot.p;
   flp = curwp->w_dot.p;
-  bsize = wloffset (curwp->w_dot.p, curwp->w_dot.o);
-  cptr = wlgetcptr (curwp->w_dot.p, curwp->w_dot.o);
-  fsize = unblen (cptr, lend (curwp->w_dot.p) - cptr);
+  bsize = curwp->w_dot.o;
+  fsize = wllength (flp) - bsize + 1;	/* +1 for newline */
   while (flp != curbp->b_linep || lback (blp) != curbp->b_linep)
     {
       if (flp != curbp->b_linep)
@@ -110,8 +108,7 @@ getregion (REGION *rp)
 	    {
 	      rp->r_pos.p = curwp->w_dot.p;
 	      rp->r_pos.o = curwp->w_dot.o;
-	      return (setsize (rp, fsize + wloffset (curwp->w_mark.p,
-						     curwp->w_mark.o)));
+	      return (setsize (rp, fsize + curwp->w_mark.o));
 	    }
 	  fsize += wllength (flp) + 1;
 	}
@@ -123,8 +120,7 @@ getregion (REGION *rp)
 	    {
 	      rp->r_pos.p = blp;
 	      rp->r_pos.o = curwp->w_mark.o;
-	      return (setsize (rp, bsize - wloffset (curwp->w_mark.p,
-						     curwp->w_mark.o)));
+	      return (setsize (rp, bsize - curwp->w_mark.o));
 	    }
 	}
     }
