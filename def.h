@@ -765,6 +765,8 @@ int ctlxrp (int f, int n, int k);	/* End macro                    */
 int ctlxe (int f, int n, int k);	/* Execute macro                */
 int jeffexit (int f, int n, int k);	/* Jeff Lomicka style exit.     */
 int showversion (int f, int n, int k);	/* Show version numbers, etc.   */
+int displaymessage (int f, int n, int k);
+					/* Display message lines.	*/
 
 int domacro (int *macrop, int n);	/* Execute macro.	*/
 

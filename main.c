@@ -566,3 +566,13 @@ showversion (int f, int n, int k)
     return (TRUE);
   return (readmsg ());
 }
+/*
+ * Display the message lines.  At present, only the display-version
+ * command uses the message system, but other commands
+ * may use it in the future.
+ */
+int
+displaymessage (int f, int n, int k)
+{
+  return (readmsg ());
+}

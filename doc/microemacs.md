@@ -1909,9 +1909,9 @@ fit on the echo line\index{Echo line}.  At present, only
 the **display-version** command uses the message system, but other commands
 may use it in the future.
 
-M-C-R
+[unbound]
 
-:   **display-message**\index{M-C-R}\index{display-message}
+:   **display-message**\index{display-message}
 
     Display the message lines one at a time on the echo line, then enter
     a special message display mode, in which certain keys have the following

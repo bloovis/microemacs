@@ -298,6 +298,7 @@ KEY key[] = {
   {-1,			rubyload,	"ruby-load"},
 #endif
   {-1,			jeffexit,	"jeff-exit"},
+  {-1,			displaymessage,	"display-message"},
 };
 
 #define	NKEY	(sizeof(key) / sizeof(key[0]))
