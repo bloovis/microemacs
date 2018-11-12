@@ -77,6 +77,40 @@ int	specmap[32] = {
 };
 
 /*
+ * Handle a left mouse click by moving to that location in the buffer.
+ */
+static void
+mouseclick(int x, int y)
+{
+  EWINDOW *wp;
+
+  ALLWIND(wp)
+    {
+      if (y >= wp->w_toprow && y < wp->w_toprow + wp->w_ntrows)
+	{
+	  int n = y - wp->w_toprow;
+	  BUFFER *bp = wp->w_bufp;
+	  LINE *lp = wp->w_linep;
+
+	  while (n > 0 && lp != bp->b_linep)
+	    {
+	      lp = lforw (lp);
+	      --n;
+	    }
+	  if (lp != bp->b_linep)
+	    {
+	      curwp = wp;
+	      curbp = bp;
+	      curwp->w_dot.p = lp;
+	      curwp->w_dot.o = 0;	/* FIXME! */
+	      curwp->w_flag |= WFMOVE;
+	      update ();
+	    }
+	}
+    }
+}
+
+/*
  * Read in a key, doing the low level mapping
  * of Unicode to 32 bit internal key code. This level deals with
  * mapping the special keys into their spots in the C1
@@ -90,22 +124,35 @@ getkbd (void)
   register int	c;
   register int	i;
 
-  c = ttgetc ();
-  if (c < KEY_MIN)			/* normal key?		*/
-     return (c);			/* just return it	*/
+  while (TRUE)
+    {
+      c = ttgetc();
+      if (c < KEY_MIN)			/* normal key?		*/
+	 return (c);			/* just return it	*/
 
-  /* Treat backspace as Ctrl-H. */
-  if (c == KEY_BACKSPACE)
-    return CTRL('H');
+      /* Treat backspace as Ctrl-H. */
+      if (c == KEY_BACKSPACE)
+	return CTRL('H');
 
-  /* Treat window resize as Ctrl-L, which will force a screen redraw. */
-  if (c == KEY_RESIZE)
-    return CTRL('L');
+      /* Treat window resize as Ctrl-L, which will force a screen redraw. */
+      if (c == KEY_RESIZE)
+	return CTRL('L');
 
-  for (i = 0; i < 32; i++)		/* search SPECIAL map	*/
-    if (c == specmap[i])		/* found it?		*/
-      return (KFIRST + i);		/* return internal code */
-  return (c);				/* not found, maybe Unicode? */
+      /* Treat mouse click as a move to that location in the buffer. */
+      if (c == KEY_MOUSE)
+	{
+	  MEVENT event;
+
+	  while (getmouse(&event) == OK)
+	    if ((event.bstate & BUTTON1_CLICKED) != 0)
+	      mouseclick (event.x, event.y);
+	  continue;
+	}
+      for (i = 0; i < 32; i++)		/* search SPECIAL map	*/
+	if (c == specmap[i])		/* found it?		*/
+	  return (KFIRST + i);		/* return internal code */
+      return (c);				/* not found, maybe Unicode? */
+    }
 }
 
 /*

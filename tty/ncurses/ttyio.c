@@ -75,7 +75,9 @@ setttysize (void)
 void
 ttopen (void)
 {
-  setlocale (LC_ALL, "");
+  mmask_t mask;
+
+  setlocale(LC_ALL, "");
   tcgetattr (0, &oldtty);
   initscr ();			/* initialize the curses library */
   keypad (stdscr, TRUE);	/* enable keyboard mapping */
@@ -83,6 +85,7 @@ ttopen (void)
   cbreak ();			/* take input chars one at a time, no wait for \n */
   noecho ();
   raw ();
+  mousemask (BUTTON1_CLICKED, &mask);
   setttysize ();
   tcgetattr (0, &newtty);
 }
