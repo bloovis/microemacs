@@ -97,6 +97,8 @@ SRCHCOM;
 static SRCHCOM cmds[NSRCH];
 static int cip;
 static regexp *regpat;
+static wchar_t upat[NPAT];	/* Unicode copy of pat	*/
+int patlen;			/* # of Unicode characters in upat */
 
 int srch_lastdir = SRCH_NOPR;	/* Last search flags.   */
 
@@ -119,6 +121,30 @@ foldcase (int f, int n, int k)
 }
 
 /*
+ * Convert pat to Unicode, store the result in upat,
+ * and set patlen to the number of Unicode characters stored.
+ */
+static void
+unicodepat (void)
+{
+  uchar *s, *end;
+  wchar_t *d;
+  int slen, clen;
+
+  s = pat;
+  slen = strlen ((const char *) s);
+  end = pat + slen;
+  d = upat;
+  while (s < end)
+    {
+      *d++ = ugetc (s, 0, &clen);
+      s += clen;
+    }
+  *d = 0;
+  patlen = d - upat;
+}
+
+/*
  * Read a pattern.
  * Stash it in the external variable "pat". The "pat" is
  * not updated if the user types in an empty line. If the user typed
@@ -134,7 +160,10 @@ readpattern (const char *prompt)
 
   s = ereplyf ("%s [%s]: ", tpat, NPAT, EFNEW | EFCR | EFPAT, prompt, pat);
   if (s == TRUE)		/* Specified            */
-    strcpy ((char *) pat, tpat);
+    {
+      strcpy ((char *) pat, tpat);
+      unicodepat ();		/* Make Unicode version of pat */
+    }
   else if (s == FALSE && pat[0] != 0)	/* CR, but old one      */
     s = TRUE;
   return (s);
@@ -315,7 +344,6 @@ forwsrch (void)
   register int tbo;
   register int pp;
   register LINE *lastline;
-  int patlen;
 
   clp = curwp->w_dot.p;
   clen = wllength (clp);
@@ -323,7 +351,6 @@ forwsrch (void)
   lastline = curbp->b_linep;
   if (clp == lastline)
     return (FALSE);
-  patlen = uslen (pat);
   for (;;)
     {
     fail:
@@ -333,10 +360,10 @@ forwsrch (void)
 	    return (FALSE);
 	  clen = wllength (clp);
 	  cbo = 0;
-	  if (pat[0] != '\n')
+	  if (upat[0] != '\n')
 	    goto fail;
 	}
-      else if (!CEQ (wlgetc (clp, cbo++), ugetc (pat, 0, NULL)))
+      else if (!CEQ (wlgetc (clp, cbo++), upat[0]))
 	goto fail;
       tlp = clp;
       tbo = cbo;
@@ -349,10 +376,10 @@ forwsrch (void)
 		return (FALSE);
 	      tlen = wllength (tlp);
 	      tbo = 0;
-	      if (ugetc (pat, pp, NULL) != '\n')
+	      if (upat[pp] != '\n')
 		goto fail;
 	    }
-	  else if (!CEQ (wlgetc (tlp, tbo++), ugetc (pat, pp, NULL)))
+	  else if (!CEQ (wlgetc (tlp, tbo++), upat[pp]))
 	    goto fail;
 	}
       curwp->w_dot.p = tlp;
@@ -382,7 +409,7 @@ backsrch (void)
   register int pp;
 
   lastline = curbp->b_linep;
-  epp = uslen (pat) - 1;
+  epp = patlen - 1;
 #if 0
   for (epp = 0; pat[epp] != 0; epp++)
     ;
@@ -398,10 +425,10 @@ backsrch (void)
 	  if ((clp = lback (clp)) == lastline)
 	    return (FALSE);
 	  cbo = wllength (clp);
-	  if (ugetc (pat, epp, NULL) != '\n')
+	  if (upat[epp] != '\n')
 	    goto fail;
 	}
-      else if (!CEQ (wlgetc (clp, --cbo), ugetc (pat, epp, NULL)))
+      else if (!CEQ (wlgetc (clp, --cbo), upat[epp]))
 	goto fail;
       tlp = clp;
       tbo = cbo;
@@ -413,10 +440,10 @@ backsrch (void)
 	      if ((tlp = lback (tlp)) == lastline)
 		return (FALSE);
 	      tbo = wllength (tlp);
-	      if (ugetc (pat, --pp, NULL) != '\n')
+	      if (upat[--pp] != '\n')
 		goto fail;
 	    }
-	  else if (!CEQ ((wlgetc (tlp, --tbo)), ugetc (pat, --pp, NULL)))
+	  else if (!CEQ ((wlgetc (tlp, --tbo)), upat[--pp]))
 	    goto fail;
 	}
       curwp->w_dot.p = tlp;
@@ -892,7 +919,7 @@ getrepl (int dir, char *news, char *sub, int sublen, int *plen)
       str = news;
     }
   if (str == news)
-    *plen = uslen ((const uchar *) pat);
+    *plen = patlen;
   else
     *plen = unslen ((const uchar *) regpat->startp[0],
 		    regpat->endp[0] - regpat->startp[0]);
@@ -943,7 +970,7 @@ searchandreplace (int f, int query, int dir)
   if (query)
     eprintf ("[Query Replace:  \"%s\" -> \"%s\"]", pat, news);
 
-  plen = uslen ((const uchar *) pat);
+  plen = patlen;
 
   /*
    * Search forward repeatedly, checking each time whether to insert
