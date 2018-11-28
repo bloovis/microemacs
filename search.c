@@ -127,15 +127,13 @@ foldcase (int f, int n, int k)
 static void
 unicodepat (void)
 {
-  uchar *s, *end;
+  uchar *s;
   wchar_t *d;
-  int slen, clen;
+  int clen;
 
   s = pat;
-  slen = strlen ((const char *) s);
-  end = pat + slen;
   d = upat;
-  while (s < end)
+  while (*s != 0)
     {
       *d++ = ugetc (s, 0, &clen);
       s += clen;
