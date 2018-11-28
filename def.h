@@ -1009,8 +1009,11 @@ int unslen (const uchar *s, int n);	/* # of UTF-8 chars in string s	*/
 int unblen (const uchar *s, int n);	/* # of bytes in next n UTF-8	*/
 					/*  chars in s			*/
 wchar_t ugetc (const uchar *s, int n, int *len);
-					/* Convert one UTF-8 character	*/
-					/*  to 32-bit Unicode		*/
+					/* Get nth UTF-8 character in s	*/
+					/*  as 32-bit Unicode		*/
+wchar_t ugetprevc (const uchar *s, int *len);
+					/* Get UTF-8 character previous	*/
+					/*  to s as 32-bit Unicode	*/
 int ucombining (wchar_t c);		/* c is a combining char?	*/
 int uputc (wchar_t c, unsigned char *s);/* Convert Unicode to UTF-8	*/
 int unicode (int f, int n, int k);	/* Command to insert Unicode.	*/

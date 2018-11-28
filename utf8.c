@@ -196,6 +196,20 @@ ugetc (const uchar *s, int n, int *len)
     *len = 1;
   return c;
 }
+/*
+ * Get the previous UTF-8 character, i.e. the character just
+ * before the one pointed to by s.  Return it
+ * as a 32-bit unicode character.  If len is not NULL,
+ * return the length of the UTF-8 character to *len.
+ */
+wchar_t
+ugetprevc (const uchar *s, int *len)
+{
+  do {
+    --s;
+  } while ((*s & 0xc0) == 0x80);
+  return ugetc (s, 0, len);
+}
   
 /*
  * Convert a Unicode character c to UTF-8, writing the
@@ -314,12 +328,26 @@ main(int argc, char *argv[])
   printf("length of s is %ld\n", sizeof(s));
   len = uslen(s);
   printf("number of UTF-8 chars in s is %d\n", len);
+  printf("Scanning forward...\n");
   for (i = 0; i < len; i++)
     {
       int u, size;
 
       printf("offset of UTF-8 char #%d in s is %ld\n", i, ugetcptr(s, i) - s);
       u = ugetc(s, i, &size);
+      printf("char #%d in s in unicode is %x, size %d\n", i, u, size);
+    }
+  printf("Scanning backwards...\n");
+  p = s + strlen (s);
+  i = len;
+  while (p > s)
+    {
+      int u, size;
+
+      u = ugetprevc (p, &size);
+      p -= size;
+      --i;
+      printf("offset of UTF-8 char #%d in s is %ld\n", i, p - s);
       printf("char #%d in s in unicode is %x, size %d\n", i, u, size);
     }
   begin = clock ();

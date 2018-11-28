@@ -387,19 +387,19 @@ forwsrch (void)
 	    {
 	      if ((tlp = lforw (tlp)) == lastline)
 		return (FALSE);
-	      tend = lend (tlp);
-	      tbo = 0;
-	      tptr = wlgetcptr (tlp, tbo);
 	      if (upat[pp] != '\n')
 		goto fail;
+	      tend = lend (tlp);
+	      tbo = 0;
+	      tptr = lgets (tlp);
 	    }
 	  else
 	    {
 	      uc = ugetc (tptr, 0, &ulen);
-	      tptr += ulen;
-	      ++tbo;
 	      if (!CEQ (uc, upat[pp]))
 		goto fail;
+	      tptr += ulen;
+	      ++tbo;
 	    }
 	}
       curwp->w_dot.p = tlp;
@@ -422,11 +422,15 @@ backsrch (void)
 {
   register LINE *clp;
   register int cbo;
+  const uchar *cptr;
   register LINE *tlp;
-  register LINE *lastline;
   register int tbo;
+  const uchar *tptr;
+  register LINE *lastline;
   register int epp;
   register int pp;
+  wchar_t uc;
+  int ulen;
 
   lastline = curbp->b_linep;
   epp = patlen - 1;
@@ -437,6 +441,7 @@ backsrch (void)
 #endif
   clp = curwp->w_dot.p;
   cbo = curwp->w_dot.o;
+  cptr = wlgetcptr (clp, cbo);
   for (;;)
     {
     fail:
@@ -445,13 +450,21 @@ backsrch (void)
 	  if ((clp = lback (clp)) == lastline)
 	    return (FALSE);
 	  cbo = wllength (clp);
+	  cptr = wlgetcptr (clp, cbo);
 	  if (upat[epp] != '\n')
 	    goto fail;
 	}
-      else if (!CEQ (wlgetc (clp, --cbo), upat[epp]))
-	goto fail;
+      else
+	{
+	  uc = ugetprevc (cptr, &ulen);
+	  cptr -= ulen;
+	  --cbo;
+	  if (!CEQ (uc, upat[epp]))
+	    goto fail;
+	}
       tlp = clp;
       tbo = cbo;
+      tptr = cptr;
       pp = epp;
       while (pp != 0)
 	{
@@ -460,11 +473,18 @@ backsrch (void)
 	      if ((tlp = lback (tlp)) == lastline)
 		return (FALSE);
 	      tbo = wllength (tlp);
+	      tptr = lend (tlp);
 	      if (upat[--pp] != '\n')
 		goto fail;
 	    }
-	  else if (!CEQ ((wlgetc (tlp, --tbo)), upat[--pp]))
-	    goto fail;
+	  else
+	    {
+	      uc = ugetprevc (tptr, &ulen);
+	      if (!CEQ (uc, upat[--pp]))
+		goto fail;
+	      tptr -= ulen;
+	      --tbo;
+	    }
 	}
       curwp->w_dot.p = tlp;
       curwp->w_dot.o = tbo;
