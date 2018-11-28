@@ -337,11 +337,11 @@ static int
 forwsrch (void)
 {
   register LINE *clp;
-  int clen;
+  const uchar *cend;
   register int cbo;
   const uchar *cptr;
   register LINE *tlp;
-  int tlen;
+  const uchar *tend;
   register int tbo;
   const uchar *tptr;
   register int pp;
@@ -351,7 +351,7 @@ forwsrch (void)
 
   clp = curwp->w_dot.p;
   cbo = curwp->w_dot.o;
-  clen = wllength (clp);
+  cend = lend (clp);
   cptr = wlgetcptr (clp, cbo);
   lastline = curbp->b_linep;
   if (clp == lastline)
@@ -359,11 +359,11 @@ forwsrch (void)
   for (;;)
     {
     fail:
-      if (cbo == clen)
+      if (cptr >= cend)
 	{
 	  if ((clp = lforw (clp)) == lastline)
 	    return (FALSE);
-	  clen = wllength (clp);
+	  cend = lend (clp);
 	  cbo = 0;
 	  cptr = wlgetcptr (clp, cbo);
 	  if (upat[0] != '\n')
@@ -380,14 +380,14 @@ forwsrch (void)
       tlp = clp;
       tbo = cbo;
       tptr = cptr;
-      tlen = clen;
+      tend = cend;
       for (pp = 1; pp < patlen; pp++)
 	{
-	  if (tbo == tlen)
+	  if (tptr >= tend)
 	    {
 	      if ((tlp = lforw (tlp)) == lastline)
 		return (FALSE);
-	      tlen = wllength (tlp);
+	      tend = lend (tlp);
 	      tbo = 0;
 	      tptr = wlgetcptr (tlp, tbo);
 	      if (upat[pp] != '\n')
