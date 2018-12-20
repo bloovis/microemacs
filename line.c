@@ -56,6 +56,8 @@
 #define LOWER 0x02
 
 char *kbufp = NULL;		/* Kill buffer data.            */
+int kindex = -1;		/* kremove UTF-8 index into KB.	*/
+const uchar *kptr = NULL;	/* kremove pointer into KB.	*/
 int kused = 0;			/* # of bytes used in KB.       */
 int ksize = 0;			/* # of bytes allocated in KB.  */
 int kchars = 0;			/* # of UTF-8 chars in KB.	*/
@@ -782,6 +784,8 @@ kdelete (void)
       kused = 0;
       ksize = 0;
       kchars = 0;
+      kptr = NULL;
+      kindex = -1;
     }
 }
 
@@ -841,19 +845,27 @@ kinsert (const char *s, int n)
  * bytes stored.  If the character index "n" is
  * off the end, it returns "-1". This lets the caller
  * just scan along until it gets a "-1" back.
- * Recently this function was replaced by a macro
- * in "def.h" for speed-up purposes.
+ *
+ * To avoid the order-n-squared problem, we use
+ * the kptr and kindex variables to iterate through
+ * the kill buffer, without starting over from
+ * the beginning of the buffer each time kremove is called.
  */
 int
 kremove (int n, uchar *buf)
 {
   int len;
-  const uchar *cptr;
 
   if (n >= kchars)
     return -1;
-  cptr = ugetcptr ((const uchar *) kbufp, n);
-  len = uclen (cptr);
-  memcpy (buf, cptr, len);
+  if (n != kindex)
+    {
+      kptr = ugetcptr ((const uchar *) kbufp, n);
+      kindex = n;
+    }
+  len = uclen (kptr);
+  memcpy (buf, kptr, len);
+  kptr += len;
+  ++kindex;
   return len;
 }
