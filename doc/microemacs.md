@@ -2494,7 +2494,7 @@ In Ruby, these values are:
 :   The command was aborted by Control-G.
 
 The **echo** command is useful when debugging Ruby code.  It displays
-a string on the echo line, so you can use it to displaying debug
+a string on the echo line, so you can use it to display debug
 messages.  For example, this code displays the current line number:
 
     echo "line number is #{$lineno}"
