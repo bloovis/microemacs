@@ -2670,6 +2670,11 @@ and written.
 :   This variable contains the current tab width.  Writing to this variable
     sets the tab width, as in the **set-tab-size** command.
 
+`$fillcol`
+
+:   This variable contains the current fill column for paragraph justification.  Writing to this variable
+    sets the fill column, as in the **set-fill-column** command.
+
 ## Exceptions
 
 If an exception occurs in Ruby code, MicroEMACS will open a temporary

@@ -515,6 +515,27 @@ set_tabsize (VALUE val, ID id)
 }
 
 /*
+ * Get the current fill column.
+ */
+static VALUE
+get_fillcol (VALUE self)
+{
+  VALUE ret;
+
+  ret = INT2NUM (fillcol);
+  return ret;
+}
+
+/*
+ * Set the current fill column.
+ */
+static void
+set_fillcol (VALUE val, ID id)
+{
+  setfillcol (TRUE, NUM2INT (val), KRANDOM);
+}
+
+/*
  * Insert a string at the current location.
  */
 static VALUE
@@ -781,6 +802,7 @@ rubyinit (int quiet)
   rb_define_virtual_variable ("$char", get_char, set_char);
   rb_define_virtual_variable ("$filename", get_filename, set_filename);
   rb_define_virtual_variable ("$tabsize", get_tabsize, set_tabsize);
+  rb_define_virtual_variable ("$fillcol", get_fillcol, set_fillcol);
 
   /* Add the current directory to the Ruby load path.
    * This allows the user to load other scripts without specifying
