@@ -17,6 +17,8 @@ def columns(s)
   return w
 end
 
+# Reformat a Ruby/Perl comment.
+
 def formatrubycomment(n)
   # The dot must be in the first line of a comment.
   # Extract the leading spaces so we know how much
@@ -42,7 +44,10 @@ def formatrubycomment(n)
       para = ''
     end
     para << rest + '  '
-    break if forw_line != ETRUE
+    if forw_line != ETRUE
+      goto_eol
+      break
+    end
   end
   if para.length > 0
     paras << para 
@@ -53,13 +58,13 @@ def formatrubycomment(n)
 
   # Reconstruct the comment, ensuring that the paragraphs don't
   # go past the fill column.
-  maxlen = $fillcol - 3 - columns(spc)
+  maxlen = $fillcol - 2 - columns(spc)
   leader = spc + '# '
   paras.each_with_index do |para, i|
     words = para.split
     line = ''
     words.each do |word|
-      if line.length + word.length > maxlen
+      if line.length + 1 + word.length > maxlen
 	insert leader + line + "\n"
 	line = word
       else
@@ -81,7 +86,7 @@ def formatrubycomment(n)
   return ETRUE
 end
 
-# MicroEMACS function for reformatting a C comment.
+# Reformat a C comment.  TODO: C++ comments (//).
 
 def formatccomment(n)
   # The dot must be in the first line of a comment.
@@ -138,13 +143,13 @@ def formatccomment(n)
 
   # Reconstruct the comment, ensuring that the paragraphs don't
   # go past the fill column.
-  maxlen = $fillcol - 4 - columns(spc)
+  maxlen = $fillcol - 3 - columns(spc)
   leader = spc + '/* '
   paras.each_with_index do |para, i|
     words = para.split
     line = ''
     words.each do |word|
-      if line.length + word.length > maxlen
+      if line.length + 1 + word.length > maxlen
 	insert leader + line + "\n"
 	leader = spc + ' * '
 	line = word
