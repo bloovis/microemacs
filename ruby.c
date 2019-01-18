@@ -552,8 +552,10 @@ my_insert (VALUE self, VALUE s)
   else
     {
       char *cs = StringValuePtr (s);
+      startsaveundo ();
       int len = RSTRING_LEN (s);
       cret = insertwithnl (cs, len);
+      endsaveundo ();
     }
   ret = INT2NUM (cret);
   return ret;
