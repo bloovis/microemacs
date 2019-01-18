@@ -2554,6 +2554,13 @@ for use in Ruby commands.
     a **Key** object describing the keystroke.  See the next section
     for a description of the **Key** object.
 
+`popup(string)`
+
+:   This function creates a pop-up window, with the contents specified
+    by the `string` parameter.  The string may contain newline characters.
+    This function is useful for displaying error messages in a temporary
+    window.
+
 ### Keycodes
 
 MicroEMACS also provides several helpers for encoding keycodes.

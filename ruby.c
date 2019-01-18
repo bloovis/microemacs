@@ -562,6 +562,66 @@ my_insert (VALUE self, VALUE s)
 }
 
 /*
+ * Helper function for my_popup and check_exception that adds
+ * an array of lines to the popup buffer.
+ */
+static int
+add_lines (VALUE ary)
+{
+  int ci;
+  VALUE len = rb_funcall (ary, rb_intern("length"), 0);
+  int clen = FIX2INT (len);
+
+  for (ci = 0; ci < clen; ci++)
+    {
+      VALUE i = LONG2FIX (ci);
+      VALUE str = rb_funcall (ary, rb_intern ("slice"), 1, i);
+      if (addline (StringValueCStr (str)) == FALSE)
+	return FALSE;
+    }
+  return TRUE;
+}
+
+/*
+ * Show the popup buffer with the specified string as the contents.
+ */
+static VALUE
+my_popup (VALUE self, VALUE s)
+{
+  VALUE ret;
+  int cret;
+
+  if (!RB_TYPE_P(s, T_STRING))
+    {
+      eprintf ("popup parameter must be a string");
+      cret = FALSE;
+    }
+  else
+    {
+      VALUE lines;
+
+      /* Clear the popup buffer.
+       */
+      blistp->b_flag &= ~BFCHG;
+      if (bclear (blistp) != TRUE)
+	return FALSE;
+      strcpy (blistp->b_fname, "");
+
+      /* Split the string into lines and write each one to the popup buffer.
+       */
+      lines = rb_funcall (s, rb_intern("split"), 1, rb_str_new_cstr ("\n"));
+      if (add_lines (lines) == FALSE)
+	return FALSE;
+
+      /* Display the popup buffer.
+       */
+      cret = popblist ();
+    }
+  ret = INT2NUM (cret);
+  return ret;
+}
+
+/*
  * Prompt the user and read back a reply, which is returned
  * as a string.  If the user aborts the reply with Control-G,
  * return nil.
@@ -600,27 +660,6 @@ my_getkey (VALUE self)
 
   ret = INT2NUM (getkey ());
   return ret;
-}
-
-/*
- * Helper function for check_exception that adds
- * an array of lines to the popup buffer.
- */
-static int
-add_lines (VALUE ary)
-{
-  int ci;
-  VALUE len = rb_funcall (ary, rb_intern("length"), 0);
-  int clen = FIX2INT (len);
-
-  for (ci = 0; ci < clen; ci++)
-    {
-      VALUE i = LONG2FIX (ci);
-      VALUE str = rb_funcall (ary, rb_intern ("slice"), 1, i);
-      if (addline (StringValueCStr (str)) == FALSE)
-	return FALSE;
-    }
-  return TRUE;
 }
 
 /*
@@ -791,6 +830,7 @@ rubyinit (int quiet)
   rb_define_global_function("iscmd", my_iscmd, 1);
   rb_define_global_function("linelen", my_linelen, 0);
   rb_define_global_function("insert", my_insert, 1);
+  rb_define_global_function("popup", my_popup, 1);
   rb_define_global_function("cbind", my_cbind, 2);
   rb_define_global_function("reply", my_reply, 1);
   rb_define_global_function("cgetkey", my_getkey, 0);
