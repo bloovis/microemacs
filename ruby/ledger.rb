@@ -9,6 +9,8 @@
 # We assume that aliases are defined in a file called aliases.dat
 # that is included in ledger.dat.
 
+require 'open3'
+
 def readaliases
   $aliases = {}
   $accounts = {}
@@ -35,7 +37,12 @@ def xact(n)
     date = $1
     payee = $2.gsub(/'/, "\\'")
     # echo "payee = #{payee}"
-    transaction = `ledger --no-aliases -f ledger.dat xact #{date} '#{payee}' 2>/dev/null`
+    transaction, stderr_str, status = Open3.capture3('ledger', '--no-aliases',
+      '-f', 'ledger.dat', 'xact', date, payee)
+    if status.to_i != 0
+      popup stderr_str
+      return EFALSE
+    end
     if transaction.length == 0
       echo "No matching transaction"
       return EFALSE
@@ -139,7 +146,7 @@ def insalias(n)
     end
   end
   if matches.length == 0
-    echo "No alias found starting with #{al}"
+    echo "No alias found containing #{al}"
     return EFALSE
   end
   if matches.length == 1
@@ -203,6 +210,36 @@ def cleared(n)
   end
 end
 
+# Prompt for a date, then find the transaction whose date is greater than
+# or equal to that date.
+
+def finddate(n)
+  line = reply "Enter a date: "
+  if line =~ /^(\d\d\d\d\/\d\d\/\d\d)$/
+    date = $1
+  else
+    echo "Date must be in format YYYY/MM/DD"
+    return EFALSE
+  end
+  lineno = $lineno
+  offset = $offset
+  goto_bob
+  keepgoing = true
+  while keepgoing
+    line = $line
+    if line =~ /^(\d\d\d\d\/\d\d\/\d\d)/
+      if $1 >= date
+	return ETRUE
+      end
+    end
+    keepgoing = forw_line == ETRUE
+  end
+  $lineno = lineno
+  $offset = offset
+  echo "Date #{date} not found"
+  return EFALSE
+end
+
 # Tell MicroEMACS about the new commands.
 
 ruby_command "xact"
@@ -213,6 +250,8 @@ ruby_command "cleared"
 bind "cleared", ctlx('c')
 ruby_command "insalias"
 bind "insalias", ctlx('a')
+ruby_command "finddate"
+bind "finddate", ctlx('f')
 
 # Set up some global variables used by the commands.
 
