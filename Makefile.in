@@ -117,6 +117,13 @@ rubyapi.o : rubyapi.S
 rubyapi.S : $(srcdir)/makeapi.rb $(srcdir)/ruby.c
 	gcc -E $(CFLAGS) $(srcdir)/ruby.c | $(srcdir)/makeapi.rb > rubyapi.S
 
+# Run valgrind
+
+.PHONY: valgrindcheck
+valgrindcheck: pe
+	valgrind --log-file=valgrind.log ./pe
+	cat valgrind.log
+
 # Include compiler-generated dependency files
 
 -include *.d
