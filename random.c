@@ -300,7 +300,7 @@ selfinsert (int f, int n, int k)
  * Open up some blank space. The basic plan
  * is to insert a bunch of newlines, and then back
  * up over them. Everything is done by the subcommand
- * procerssors. They even handle the looping. Normally
+ * processors. They even handle the looping. Normally
  * this is bound to "C-O".
  */
 int
