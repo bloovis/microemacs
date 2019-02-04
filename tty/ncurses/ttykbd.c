@@ -140,7 +140,7 @@ void ttykeymapinit()
 #else
   keydup(KF6,		"display-buffers");
 #endif
-  keydup(KF7,		"forw-window");
+  keydup(KF7,		"redo");
   keydup(KF8,		"forw-buffer");
   keydup(KF9,		"search-again");
   keydup(KF10,		"only-window");

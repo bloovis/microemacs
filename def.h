@@ -987,6 +987,7 @@ EWINDOW * wpopup (void);		/* Pick window for a pop-up	*/
  * Defined by "undo.c".
  */
 int undo (int f, int n, int k);		/* Undo most recent operation.  */
+int redo (int f, int n, int k);		/* Undo most recent undo.	*/
 
 void startsaveundo (void);		/* Start of undo sequence.	*/
 int saveundo (UKIND kind, POS *pos, ...); /* Save undo information.	*/

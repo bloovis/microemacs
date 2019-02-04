@@ -299,6 +299,7 @@ KEY key[] = {
 #endif
   {-1,			jeffexit,	"jeff-exit"},
   {-1,			displaymessage,	"display-message"},
+  {-1,			redo,		"redo"}
 };
 
 #define	NKEY	(sizeof(key) / sizeof(key[0]))

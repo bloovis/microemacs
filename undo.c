@@ -69,7 +69,8 @@ UNDOGROUP;
 /* Linked list of undo groups, treated as a stack of maximum size N_UNDO */
 typedef struct UNDOSTACK
 {
-  LINKS links;		/* head and tail of group list */
+  LINKS undolist;	/* head and tail of undo group list */
+  LINKS redolist;	/* head and tail of redo group list */
   int ngroups;		/* size of group stack */
 }
 UNDOSTACK;
@@ -96,22 +97,43 @@ initlinks (LINKS *links)
  * Remove group from list.
  */
 static void
-unlinkgroup (LINKS *links)
+unlinkgroup (UNDOGROUP *g)
 {
-  links->prev->next = links->next;
-  links->next->prev = links->prev;
+  g->links.prev->next = g->links.next;
+  g->links.next->prev = g->links.prev;
 }
 
 /*
- * Append new group into list after oldgroup .
+ * Append a group to the end of a list.
  */
 static void
-appendgroup (LINKS *newlinks, LINKS *oldlinks)
+appendgroup (UNDOGROUP *g, LINKS *list)
 {
-  newlinks->prev = oldlinks;
-  newlinks->next = oldlinks->next;
-  oldlinks->next->prev = newlinks;
-  oldlinks->next = newlinks;
+  g->links.prev = list->prev;
+  g->links.next = list;
+  list->prev->next = &g->links;
+  list->prev = &g->links;
+}
+
+/*
+ * Prepend a group to the beginning of a list.
+ */
+static void
+prependgroup (UNDOGROUP *g, LINKS *list)
+{
+  g->links.prev = list;
+  g->links.next = list->next;
+  list->next->prev = &g->links;
+  list->next = &g->links;
+}
+
+/*
+ * Is a group list empty?
+ */
+static int
+emptylist (LINKS *list)
+{
+  return list->next == list;
 }
 
 /*
@@ -130,7 +152,7 @@ newgroup (void)
 }
 
 /*
- * Free up an undo stepand any resources associated with it.
+ * Free up an undo step and any resources associated with it.
  */
 static void
 freeundo (UNDO *up)
@@ -170,7 +192,8 @@ static UNDOSTACK *
 newstack (void)
 {
   UNDOSTACK *st = malloc (sizeof (*st));
-  initlinks (&st->links);
+  initlinks (&st->undolist);
+  initlinks (&st->redolist);
   st->ngroups = 0;
   return st;
 }
@@ -223,7 +246,7 @@ freegroup (UNDOGROUP *g)
 
   /* Remove group from its list.
    */
-  unlinkgroup (&g->links);
+  unlinkgroup (g);
 
   /* Free up any resources used by the undo steps in the group.
    */
@@ -241,6 +264,20 @@ freegroup (UNDOGROUP *g)
 }
 
 /*
+ * Free up all undo groups on a list.
+ */
+static void
+freegrouplist (LINKS *list)
+{
+  UNDOGROUP *g;
+
+  for (g = (UNDOGROUP *) list->next;
+       &g->links != list;
+       g = (UNDOGROUP *) list->next)
+    freegroup (g);
+}
+
+/*
  * Return a pointer to the most recently saved undo record,
  * or NULL if there is none.
  */
@@ -249,15 +286,14 @@ lastundo (UNDOSTACK *st)
 {
   UNDOGROUP *g;
 
-  g = (UNDOGROUP *) st->links.prev;
-
   /* Is group list empty?
    */
-  if (&g->links == &st->links)
+  if (emptylist (&st->undolist))
     return NULL;
 
   /* Is group itself empty?
    */
+  g = (UNDOGROUP *) st->undolist.prev;
   if (g->next == 0)
     return NULL;
 
@@ -288,13 +324,13 @@ newundo (UNDOSTACK *st, UKIND kind, int line, int offset)
        * and place it at the end of list of groups.
        */
       g = newgroup ();
-      appendgroup (&g->links, st->links.prev);
+      appendgroup (g, &st->undolist);
 
       /* If we've reached the maximum number of undo groups, recycle the
        * first one in the list.
        */
       if (st->ngroups >= N_UNDO)
-	freegroup ((UNDOGROUP *) st->links.next);
+	freegroup ((UNDOGROUP *) st->undolist.next);
       else
 	st->ngroups++;
     }
@@ -302,7 +338,7 @@ newundo (UNDOSTACK *st, UKIND kind, int line, int offset)
     /* This is not the first undo record in a group.  Get
      * the last group in the list
      */
-    g = (UNDOGROUP *) st->links.prev;
+    g = (UNDOGROUP *) st->undolist.prev;
 
   /* Do we need to expand the array of undo records in this group?
    */
@@ -396,7 +432,10 @@ saveundo (UKIND kind, POS *pos, ...)
       offset = NOLINE;
     }
 
+  /* Free up any redo records that have accumulated.
+   */
   st = curwp->w_bufp->b_undo;
+  freegrouplist (&st->redolist);
 
   switch (kind)
     {
@@ -544,13 +583,13 @@ undo (int f, int n, int k)
    */
   undoing = TRUE;
   st = curwp->w_bufp->b_undo;
-  g = (UNDOGROUP *) st->links.prev;
-  if (&g->links == &st->links)
+  if (emptylist (&st->undolist))
     {
       eprintf ("undo stack is empty");
       undoing = FALSE;
       return FALSE;
     }
+  g = (UNDOGROUP *) st->undolist.prev;
 
   /* Replay all steps of the most recently saved undo.  Break up
    * the steps into subsequences that start with moves.  Play these
@@ -582,10 +621,83 @@ undo (int f, int n, int k)
     curbp->b_flag &= ~BFCHG;
   updatemode ();
 
+#if 0
   /* Pop this undo group from the list and free it up.
    */
   freegroup (g);
+#else
+  /* Pop this undo group from the undo list and move it
+   * to the redo list.
+   */
+  unlinkgroup (g);
+  prependgroup (g, &st->redolist);
+#endif
   st->ngroups--;
+  undoing = FALSE;
+  return status;
+}
+
+/*
+ * Undo a single step in a possibly larger sequence of undo records.
+ */
+static int
+redostep (UNDO *up)
+{
+  int status = TRUE;
+
+  return status;
+}
+
+/*
+ * Redo the first undo group on the redo list.
+ */
+int
+redo (int f, int n, int k)
+{
+  UNDO *up;
+  UNDO *start;
+  UNDO *end;
+  UNDOSTACK *st;
+  UNDOGROUP *g;
+  int status = TRUE;
+
+  /* Get the last undo group on the list, or error out
+   * if the list is empty.
+   */
+  undoing = TRUE;
+  st = curwp->w_bufp->b_undo;
+  if (emptylist (&st->redolist))
+    {
+      eprintf ("redo list is empty");
+      undoing = FALSE;
+      return FALSE;
+    }
+  g = (UNDOGROUP *) st->redolist.next;
+
+  /* Undo all steps of the first redo group on the list.
+   */
+  eprintf("redo not implemented!");
+  end = &g->undos[g->next];
+  start = &g->undos[0];
+  for (up = start; up != end; up++)
+    {
+      int s = redostep (up);
+
+      if (s != TRUE)
+	status = s;
+    }
+
+  /* Set the buffer change flag.
+   */
+  if (g->b_flag & BFCHG)
+    curbp->b_flag |= BFCHG;
+  else
+    curbp->b_flag &= ~BFCHG;
+  updatemode ();
+
+  /* Remove this undo group from the redo list and free it up.
+   */
+  freegroup (g);
   undoing = FALSE;
   return status;
 }
@@ -662,8 +774,8 @@ printundo (void)
 
   level = 1;
   st = curwp->w_bufp->b_undo;
-  for (g = (UNDOGROUP *) st->links.next;
-       &g->links != &st->links;
+  for (g = (UNDOGROUP *) st->undolist.next;
+       &g->links != &st->undolist;
        g = (UNDOGROUP *) g->links.next)
     {
       printf ("%d:\r\n", level);
@@ -681,13 +793,10 @@ printundo (void)
 void
 killundo (BUFFER *bp)
 {
-  UNDOGROUP *g;
   UNDOSTACK *st = bp->b_undo;
 
-  for (g = (UNDOGROUP *) st->links.next;
-       &g->links != &st->links;
-       g = (UNDOGROUP *) st->links.next)
-    freegroup (g);
+  freegrouplist (&st->undolist);
+  freegrouplist (&st->redolist);
   free (st);
   bp->b_undo = NULL;
 }
