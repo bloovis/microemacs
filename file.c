@@ -729,6 +729,7 @@ filesave (int f, int n, int k)
 #if	BACKUP
   curbp->b_flag &= ~BFBAK;	/* No backup.           */
 #endif
+  setundochanged ();
   return (s);
 }
 

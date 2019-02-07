@@ -514,7 +514,7 @@ ldelete (int n, int kflag)
 	  if (ldelnewline () == FALSE
 	      || (kflag != FALSE && kinsert ("\n", 1) == FALSE))
 	    return (FALSE);
-          saveundo(UDELETE, NULL, 1, "\n");
+          saveundo(UDELETE, NULL, 1, 1, "\n");
 	  --n;
 	  continue;
 	}
@@ -523,7 +523,7 @@ ldelete (int n, int kflag)
       if (kflag != FALSE)	/* Kill?                */
 	if (kinsert ((const char *) cp1, bytes) == FALSE)
 	  return (FALSE);
-      saveundo(UDELETE, NULL, bytes, cp1);
+      saveundo(UDELETE, NULL, chars, bytes, cp1);
       memmove (cp1, cp2, end - cp2);
       dot.p->l_used -= bytes;
       ALLWIND (wp)

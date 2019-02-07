@@ -23,11 +23,11 @@
 #define N_UNDO 100
 
 /* A single undo step, as part of a larger group.
- * Each step is like a journal entry for the editor:
- * It saves a:
- *  - UDELETE entry when it deletes a string
- *  - UINSERT entry when it inserts a string
- *  - UMOVE entry when it moves the dot
+ * Each step is like a journal entry for the editor.
+ * It consists of a:
+ *  - UDELETE entry when the editor deletes a string
+ *  - UINSERT entry when the editor inserts a string
+ *  - UMOVE entry when the editor moves the dot
  */
 typedef struct UNDO
 {
@@ -39,7 +39,8 @@ typedef struct UNDO
     /* UDELETE record */
     struct
     {
-      int bytes;		/* # of bytes in string		*/
+      int chars;		/* # of characters deleted	*/
+      int bytes;		/* # of bytes deleted		*/
       uchar *s;			/* string that was deleted	*/
     } del;
 
@@ -409,7 +410,8 @@ memdup (uchar *dest, int copies, const uchar *s, int n)
 }
 
 /*
- * Save a single undo record.  The first two parameters are fixed:
+ * Save a single undo record, which is a record of a move, deletion, or insertion.
+ * The first two parameters are fixed:
  *  - the kind of undo record
  *  - a pointer to a line/offset pair to be recorded in
  *    the record, or NULL if no line/offset pair is to be recorded.
@@ -418,13 +420,14 @@ memdup (uchar *dest, int copies, const uchar *s, int n)
  *  - UMOVE:
  *    - takes no extra parameters
  *  - UDELETE:
- *    - size of string in bytes
- *    - pointer to string (may not be null-terminated)
+ *    - size of deleted string in characters
+ *    - size of deleted string in bytes
+ *    - pointer to deleted string (may not be null-terminated)
  *  - UINSERT:
- *    - # of copies of string
- *    - size of string in characters
- *    - size of string in bytes
- *    - pointer to string (may not be null-terminated)
+ *    - # of copies of inserted string
+ *    - size of inserted string in characters
+ *    - size of inserted string in bytes
+ *    - pointer to inserted string (may not be null-terminated)
  */
 int
 saveundo (UKIND kind, POS *pos, ...)
@@ -473,18 +476,20 @@ saveundo (UKIND kind, POS *pos, ...)
 
     case UDELETE:		/* Delete string		*/
       {
-	int n = va_arg (ap, int);
+	int chars = va_arg (ap, int);
+	int bytes = va_arg (ap, int);
 	const uchar *s = va_arg (ap, const uchar *);
 
 	up = newundo (st, kind, line, offset);
-	up->u.del.s = (uchar *) malloc (n);
+	up->u.del.s = (uchar *) malloc (bytes);
 	if (up->u.del.s == NULL)
 	  {
 	  eprintf ("Out of memory in undo!");
 	  return FALSE;
 	  }
-        memcpy (up->u.del.s, s, n);
-	up->u.del.bytes = n;
+        memcpy (up->u.del.s, s, bytes);
+	up->u.del.chars = chars;
+	up->u.del.bytes = bytes;
 	break;
       }
 
@@ -671,6 +676,37 @@ redostep (UNDO *up)
 {
   int status = TRUE;
 
+  if (up->l != NOLINE)
+    {
+      status = gotoline (TRUE, up->l + 1, KRANDOM);
+      curwp->w_dot.o = up->o;
+      curwp->w_flag |= WFMOVE;
+    }
+
+  if (status == TRUE)
+    {
+      switch (ukind (up))
+	{
+	case UMOVE:
+	  break;
+
+	case UDELETE:
+	  {
+	    status = ldelete (up->u.del.chars, FALSE);	/* FIXME: should be del.chars */
+	    break;
+	  }
+
+	case UINSERT:
+	  status = insertwithnl ((const char *) up->u.ins.s, up->u.ins.bytes);
+	  break;
+
+	default:
+	  eprintf ("Unknown undo kind 0x%x", up->kind);
+	  status = FALSE;
+	  break;
+	}
+    }
+
   return status;
 }
 
@@ -687,7 +723,7 @@ redo (int f, int n, int k)
   UNDOGROUP *g;
   int status = TRUE;
 
-  /* Get the last undo group on the list, or error out
+  /* Get the first undo group on the list, or error out
    * if the list is empty.
    */
   undoing = TRUE;
@@ -700,9 +736,8 @@ redo (int f, int n, int k)
     }
   g = (UNDOGROUP *) st->redolist.next;
 
-  /* Undo all steps of the first redo group on the list.
+  /* Undo all steps of this redo group.
    */
-  eprintf("redo not implemented!");
   end = &g->undos[g->next];
   start = &g->undos[0];
   for (up = start; up != end; up++)
@@ -718,9 +753,11 @@ redo (int f, int n, int k)
   curbp->b_flag |= BFCHG;
   updatemode ();
 
-  /* Remove this undo group from the redo list and free it up.
+  /* Move this undo group from the redo list back to the top of the
+   * the undo stack.
    */
-  freegroup (g);
+  unlinkgroup (g);
+  appendgroup (g, &st->undolist);
   undoing = FALSE;
   return status;
 }
@@ -814,4 +851,26 @@ killundo (BUFFER *bp)
   freegrouplist (&st->redolist);
   free (st);
   bp->b_undo = NULL;
+}
+
+
+/*
+ * Set the "buffer changed" flag in all undo records for
+ * the buffer buffer.  This should be called after a buffer
+ * is saved to disk, so that any subsequent undo operations will
+ * set the "buffer changed" flag for that buffer.
+ */
+void
+setundochanged (void)
+{
+  UNDOSTACK *st;
+  UNDOGROUP *g;
+
+  st = curbp->b_undo;
+  for (g = (UNDOGROUP *) st->undolist.next;
+       &g->links != &st->undolist;
+       g = (UNDOGROUP *) g->links.next)
+    {
+      g->b_flag = BFCHG;
+    }
 }
