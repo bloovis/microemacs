@@ -258,7 +258,7 @@ linsert (int n, int c, char *s)
        */
       chars = unslen ((uchar *)s, n);
       bytes = n;
-      saveundo (UDELETE, NULL, 1, chars, bytes, s);
+      saveundo (UINSERT, NULL, 1, chars, bytes, s);
     }
  else
     {
@@ -269,7 +269,7 @@ linsert (int n, int c, char *s)
       buflen = uputc (c, (uchar *)buf);
       chars = n;
       bytes = n * buflen;
-      saveundo (UDELETE, NULL, n, 1, buflen, buf);
+      saveundo (UINSERT, NULL, n, 1, buflen, buf);
     }
 
   if (dot.p == curbp->b_linep)
@@ -415,7 +415,7 @@ lnewline (void)
   offset = wloffset (lp1, doto);	/* Actual byte offset	*/
 
   /* Save undo information. */
-  saveundo (UDELETE, NULL, 1, 1, 1, "\n");
+  saveundo (UINSERT, NULL, 1, 1, 1, "\n");
 
   if ((lp2 = lalloc (offset)) == NULL)	/* New first half line  */
     return (FALSE);
@@ -514,7 +514,7 @@ ldelete (int n, int kflag)
 	  if (ldelnewline () == FALSE
 	      || (kflag != FALSE && kinsert ("\n", 1) == FALSE))
 	    return (FALSE);
-          saveundo(UINSERT, NULL, 1, "\n");
+          saveundo(UDELETE, NULL, 1, "\n");
 	  --n;
 	  continue;
 	}
@@ -523,7 +523,7 @@ ldelete (int n, int kflag)
       if (kflag != FALSE)	/* Kill?                */
 	if (kinsert ((const char *) cp1, bytes) == FALSE)
 	  return (FALSE);
-      saveundo(UINSERT, NULL, bytes, cp1);
+      saveundo(UDELETE, NULL, bytes, cp1);
       memmove (cp1, cp2, end - cp2);
       dot.p->l_used -= bytes;
       ALLWIND (wp)
