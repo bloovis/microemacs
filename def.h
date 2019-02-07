@@ -287,9 +287,8 @@ typedef enum UKIND
 {
   UUNUSED = 0,			/* Entry is unused		*/
   UMOVE,			/* Move to (line #, offset)	*/
-  UCH,				/* Insert character		*/
-  USTR,				/* Insert string		*/
-  UDEL,				/* Delete N characters		*/
+  UINSERT,			/* Insert string		*/
+  UDELETE,			/* Delete N copies of string	*/
 } UKIND;
 
 typedef struct UNDOSTACK UNDOSTACK;

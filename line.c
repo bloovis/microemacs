@@ -253,23 +253,24 @@ linsert (int n, int c, char *s)
 
   if (s != NULL)
     {
-      /* set chars to number of characters in UTF-8 string.
+      /* Set chars to number of characters in UTF-8 string.
        * Set bytes to number of bytes in the string.
        */
       chars = unslen ((uchar *)s, n);
       bytes = n;
+      saveundo (UDELETE, NULL, 1, chars, bytes, s);
     }
  else
     {
       /* Convert character to UTF-8, store in buf. Set chars to
-       * total number of characters to insert, bytes to total number
+       * total number of characters to insert.  Set bytes to total number
        * of bytes to insert.
        */
       buflen = uputc (c, (uchar *)buf);
       chars = n;
       bytes = n * buflen;
+      saveundo (UDELETE, NULL, n, 1, buflen, buf);
     }
-  saveundo (UDEL, NULL, chars);
 
   if (dot.p == curbp->b_linep)
     {				/* At the end: special  */
@@ -414,7 +415,7 @@ lnewline (void)
   offset = wloffset (lp1, doto);	/* Actual byte offset	*/
 
   /* Save undo information. */
-  saveundo (UDEL, NULL, 1);
+  saveundo (UDELETE, NULL, 1, 1, 1, "\n");
 
   if ((lp2 = lalloc (offset)) == NULL)	/* New first half line  */
     return (FALSE);
@@ -513,7 +514,7 @@ ldelete (int n, int kflag)
 	  if (ldelnewline () == FALSE
 	      || (kflag != FALSE && kinsert ("\n", 1) == FALSE))
 	    return (FALSE);
-          saveundo(UCH, NULL, 1, '\n');
+          saveundo(UINSERT, NULL, 1, "\n");
 	  --n;
 	  continue;
 	}
@@ -522,7 +523,7 @@ ldelete (int n, int kflag)
       if (kflag != FALSE)	/* Kill?                */
 	if (kinsert ((const char *) cp1, bytes) == FALSE)
 	  return (FALSE);
-      saveundo(USTR, NULL, bytes, cp1);
+      saveundo(UINSERT, NULL, bytes, cp1);
       memmove (cp1, cp2, end - cp2);
       dot.p->l_used -= bytes;
       ALLWIND (wp)

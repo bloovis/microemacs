@@ -32,17 +32,15 @@ typedef struct UNDO
   {
     struct
     {
-      int n;			/* # of characters to insert	*/
-      uchar c;			/* Character			*/
-    } ch;
-    struct
-    {
-      int n;			/* Length of string		*/
+      int bytes;		/* # of bytes in string		*/
       uchar *s;			/* String			*/
-    } str;
+    } ins;
     struct
     {
-      int n;			/* # of characters to delete	*/
+      int copies;		/* # of copies of string	*/
+      int chars;		/* # of characters to delete	*/
+      int bytes;		/* # of bytes to delete		*/
+      uchar *s;			/* String			*/
     } del;
   } u;
 }
@@ -157,8 +155,15 @@ newgroup (void)
 static void
 freeundo (UNDO *up)
 {
-  if (ukind (up) == USTR)
-    free (up->u.str.s);
+  switch (ukind (up))
+    {
+    case UINSERT:
+      free (up->u.ins.s);
+      break;
+    case UDELETE:
+      free (up->u.del.s);
+      break;
+    }
   up->kind = UUNUSED;
 }
 
@@ -381,6 +386,20 @@ enablesaveundo (void)
 }
 
 /*
+ * Make one or more copies of byte sequence s whose length in bytes is n
+ * to dest.
+ */
+static uchar *
+memdup (uchar *dest, int copies, const uchar *s, int n)
+{
+  int i;
+
+  for (i = 0; i < copies; i++)
+    memcpy (dest + (i * n), s, n);
+  return dest;
+}
+
+/*
  * Save a single undo record.  The first two parameters are fixed:
  *  - the kind of undo record
  *  - a pointer to a line/offset pair to be recorded in
@@ -389,14 +408,14 @@ enablesaveundo (void)
  * depending on the kind:
  *  - UMOVE:
  *    - takes no extra parameters
- *  - UCH:
- *    - count
- *    - character to be inserted
- *  - USTR:
- *    - size of string
+ *  - UINSERT:
+ *    - size of string in bytes
  *    - pointer to string (may not be null-terminated)
- *  - UDEL:
- *    - count of characters to be deleted
+ *  - UDELETE:
+ *    - # of copies of string
+ *    - size of string in characters
+ *    - size of string in bytes
+ *    - pointer to string (may not be null-terminated)
  */
 int
 saveundo (UKIND kind, POS *pos, ...)
@@ -443,56 +462,61 @@ saveundo (UKIND kind, POS *pos, ...)
       up = newundo (st, kind, line, offset);
       break;
 
-    case UCH:				/* Insert character	*/
-      up = newundo (st, kind, line, offset);
-      up->u.ch.n = va_arg (ap, int);	/* Count		*/
-      up->u.ch.c = va_arg (ap, int);	/* Character		*/
-      break;
-
-    case USTR:			/* Insert string		*/
+    case UINSERT:		/* Insert string		*/
       {
 	int n = va_arg (ap, int);
 	const uchar *s = va_arg (ap, const uchar *);
 
-	if (n == 1)
+	up = newundo (st, kind, line, offset);
+	up->u.ins.s = (uchar *) malloc (n);
+	if (up->u.ins.s == NULL)
 	  {
-	    /* Treat single-character strings as a UCH
-	     * for efficiency
-	     */
-	    up = newundo (st, UCH, line, offset);
-	    up->u.ch.n = 1;
-	    up->u.ch.c = s[0];
+	  eprintf ("Out of memory in undo!");
+	  return FALSE;
 	  }
-	else
-	  {
-            up = newundo (st, kind, line, offset);
-	    up->u.str.s = (uchar *) malloc (n);
-	    if (up->u.str.s == NULL)
-	      {
-	      eprintf ("Out of memory in undo!");
-	      return FALSE;
-	      }
-	    memcpy (up->u.str.s, s, n);
-	    up->u.str.n = n;
-	  }
+        memcpy (up->u.ins.s, s, n);
+	up->u.ins.bytes = n;
 	break;
       }
-    case UDEL:			/* Delete N characters		*/
+
+    case UDELETE:		/* Delete N copies of a string	*/
       {
-	int n = va_arg (ap, int);
+	int copies = va_arg (ap, int);
+	int chars = va_arg (ap, int);
+	int bytes = va_arg (ap, int);
+	const uchar *s = va_arg (ap, const uchar *);
 	UNDO *prev = lastundo (st);
+	int totalbytes = bytes * copies;
 
 	if (prev != NULL &&
-            ukind (prev) == UDEL &&
+            ukind (prev) == UDELETE &&
 	    prev->l == line &&
-	    prev->o + prev->u.del.n == offset)
+	    prev->o + prev->u.del.chars == offset)
 	  {
-	    prev->u.del.n += n;
+	    prev->u.del.chars += chars;
+	    prev->u.del.s = (uchar *) realloc (prev->u.del.s, prev->u.del.bytes + totalbytes);
+	    if (prev->u.del.s == NULL)
+	      {
+		eprintf ("Out of memory in undo!");
+		return FALSE;
+	      }
+	    memdup (prev->u.del.s + prev->u.del.bytes, copies, s, bytes);
+	    prev->u.del.bytes += totalbytes;
 	  }
 	else
 	  {
 	    up = newundo (st, kind, line, offset);
-	    up->u.del.n = n;
+	    up->u.del.chars = chars * copies;
+	    up->u.del.bytes = totalbytes;
+
+	    /* Make copy of string. */
+	    up->u.del.s = (uchar *) malloc (totalbytes);
+	    if (up->u.del.s == NULL)
+	      {
+		eprintf ("Out of memory in undo!");
+		return FALSE;
+	      }
+	    memdup (up->u.del.s, copies, s, bytes);
 	  }
         break;
       }
@@ -529,22 +553,15 @@ undostep (UNDO *up)
 	case UMOVE:
 	  break;
 
-	case UCH:
-	  if (up->u.ch.c == '\n')
-	    status = newline (FALSE, up->u.ch.n, KRANDOM);
-	  else
-	    status = linsert (up->u.ch.n, up->u.ch.c, NULL);
-	  break;
-
-	case USTR:
+	case UINSERT:
 	  {
-	    const uchar *s = up->u.str.s;
-	    status = insertwithnl ((const char *) s, up->u.str.n);
+	    const uchar *s = up->u.ins.s;
+	    status = insertwithnl ((const char *) s, up->u.ins.bytes);
 	    break;
 	  }
 
-	case UDEL:
-	  status = ldelete (up->u.del.n, FALSE);
+	case UDELETE:
+	  status = ldelete (up->u.del.chars, FALSE);
 	  break;
 
 	default:
@@ -689,10 +706,7 @@ redo (int f, int n, int k)
 
   /* Set the buffer change flag.
    */
-  if (g->b_flag & BFCHG)
-    curbp->b_flag |= BFCHG;
-  else
-    curbp->b_flag &= ~BFCHG;
+  curbp->b_flag |= BFCHG;
   updatemode ();
 
   /* Remove this undo group from the redo list and free it up.
@@ -714,21 +728,13 @@ printone (UNDO *up)
   printf ("  ");
   switch (ukind (up))
     {
-    case UCH:
-      if (up->u.ch.c == '\n')
-	printf ("Char: NEWLINE");
-      else
-	printf ("Char: '%c'", up->u.ch.c);
-      printf (", n = %d", up->u.ch.n);
-      break;
-
-    case USTR:
+    case UINSERT:
       {
 	const uchar *s;
 	int n;
 
 	printf ("String: '");
-	for (s = up->u.str.s, n = up->u.str.n; n > 0; --n, ++s)
+	for (s = up->u.ins.s, n = up->u.ins.bytes; n > 0; --n, ++s)
 	  {
 	    uchar c = *s;
 	    if (c == '\n')
@@ -744,9 +750,9 @@ printone (UNDO *up)
       printf ("Move");
       break;
 
-    case UDEL:
-      printf ("Delete: %d characters",
-              up->u.del.n);
+    case UDELETE:
+      printf ("Delete: %d chars of string '%s'",
+              up->u.del.chars, up->u.del.s);
       break;
 
     default:
