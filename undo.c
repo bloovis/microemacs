@@ -762,6 +762,28 @@ redo (int f, int n, int k)
   return status;
 }
 
+#if DEBUG
+
+/*
+ * Print a non-null-terminated string.
+ */
+static void
+printstring (const uchar *s, int bytes)
+{
+  printf ("'");
+  while (bytes > 0)
+    {
+      uchar c = *s;
+      if (c == '\n')
+	printf ("\\n");
+      else
+	printf ("%c", c);
+      --bytes;
+      ++s;
+    }
+  printf ("'");
+}
+
 /*
  * Print a single undo record.  The \r characters are necessary
  * because this function is called from gdb, and
@@ -776,19 +798,8 @@ printone (UNDO *up)
     {
     case UDELETE:
       {
-	const uchar *s;
-	int n;
-
-	printf ("Delete string: '");
-	for (s = up->u.del.s, n = up->u.del.bytes; n > 0; --n, ++s)
-	  {
-	    uchar c = *s;
-	    if (c == '\n')
-	      printf ("\\n");
-	    else
-	      printf ("%c", c);
-	  }
-	printf ("'");
+	printf ("Delete string: ");
+	printstring (up->u.del.s, up->u.del.bytes);
         break;
       }
 
@@ -797,8 +808,8 @@ printone (UNDO *up)
       break;
 
     case UINSERT:
-      printf ("Insert: %d chars of string '%s'",
-              up->u.ins.chars, up->u.ins.s);
+      printf ("Insert string: ");
+      printstring (up->u.ins.s, up->u.ins.bytes);
       break;
 
     default:
@@ -838,6 +849,7 @@ printundo (void)
     }
 }
 
+#endif	/* DEBUG */
 
 /*
  * Free up the undo records associated with a buffer.
