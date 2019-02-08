@@ -669,7 +669,7 @@ undo (int f, int n, int k)
 }
 
 /*
- * Undo a single step in a possibly larger sequence of undo records.
+ * Redo a single step in a possibly larger sequence of undo records.
  */
 static int
 redostep (UNDO *up)
@@ -692,7 +692,7 @@ redostep (UNDO *up)
 
 	case UDELETE:
 	  {
-	    status = ldelete (up->u.del.chars, FALSE);	/* FIXME: should be del.chars */
+	    status = ldelete (up->u.del.chars, FALSE);
 	    break;
 	  }
 
