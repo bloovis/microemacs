@@ -124,18 +124,6 @@ appendgroup (UNDOGROUP *g, LINKS *list)
 }
 
 /*
- * Prepend a group to the beginning of a list.
- */
-static void
-prependgroup (UNDOGROUP *g, LINKS *list)
-{
-  g->links.prev = list;
-  g->links.next = list->next;
-  list->next->prev = &g->links;
-  list->next = &g->links;
-}
-
-/*
  * Is a group list empty?
  */
 static int
@@ -282,14 +270,17 @@ freegroup (UNDOGROUP *g)
  * Free up all undo groups on a list.
  */
 static void
-freegrouplist (LINKS *list)
+freegrouplist (UNDOSTACK *st, LINKS *list)
 {
   UNDOGROUP *g;
 
   for (g = (UNDOGROUP *) list->next;
        &g->links != list;
        g = (UNDOGROUP *) list->next)
-    freegroup (g);
+    {
+      freegroup (g);
+      st->ngroups--;
+    }
 }
 
 /*
@@ -466,7 +457,7 @@ saveundo (UKIND kind, POS *pos, ...)
   /* Free up any redo records that have accumulated.
    */
   st = curwp->w_bufp->b_undo;
-  freegrouplist (&st->redolist);
+  freegrouplist (st, &st->redolist);
 
   switch (kind)
     {
@@ -652,18 +643,12 @@ undo (int f, int n, int k)
     curbp->b_flag &= ~BFCHG;
   updatemode ();
 
-#if 0
-  /* Pop this undo group from the list and free it up.
-   */
-  freegroup (g);
-#else
   /* Pop this undo group from the undo list and move it
    * to the redo list.
    */
   unlinkgroup (g);
-  prependgroup (g, &st->redolist);
-#endif
-  st->ngroups--;
+  appendgroup (g, &st->redolist);
+
   undoing = FALSE;
   return status;
 }
@@ -734,7 +719,7 @@ redo (int f, int n, int k)
       undoing = FALSE;
       return FALSE;
     }
-  g = (UNDOGROUP *) st->redolist.next;
+  g = (UNDOGROUP *) st->redolist.prev;
 
   /* Undo all steps of this redo group.
    */
@@ -859,8 +844,8 @@ killundo (BUFFER *bp)
 {
   UNDOSTACK *st = bp->b_undo;
 
-  freegrouplist (&st->undolist);
-  freegrouplist (&st->redolist);
+  freegrouplist (st, &st->undolist);
+  freegrouplist (st, &st->redolist);
   free (st);
   bp->b_undo = NULL;
 }
