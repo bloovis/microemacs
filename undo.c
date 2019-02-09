@@ -87,7 +87,7 @@ UNDOSTACK;
 #define ustart(up) ((up->kind & USTART) != 0)
 #define uend(up)   ((up->kind & UEND) != 0)
 
-#define NOLINE  -1		/* UNDO.{l,o} value meaing not used	*/
+#define NOLINE  -1		/* UNDO.{l,o} value meaning "not used"	*/
 
 static int startl = NOLINE;	/* lineno saved by startundo		*/
 static int starto;		/* offset saved by startundo		*/
@@ -148,7 +148,7 @@ newgroup (void)
 }
 
 /*
- * Free up an undo step and any resources associated with it.
+ * Free up any resources associated with an undo step.
  */
 static void
 freeundo (UNDO *up)
@@ -387,8 +387,8 @@ enablesaveundo (void)
 }
 
 /*
- * Make one or more copies of byte sequence s whose length in bytes is n
- * to dest.
+ * Make one or more copies of byte sequence s whose length in bytes is n,
+ * and store the result in dest, which must be at least (copies * n) bytes.
  */
 static uchar *
 memdup (uchar *dest, int copies, const uchar *s, int n)
@@ -696,7 +696,7 @@ redostep (UNDO *up)
 }
 
 /*
- * Redo the first undo group on the redo list.
+ * Redo the topmost undo group on the redo stack.
  */
 int
 redo (int f, int n, int k)
@@ -708,14 +708,14 @@ redo (int f, int n, int k)
   UNDOGROUP *g;
   int status = TRUE;
 
-  /* Get the first undo group on the list, or error out
-   * if the list is empty.
+  /* Get the top undo group on the redo stack, or error out
+   * if the stack is empty.
    */
   undoing = TRUE;
   st = curwp->w_bufp->b_undo;
   if (emptylist (&st->redolist))
     {
-      eprintf ("redo list is empty");
+      eprintf ("redo stack is empty");
       undoing = FALSE;
       return FALSE;
     }
@@ -738,7 +738,7 @@ redo (int f, int n, int k)
   curbp->b_flag |= BFCHG;
   updatemode ();
 
-  /* Move this undo group from the redo list back to the top of the
+  /* Move this undo group from the redo stack back to the top of the
    * the undo stack.
    */
   unlinkgroup (g);

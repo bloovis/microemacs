@@ -94,9 +94,8 @@ def insdate(n)
   return ETRUE
 end
 
-# Return the word under the cursor and its offset in the line, and move
-# the cursor past the end of the word.  If there is no word under the cursor
-# return an empty string.
+# Return the word under the cursor and its offset in the line.
+# If there is no word under the cursor, return an empty string.
 
 def getword
   line = $line
