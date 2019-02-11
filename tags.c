@@ -60,9 +60,9 @@
 #include	<string.h>
 #include	<unistd.h>
 
-#define DEBUG 0
+#define DPRINT 0	/* Set to 0 to enable debug output to a file */
 
-#if DEBUG
+#if DPRINT
 FILE *report;
 #define dprintf(x) fprintf x
 #else
@@ -498,7 +498,7 @@ searchtag (int f, int n, prepfunc prep, const char * tagtype)
       if (prep (tagpat) == FALSE)
 	return FALSE;
 
-#if DEBUG
+#if DPRINT
       report = fopen ("report", "w");
 #endif
 
@@ -536,7 +536,7 @@ searchtag (int f, int n, prepfunc prep, const char * tagtype)
     return FALSE;
   if (gotoline (TRUE, r->line, 0) == FALSE)
     return FALSE;
-#if DEBUG
+#if DPRINT
   fclose (report);
 #endif
   return TRUE;
