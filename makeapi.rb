@@ -22,7 +22,7 @@ STDIN.each_line do |line|
       name = $1
       puts("  .globl #{name}")
       puts("#{name}:")
-      puts("  jmp *ruby_fptrs+#{index*ptrsize}")
+      puts("  jmp *#{index*ptrsize}+ruby_fptrs(%rip)")
       index += 1
     end
   end

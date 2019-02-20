@@ -145,7 +145,7 @@ def method_missing(m, *args, &block)
   s = []
   args.each do |arg|
     case arg
-    when Fixnum
+    when Integer
       # printf "arg = 0x%x\n", arg
       f = 1
       n = arg
