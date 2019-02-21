@@ -5,8 +5,10 @@ index = 0
 
 if `uname -p` =~ /i686/
   ptrsize = 4
+  regip = ''
 else
   ptrsize = 8
+  regip = '(%rip)'
 end
 
 STDIN.each_line do |line|
@@ -22,7 +24,7 @@ STDIN.each_line do |line|
       name = $1
       puts("  .globl #{name}")
       puts("#{name}:")
-      puts("  jmp *#{index*ptrsize}+ruby_fptrs(%rip)")
+      puts("  jmp *#{index*ptrsize}+ruby_fptrs#{regip}")
       index += 1
     end
   end
