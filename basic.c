@@ -382,8 +382,7 @@ setmark (int f, int n, int k)
 {
   if (f == FALSE)
     {
-      curwp->w_mark = curwp->w_dot;
-      pushring (&curwp->w_ring, curwp->w_mark);
+      pushmark (curwp->w_dot);
       if (kbdmop == NULL)
 	eprintf ("[Mark set]");
     }
@@ -394,8 +393,7 @@ setmark (int f, int n, int k)
 	  eprintf ("No mark in this window");
 	  return (FALSE);
 	}
-      curwp->w_dot = popring (&curwp->w_ring);
-      curwp->w_mark = topring (&curwp->w_ring);
+      curwp->w_dot = popmark ();
       curwp->w_flag |= WFMOVE;
     }
   return (TRUE);

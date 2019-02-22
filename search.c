@@ -432,11 +432,6 @@ backsrch (void)
 
   lastline = curbp->b_linep;
   epp = patlen - 1;
-#if 0
-  for (epp = 0; pat[epp] != 0; epp++)
-    ;
-  --epp;
-#endif
   clp = curwp->w_dot.p;
   cbo = curwp->w_dot.o;
   cptr = wlgetcptr (clp, cbo);

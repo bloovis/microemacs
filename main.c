@@ -378,9 +378,7 @@ bufinit (const char *fname)
       wp->w_linep = bp->b_linep;
       wp->w_dot.p = bp->b_linep;
       wp->w_dot.o = 0;
-      wp->w_mark.p = NULL;
-      wp->w_mark.o = 0;
-      clearring (&wp->w_ring);
+      clearmarks (&wp->w_ring);
       wp->w_force = 0;
       wp->w_flag = WFMODE | WFHARD;	/* Full.                */
       wp->w_leftcol = 0;	/* Display at left edge */

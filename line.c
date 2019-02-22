@@ -204,17 +204,24 @@ lchange (int flag)
 }
 
 /*
- * Adjust line position *pos to account for an insertion of nchars characters
+ * Adjust line positions in wp->w_ring to account for an insertion of nchars characters
  * at position *oldpos, where newlp is the line that replaced oldpos.p.
  */
 static void
-adjustforinsert (const POS *oldpos, LINE *newlp, int nchars, POS *pos)
+adjustforinsert (const POS *oldpos, LINE *newlp, int nchars, EWINDOW *wp)
 {
-  if (pos->p == oldpos->p)
+  int i;
+
+  for (i = 0; i < wp->w_ring.m_count; i++)
     {
-      pos->p = newlp;
-      if (pos->o > oldpos->o)
-	pos->o += nchars;
+      POS *pos = &wp->w_ring.m_ring[i];
+
+      if (pos->p == oldpos->p)
+	{
+	  pos->p = newlp;
+	  if (pos->o > oldpos->o)
+	    pos->o += nchars;
+	}
     }
 }
 
@@ -330,7 +337,7 @@ linsert (int n, int c, char *s)
 	if (wp == curwp || wp->w_dot.o > dot.o)
 	  wp->w_dot.o += chars;
       }
-    adjustforinsert (&dot, lp2, chars, &wp->w_mark);
+    adjustforinsert (&dot, lp2, chars, wp);
   }
   return (TRUE);
 }
@@ -376,14 +383,26 @@ insertwithnl (const char *s, int len)
  * part of line pos.p.
  */
 static void
-adjustfornewline (const POS *oldpos, LINE *newlp, POS *pos)
+adjustfornewline (const POS *oldpos, LINE *newlp, EWINDOW *wp)
 {
-  if (pos->p == oldpos->p)
+  int i;
+
+  for (i = 0; i <= wp->w_ring.m_count; i++)
     {
-      if (pos->o < oldpos->o)
-	pos->p = newlp;
+      POS *pos;
+
+      if (i == wp->w_ring.m_count)
+	pos = &wp->w_dot;
       else
-	pos->o -= oldpos->o;
+	pos = &wp->w_ring.m_ring[i];
+
+      if (pos->p == oldpos->p)
+	{
+	  if (pos->o < oldpos->o)
+	    pos->p = newlp;
+	  else
+	    pos->o -= oldpos->o;
+	}
     }
 }
 
@@ -438,8 +457,7 @@ lnewline (void)
       wp->w_savep = lp2;
     dot.p = lp1;
     dot.o = doto;
-    adjustfornewline (&dot, lp2, &wp->w_dot);
-    adjustfornewline (&dot, lp2, &wp->w_mark);
+    adjustfornewline (&dot, lp2, wp);
   }
   return (TRUE);
 }
@@ -449,15 +467,27 @@ lnewline (void)
  * at position *oldpos.
  */
 static void
-adjustfordelete (POS *oldpos, int nchars, POS *pos)
+adjustfordelete (POS *oldpos, int nchars, EWINDOW *wp)
 {
-  if (pos->p == oldpos->p && pos->o >= oldpos->o)
+  int i;
+
+  for (i = 0; i <= wp->w_ring.m_count; i++)
     {
-      int o = pos->o - nchars;
-      if (o < oldpos->o)
-	pos->o = oldpos->o;
+      POS *pos;
+
+      if (i == wp->w_ring.m_count)
+	pos = &wp->w_dot;
       else
-	pos->o = o;
+	pos = &wp->w_ring.m_ring[i];
+
+      if (pos->p == oldpos->p && pos->o >= oldpos->o)
+	{
+	  int o = pos->o - nchars;
+	  if (o < oldpos->o)
+	    pos->o = oldpos->o;
+	  else
+	    pos->o = o;
+	}
     }
 }
 
@@ -528,8 +558,7 @@ ldelete (int n, int kflag)
       dot.p->l_used -= bytes;
       ALLWIND (wp)
       {				/* Fix windows          */
-	adjustfordelete (&dot, chars, &wp->w_dot);
-	adjustfordelete (&dot, chars, &wp->w_mark);
+	adjustfordelete (&dot, chars, wp);
       }
       n -= chars;
     }
@@ -541,14 +570,26 @@ ldelete (int n, int kflag)
  * old lines lp1 and lp2, forming a new line newlp.
  */
 static void
-adjustfordelnewline (LINE *lp1, LINE *lp2, LINE *newlp, POS *pos)
+adjustfordelnewline (LINE *lp1, LINE *lp2, LINE *newlp, EWINDOW *wp)
 {
-  if (pos->p == lp1)
-    pos->p = newlp;
-  else if (pos->p == lp2)
+  int i;
+
+  for (i = 0; i <= wp->w_ring.m_count; i++)
     {
-      pos->p = newlp;
-      pos->o += lp1->l_used;
+      POS *pos;
+
+      if (i == wp->w_ring.m_count)
+	pos = &wp->w_dot;
+      else
+	pos = &wp->w_ring.m_ring[i];
+
+      if (pos->p == lp1)
+	pos->p = newlp;
+      else if (pos->p == lp2)
+	{
+	  pos->p = newlp;
+	  pos->o += lp1->l_used;
+	}
     }
 }
 
@@ -616,8 +657,7 @@ ldelnewline (void)
       wp->w_linep = lp3;
     if (wp->w_savep == lp1 || wp->w_savep == lp2)
       wp->w_savep = lp3;
-    adjustfordelnewline(lp1, lp2, lp3, &wp->w_dot);
-    adjustfordelnewline(lp1, lp2, lp3, &wp->w_mark);
+    adjustfordelnewline(lp1, lp2, lp3, wp);
   }
   free ((char *) lp1);
   free ((char *) lp2);
@@ -721,8 +761,8 @@ lreplace (
   saveundo (UMOVE, &curwp->w_dot);
 
   /*
-   * do the replacement:  If was capital, then place first 
-   * char as if upper, and subsequent chars as if lower.  
+   * do the replacement:  If was capital, then place first
+   * char as if upper, and subsequent chars as if lower.
    * If inserting upper, check replacement for case.
    */
   end = st + strlen (st);

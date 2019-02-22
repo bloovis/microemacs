@@ -40,10 +40,12 @@ static POS nullpos = { NULL, 0 };
  * a mark with a null line pointer is returned and the stack pointer
  * is not moved.
  */
-POS popring (MARKRING *ring)
+POS
+popmark (void)
 {
   POS top;
   int i, count;
+  MARKRING *ring = &curwp->w_ring;
 
   /* Check for empty stack. */
   count = ring->m_count;
@@ -61,25 +63,14 @@ POS popring (MARKRING *ring)
 }
 
 /*
- * Return the top mark of the stack without popping it.
+ * Push a mark onto the current window's mark stack.
+ * If the stack is full, reuse the oldest mark.
  */
-POS topring (MARKRING *ring)
-{
-  /* Check for empty stack. */
-  if (ring->m_count == 0)
-    return nullpos;
-
-  /* Return top stack item. */
-  return ring->m_ring[0];
-}
-
-/*
- * Push a mark onto the stack.  If there the stack is full, reuse the
- * oldest mark.
- */
-void pushring (MARKRING *ring, POS pos)
+void
+pushmark (POS pos)
 {
   int i, count;
+  MARKRING *ring = &curwp->w_ring;
 
   if (pos.p == NULL)
     return;
@@ -100,7 +91,8 @@ void pushring (MARKRING *ring, POS pos)
 /*
  * Clear a mark ring.
  */
-void clearring (MARKRING *ring)
+void
+clearmarks (MARKRING *ring)
 {
   int i;
 

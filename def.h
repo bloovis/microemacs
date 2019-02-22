@@ -331,7 +331,8 @@ typedef struct POS
 } POS;
 
 /*
- * A mark ring saves the 16 most recent locations of the mark.
+ * A mark ring saves the 16 most recent locations of the mark;
+ * m_ring[0] is the current mark.
  */
 #define RINGSIZE 16
 typedef struct MARKRING
@@ -354,7 +355,6 @@ typedef struct BUFFER
 {
   struct BUFFER *b_bufp;	/* Link to next BUFFER          */
   struct POS b_dot;		/* The "." (dot) position	*/
-  struct POS b_mark;		/* The "mark" position		*/
   struct MARKRING b_ring;	/* Mark ring			*/
   struct LINE *b_linep;		/* Link to the header LINE      */
   struct UNDOSTACK *b_undo;	/* Pointer to undo stack	*/
@@ -365,6 +365,8 @@ typedef struct BUFFER
   char b_bname[NBUFN];		/* Buffer name                  */
 }
 BUFFER;
+
+#define b_mark b_ring.m_ring[0] /* Current "mark" position	*/
 
 #define BFCHG	0x01		/* Changed.                     */
 #define BFBAK	0x02		/* Need to make a backup.       */
@@ -386,7 +388,6 @@ typedef struct EWINDOW
   struct BUFFER *w_bufp;	/* Buffer displayed in window   */
   struct LINE *w_linep;		/* Top line in the window       */
   struct POS w_dot;		/* The "." (dot) position	*/
-  struct POS w_mark;		/* The "mark" position		*/
   struct MARKRING w_ring;	/* Mark ring			*/
   struct LINE *w_savep;		/* save line pointer for search */
   short w_toprow;		/* Origin 0 top row of window   */
@@ -396,6 +397,8 @@ typedef struct EWINDOW
   int w_leftcol;		/* left column of window        */
 }
 EWINDOW;
+
+#define w_mark w_ring.m_ring[0] /* Current "mark" position	*/
 
 /*
  * Window flags are set by command processors to
@@ -820,10 +823,9 @@ int getregion (REGION *rp);		/* Get current region bounds.	*/
 /*
  * Defined "ring.c".
  */
-POS popring (MARKRING *ring);
-POS topring (MARKRING *ring);
-void pushring (MARKRING *ring, POS pos);
-void clearring (MARKRING *ring);
+POS popmark (void);
+void pushmark (POS pos);
+void clearmarks (MARKRING *ring);
 
 /*
  * Defined by "search.c".

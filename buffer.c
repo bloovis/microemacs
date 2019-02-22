@@ -517,9 +517,7 @@ bcreate (const char *bname)
   bp->b_bufp = NULL;
   bp->b_dot.p = lp;
   bp->b_dot.o = 0;
-  bp->b_mark.p = NULL;
-  bp->b_mark.o = 0;
-  clearring(&bp->b_ring);
+  clearmarks (&bp->b_ring);
   bp->b_flag = rflag ? BFRO : 0;
   bp->b_nwnd = 0;
   bp->b_linep = lp;
