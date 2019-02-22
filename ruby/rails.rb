@@ -6,6 +6,10 @@
 require 'rubygems'
 require 'active_support/inflector'
 
+# Walk up the directory tree looking for the root directory
+# of the Rails project.  Return that directory name if found,
+# or nil if not found within five directories up.
+
 def findroot
   tries = 0
   root = "."
@@ -25,6 +29,9 @@ def findroot
   return nil
 end
 
+# Scan backwards looking for the start of method, and if found,
+# return its name; otherwise, return nil.
+
 def findmethod
   name = nil
   old_lineno = $lineno
@@ -42,6 +49,9 @@ def findmethod
   return name
 end
 
+# Scan backwards for the start of a class, and if found,
+# return the class name; otherwise, return nil.
+
 def findclass
   name = nil
   old_lineno = $lineno
@@ -58,6 +68,9 @@ def findclass
   $offset = old_offset
   return name
 end
+
+# Load the file containing the view for the current class
+# and method.
 
 def loadview(n)
   klass = n.nil? ? findclass : nil
@@ -86,6 +99,8 @@ def loadview(n)
   end
 end
 
+# Load the file containing the model for the current class.
+
 def loadmodel(n)
   klass = n.nil? ? findclass : nil
   if klass.nil?
@@ -105,6 +120,8 @@ def loadmodel(n)
     return EFALSE
   end
 end
+
+# Load the file containing the controller for the current class.
 
 def loadcontroller(n)
   klass = n.nil? ? findclass : nil
