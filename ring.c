@@ -36,9 +36,9 @@
 static POS nullpos = { NULL, 0 };
 
 /*
- * Pop a mark off of the stack.  If there are no more marks to pop,
- * a mark with a null line pointer is returned and the stack pointer
- * is not moved.
+ * Fetch the most recent mark from the ring, move it to the end of
+ * the ring, and return it to the caller.  If the ring is empty,
+ * return a mark with a null line pointer.
  */
 POS
 popmark (void)
@@ -47,12 +47,12 @@ popmark (void)
   int i, count;
   MARKRING *ring = &curwp->w_ring;
 
-  /* Check for empty stack. */
+  /* Check for empty ring. */
   count = ring->m_count;
   if (count == 0)
     return nullpos;
 
-  /* Rotate the stack. */
+  /* Rotate the ring. */
   top = ring->m_ring[0];
   for (i = 0; i < count - 1; i++)
     ring->m_ring[i] = ring->m_ring[i + 1];
@@ -63,8 +63,8 @@ popmark (void)
 }
 
 /*
- * Push a mark onto the current window's mark stack.
- * If the stack is full, reuse the oldest mark.
+ * Push a mark onto the current window's mark ring.
+ * If the ring is full, reuse the oldest mark.
  */
 void
 pushmark (POS pos)
@@ -75,12 +75,12 @@ pushmark (POS pos)
   if (pos.p == NULL)
     return;
 
-  /* Check for full stack. */
+  /* Check for full ring. */
   if (ring->m_count < RINGSIZE)
     ring->m_count++;
   count = ring->m_count;
 
-  /* Make room on the stack for a new item. */
+  /* Make room on the ring for a new item. */
   for (i = count - 1; i > 0; i--)
     ring->m_ring[i] = ring->m_ring[i - 1];
 

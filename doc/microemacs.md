@@ -681,13 +681,16 @@ C-@,C-space,M-space
     operated on by a region command\index{Region} such as **C-W**\index{C-W}.
     You can also use this command to mark
     current location so it can be returned to later by **C-X C-X**.
+    This command also pushes the new value of the mark onto a 16-entry
+    ring of marks\index{mark ring} for the current window.
 
-    This command also pushes the previous mark (if any) onto a 16-entry
-    ring of marks for the current window.  If you precede this command
-    with any argument (i.e., precede it with a **C-U**), instead of setting the current mark,
-    it will set the dot to the most recent mark that was stored in the ring.
+    If you precede this command
+    with an argument (i.e., precede it with a **C-U**),
+    it sets the dot to the most recent mark that was stored in the ring,
+    and moves that mark to the end of the ring.  It also sets the mark to the next most recent
+    mark in the ring, if any.
     By repeatedly using this command with an argument, you can cycle through
-    the entire ring of marks.
+    the entire ring of marks, returning to those marked locations in sequence.
 
 C-X C-X
 
