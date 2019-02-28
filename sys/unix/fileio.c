@@ -435,6 +435,9 @@ ffisdir (
 char *
 fftilde (char *arg)
 {
+#ifdef MINGW
+  return "";
+#else
   char *user, *tail;
   struct passwd *pw;
   static char buf[1024];
@@ -477,6 +480,7 @@ fftilde (char *arg)
   strcpy (buf, pw->pw_dir);
   strcat (buf, tail);
   return buf;
+#endif
 }
 
 /*
@@ -485,6 +489,9 @@ fftilde (char *arg)
 const char *
 ffexedir (void)
 {
+#ifdef MINGW
+  return "";
+#else
   int len;
   static char path[NFILEN];
   char *p;
@@ -506,4 +513,5 @@ ffexedir (void)
   else
     path[0] = '\0';
   return path;
+#endif
 }

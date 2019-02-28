@@ -220,7 +220,9 @@ KEY key[] = {
   {KCTLX | 'F',		readprofile,	"read-profile"},
   {KCTLX | 'G',		gotoline,	"goto-line"},
   {KCTLX | 'H',		checkheap,	"check-heap"},
+#ifndef MINGW
   {KCTLX | 'I',		spellregion,	"spell-region"},
+#endif
   {KCTLX | 'K',		killbuffer,	"kill-buffer"},
   {KCTLX | 'M',		railsmodel,	"rails-model"},
   {KCTLX | 'N',		nextwind,	"forw-window"},
@@ -256,7 +258,9 @@ KEY key[] = {
   {KMETA | '+',		indentregion,	"indent-region"},
   {KMETA | '/',		regrepl,	"reg-replace"},
   {KMETA | '?',		regqueryrepl,	"reg-query-replace"},
+#ifndef MINGW
   {KMETA | '$',		spellword,	"spell-word"},
+#endif
   {KMETA | 'B',		backword,	"back-word"},
   {KMETA | 'C',		capword,	"cap-word"},
   {KMETA | 'D',		delfword,	"forw-del-word"},

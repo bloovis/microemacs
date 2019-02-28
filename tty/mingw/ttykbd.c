@@ -35,7 +35,7 @@ char	*keystrings[32] = {
 	"F6",		"F7",		"F8",		"F9",
 	"F10",		"S-F1",		"S-F2",		"S-F3",
 	"S-F4",		"S-F5",		"S-F6",		"S-F7",
-	"S-F8",		"S-F9",		"S-F10",	NULL
+	"S-F8",		"S-F9",		"F11",		"F12"
 };
 
 /*
@@ -54,7 +54,7 @@ int	specmap[32] = {
 	0x140,		0x141,		0x142,		0x143,
 	0x144,		0x154,		0x155,		0x156,
 	0x157,		0x158,		0x159,		0x15a,
-	0x15b,		0x15c,		0x15d,		0
+	0x15b,		0x15c,		0x185,		0x186
 };
 
 /* This table gives the values of the special function keys when modified
