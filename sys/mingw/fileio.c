@@ -1,6 +1,6 @@
 /* $Header: /home/bloovis/cvsroot/pe/nt/fileio.c,v 1.1 2003-11-06 02:51:52 bloovis Exp $
  * Name:	MicroEMACS
- *		OS/2 file I/O.
+ *		Win32 file I/O.
  * Version:	29
  * By:		Mark Alexander
  *		drivax!alexande

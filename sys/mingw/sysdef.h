@@ -1,7 +1,7 @@
 /* $Header: /home/bloovis/cvsroot/pe/nt/sysdef.h,v 1.1 2003-11-06 02:51:52 bloovis Exp $
  *
  * Name:	MicroEMACS
- *		OS/2 system header file.
+ *		Win32 system header file.
  * By:		Mark Alexander
  *		alexande@borland.com
  *
@@ -29,5 +29,3 @@
 #define BDC0	':'                     /* Buffer names.                */
 #define BDC1	'\\'
 #define BDC2	'/'
-
-#define OS2_SAFE			/* Don't hang on OS/2		*/
