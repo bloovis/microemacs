@@ -1,9 +1,9 @@
 /* $Header: /home/bloovis/cvsroot/pe/nt/tty.c,v 1.1 2003-11-06 02:51:52 bloovis Exp $
  *
  * Name:        MicroEMACS
- *              OS/2 80x25 to 80x50 text-mode display
- * By:      Mark Alexander
- *              alexande@borland.com
+ *              Win32 display
+ * By:          Mark Alexander
+ *              marka@pobox.com
  *
  * $Log: tty.c,v $
  * Revision 1.1  2003-11-06 02:51:52  bloovis

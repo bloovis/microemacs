@@ -47,8 +47,6 @@ static DWORD  houtmode;
 /*
  * Initialization.
  * Set up the video system, and set the keyboard to binary mode.
- * Apparently, OS/2 doesn't allow control-BREAK to be disabled
- * when the keyboard is in binary mode, using signal.
  */
 void ttopen()
 {
