@@ -3371,6 +3371,7 @@ x86_64*linux*)	DEFINES="$DEFINES -DLINUX";
 *solaris*)	DEFINES="$DEFINES -DSOLARIS"; EXTRA_OBJS=bcopy.o;
                 bcopy=bcopy.s ;;
 *cygwin)	DEFINES="$DEFINES -DCYGWIN" ;;
+*mingw*)	DEFINES="$DEFINES -DMINGW" ;;
 *)		DEFINES="$DEFINES -DUNKNOWN" ;;
 esac
 echo host is ${host}
@@ -3413,6 +3414,12 @@ else
 
 fi
 
+
+case "${host}" in
+*mingw*)	ttydir=tty/mingw;
+		sysdir=sys/mingw;
+		LIBS="" ;;
+esac
 
 # Set the default compiler switches based on the --enable-debug option
 

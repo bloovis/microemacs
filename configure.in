@@ -19,12 +19,12 @@ x86_64*linux*)	DEFINES="$DEFINES -DLINUX";
 *solaris*)	DEFINES="$DEFINES -DSOLARIS"; EXTRA_OBJS=bcopy.o;
                 bcopy=bcopy.s ;;
 *cygwin)	DEFINES="$DEFINES -DCYGWIN" ;;
+*mingw*)	DEFINES="$DEFINES -DMINGW" ;;
 *)		DEFINES="$DEFINES -DUNKNOWN" ;;
 esac
 echo host is ${host}
 
-dnl Hard-code the system and tty directories for now; eventually
-dnl we might have different ones depending on target platform.
+dnl Set system and tty directories based on arguments.
 AC_ARG_WITH(linux,
 [  --with-linux            Use Linux-specific instead of generic UNIX I/O],
 [sysdir=sys/linux],
@@ -49,6 +49,14 @@ LIBS="$LIBS -ldl"],
 [CFLAGS_RUBY=""
 ])
 
+dnl Set host-specific system and tty directories
+case "${host}" in
+*mingw*)	ttydir=tty/mingw;
+		sysdir=sys/mingw;
+		LIBS="" ;;
+esac
+
+dnl we might have different ones depending on target platform.
 # Set the default compiler switches based on the --enable-debug option
 
 AC_ARG_ENABLE(debug,
