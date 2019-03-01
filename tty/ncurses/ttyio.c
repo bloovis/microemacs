@@ -177,8 +177,9 @@ ttdelc (void)
 
 /*
  * Write multiple characters to the display.
- * Use this entry point to optimization on some systems.
- * Here we just call ttputc.
+ * Use this entry point to do optimization on some systems.
+ * Here we use the wide character functions of curses
+ * so that Unicode characters will be displayed correctly.
  */
 void
 ttputs (const wchar_t *buf, int size)
