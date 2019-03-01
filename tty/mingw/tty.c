@@ -263,7 +263,7 @@ void putline(int row, int col, const wchar_t *buf)
     /* Copy the text into a char/attribute buffer. */
     for (i = 0; i < size.X; i++)
     {
-        cinfo[i].Char.AsciiChar = *buf++;
+        cinfo[i].Char.UnicodeChar = *buf++;
         cinfo[i].Attributes = ttattr;
     }
 
@@ -272,5 +272,5 @@ void putline(int row, int col, const wchar_t *buf)
     region.Left = windowcol + col;
     region.Right = windowcol + ncol - 1;
     region.Top = region.Bottom = windowrow + row;
-    WriteConsoleOutput(hout, cinfo, size, coord, &region);
+    WriteConsoleOutputW(hout, cinfo, size, coord, &region);
 }

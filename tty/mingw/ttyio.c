@@ -114,9 +114,9 @@ ttgetc(void)
     else
         return (ch);
 #else
-    if ((ch = getch()) == 0 || ch == 0xe0)	/* extended key */
+    if ((ch = _getch()) == 0 || ch == 0xe0)	/* extended key */
     {
-	if ((ch = getch()) == 3)	/* null? */
+	if ((ch = _getch()) == 3)	/* null? */
 	    return 0;			/* convert to 0 */
 	else
 	    return (ch + 0x100);	/* flag this as extended key */
