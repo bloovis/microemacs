@@ -1803,9 +1803,14 @@ C-L
 
     This command clears the screen, and completely redisplays all
     of the text is all of the windows. It is useful if a line error has garbaged
-    your screen. If you give **C-L** an argument
-    (any value will do) it will re-center
-    dot in the current window as well.
+    your screen.
+
+    If you give **C-L** an argument, it will attempt to split the
+    screen vertically into that number of side-by-side pages.  This has the effect
+    of giving you a screen that has more rows but fewer columns than normal.
+    To restore the screen to normal, give an argument of 1.
+    Currently this feature only works with the ncurses display code;
+    see [**Building on Linux**](#building-on-linux).
 
 C-X 2
 
