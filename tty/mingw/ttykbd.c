@@ -1,25 +1,22 @@
-/* $Header: /home/bloovis/cvsroot/pe/nt/ttykbd.c,v 1.1 2003-11-06 02:51:52 bloovis Exp $
- *
- * Name:	MicroEMACS
- * 		IBM PC Keyboard
- * Version:	1
- * By:		Mark Alexander
- *		drivax!alexande
- *
- * $Log: ttykbd.c,v $
- * Revision 1.1  2003-11-06 02:51:52  bloovis
- * Initial revision
- *
- * Revision 1.1  2001/04/19 20:26:08  malexander
- * New files for NT version of MicroEMACS.
- *
- * Revision 1.2  91/04/19  23:04:40  alexande
- * Bind Insert key to new set-overstrike function.
- * 
- * Revision 1.1  91/04/19  23:02:44  alexande
- * Initial revision
- * 
- */
+/*
+    Copyright (C) 2019 Mark Alexander
+
+    This file is part of MicroEMACS, a small text editor.
+
+    MicroEMACS is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+*/
+
 #include	"def.h"
 
 /*
@@ -116,36 +113,36 @@ int alt09[10] =
  * ALT-Z are mapped to META-A through META-Z.
  */
 int
-getkbd(void)
+getkbd (void)
 {
-	register int	c;
-	register int	i;
+  register int	c;
+  register int	i;
 
-	c = ttgetc();
-	if (c < 0x100)				/* normal key?		*/
-		return (c);			/* just return it	*/
+  c = ttgetc ();
+  if (c < 0x100)				/* normal key?		*/
+	  return (c);			/* just return it	*/
 
-	for (i = 0; i < 32; i++)		/* search SPECIAL map	*/
-		if (c == specmap[i])		/* found it?		*/
-			return (KFIRST + i);	/* return internal code */
+  for (i = 0; i < 32; i++)		/* search SPECIAL map	*/
+    if (c == specmap[i])		/* found it?		*/
+      return (KFIRST + i);	/* return internal code */
 
-	for (i = 0; i < 21; i++)		/* search ALT map	*/
-		if (c == altmap[i])
-			return (KMETA | (KFIRST + i));
+  for (i = 0; i < 21; i++)		/* search ALT map	*/
+    if (c == altmap[i])
+      return (KMETA | (KFIRST + i));
 
-	for (i = 0; i < 21; i++)		/* search CTRL map	*/
-		if (c == ctrlmap[i])
-			return (KCTRL | (KFIRST + i));
+  for (i = 0; i < 21; i++)		/* search CTRL map	*/
+    if (c == ctrlmap[i])
+      return (KCTRL | (KFIRST + i));
 
-	for (i = 0; i < 26; i++)		/* search ALT A-Z map	*/
-		if (c == altaz[i])
-			return (KMETA | (i + 'A'));
+  for (i = 0; i < 26; i++)		/* search ALT A-Z map	*/
+    if (c == altaz[i])
+      return (KMETA | (i + 'A'));
 
-	for (i = 0; i < 10; i++)		/* search ALT 0-9 map	*/
-		if (c == alt09[i])
-			return (KMETA | (i + '0'));
+  for (i = 0; i < 10; i++)		/* search ALT 0-9 map	*/
+    if (c == alt09[i])
+      return (KMETA | (i + '0'));
 
-	return (KRANDOM);			/* not found		*/
+  return (KRANDOM);			/* not found		*/
 }
 
 /*
@@ -156,49 +153,52 @@ getkbd(void)
  * As is the case of all the keymap routines, errors
  * are very fatal.
  */
-void ttykeymapinit()
+void
+ttykeymapinit (void)
 {
-	register SYMBOL	*sp;
-	register int	i;
+  register SYMBOL	*sp;
+  register int	i;
 
-	keydup(KUP,		"back-line");
-	keydup(KDOWN,		"forw-line");
-	keydup(KLEFT,		"back-char");
-	keydup(KRIGHT,		"forw-char");
-	keydup(KCTRL|KLEFT,	"back-word");
-	keydup(KCTRL|KRIGHT,	"forw-word");
-	keydup(KPGUP,		"back-page");
-	keydup(KPGDN,		"forw-page");
-	keydup(KCTRL|KPGUP,	"up-window");
-	keydup(KCTRL|KPGDN,	"down-window");
-	keydup(KHOME,		"goto-bol");
-	keydup(KEND,		"goto-eol");
-	keydup(KCTRL|KHOME,	"goto-bob");
-	keydup(KCTRL|KEND,	"goto-eob");
-	keydup(KINS,		"set-overstrike");
-	keydup(KDEL,		"forw-del-char");
-	keydup(KF1,		"help");
-	keydup(KF2,		"file-save");
-	keydup(KF3,		"file-visit");
-	keydup(KF4,		"quit");
-	keydup(KF5,		"undo");
-	keydup(KF6,		"display-buffers");
-	keydup(KF7,		"redo");
-	keydup(KF8,		"forw-buffer");
-	keydup(KF9,		"search-again");
-	keydup(KF10,		"only-window");
-	/*
-	 * Bind all GR positions that correspond
-	 * to assigned characters in the IBM PC special
-	 * character set to "ins-self". These characters may
-	 * be used just like any other character.
-	 */
+  keydup (KUP,		"back-line");
+  keydup (KDOWN,	"forw-line");
+  keydup (KLEFT,	"back-char");
+  keydup (KRIGHT,	"forw-char");
+  keydup (KCTRL|KLEFT,	"back-word");
+  keydup (KCTRL|KRIGHT,	"forw-word");
+  keydup (KPGUP,	"back-page");
+  keydup (KPGDN,	"forw-page");
+  keydup (KCTRL|KPGUP,	"up-window");
+  keydup (KCTRL|KPGDN,	"down-window");
+  keydup (KHOME,	"goto-bol");
+  keydup (KEND,		"goto-eol");
+  keydup (KCTRL|KHOME,	"goto-bob");
+  keydup (KCTRL|KEND,	"goto-eob");
+  keydup (KINS,		"set-overstrike");
+  keydup (KDEL,		"forw-del-char");
+  keydup (KF1,		"help");
+  keydup (KF2,		"file-save");
+  keydup (KF3,		"file-visit");
+  keydup (KF4,		"quit");
+  keydup (KF5,		"undo");
+  keydup (KF6,		"display-buffers");
+  keydup (KF7,		"redo");
+  keydup (KF8,		"forw-buffer");
+  keydup (KF9,		"search-again");
+  keydup (KF10,		"only-window");
 
-	if ((sp=symlookup("ins-self")) == NULL)
-		abort();
-	for (i=0xA0; i<0xFF; ++i) {
-		if (getbinding (i) != NULL)
-			abort();
-		setbinding (i, sp);
-	}
+  /*
+   * Bind all GR positions that correspond
+   * to assigned characters in the IBM PC special
+   * character set to "ins-self". These characters may
+   * be used just like any other character.
+   */
+
+  if ((sp=symlookup ("ins-self")) == NULL)
+    abort ();
+  for (i = 0xA0; i < 0xFF; ++i)
+    {
+      if (getbinding (i) != NULL)
+	abort ();
+      setbinding (i, sp);
+    }
 }

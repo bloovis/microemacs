@@ -71,7 +71,7 @@ setttysize (void)
 void
 ttopen (void)
 {
-  setlocale(LC_ALL, "");
+  setlocale (LC_ALL, "");
   tcgetattr (0, &oldtty);
   initscr ();			/* initialize the curses library */
   keypad (stdscr, TRUE);	/* enable keyboard mapping */
@@ -90,7 +90,8 @@ ttopen (void)
  * FALSE otherwise.
  */
 
-int ttold (void)
+int
+ttold (void)
 {
   return tcsetattr (0, TCSANOW, &oldtty) >= 0;
 }
@@ -102,7 +103,8 @@ int ttold (void)
  * FALSE otherwise.
  */
 
-int ttnew (void)
+int
+ttnew (void)
 {
   return tcsetattr (0, TCSANOW, &newtty) >= 0;
 }
@@ -143,7 +145,7 @@ ttputc (int c)
 
   wch[0] = c;
   wch[1] = 0;
-  setcchar(&wcval, wch, 0, 0, NULL);
+  setcchar (&wcval, wch, 0, 0, NULL);
   add_wch (&wcval);
   return c;
 }
@@ -160,7 +162,7 @@ ttinsertc (int c)
 
   wch[0] = c;
   wch[1] = 0;
-  setcchar(&wcval, wch, 0, 0, NULL);
+  setcchar (&wcval, wch, 0, 0, NULL);
   ins_wch (&wcval);
   return c;
 }
@@ -208,10 +210,10 @@ ttputs (const wchar_t *buf, int size)
 	    }
 	  wch[1] = 0;
 	}
-      setcchar(&wcval[wsize], wch, 0, 0, NULL);
+      setcchar (&wcval[wsize], wch, 0, 0, NULL);
       ++wsize;
     }
-  add_wchnstr(wcval, wsize);
+  add_wchnstr (wcval, wsize);
 }
 
 /*

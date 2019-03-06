@@ -1,19 +1,21 @@
-/* $Header: /home/bloovis/cvsroot/pe/nt/ttyio.c,v 1.1 2003-11-06 02:51:52 bloovis Exp $
- *
- * Name:    MicroEMACS
- *      WIN32 text mode I/O.
- * Modified by: Mark Alexander
- *      marka@pobox.com
- *
- * $Log: ttyio.c,v $
- * Revision 1.1  2003-11-06 02:51:52  bloovis
- * Initial revision
- *
- * Revision 1.1  2001/04/19 20:26:08  malexander
- * New files for NT version of MicroEMACS.
- *
- *
- */
+/*
+    Copyright (C) 2019 Mark Alexander
+
+    This file is part of MicroEMACS, a small text editor.
+
+    MicroEMACS is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+*/
 
 #include <excpt.h>
 #if 0
@@ -48,54 +50,57 @@ static DWORD  houtmode;
  * Initialization.
  * Set up the video system, and set the keyboard to binary mode.
  */
-void ttopen()
+void
+ttopen (void)
 {
-    CONSOLE_SCREEN_BUFFER_INFO binfo;
-    CONSOLE_CURSOR_INFO cinfo;
+  CONSOLE_SCREEN_BUFFER_INFO binfo;
+  CONSOLE_CURSOR_INFO cinfo;
 
-    /* Get handles for console output and input
-     */
-    hout = GetStdHandle(STD_OUTPUT_HANDLE);
-    hin =  GetStdHandle(STD_INPUT_HANDLE);
+  /* Get handles for console output and input
+   */
+  hout = GetStdHandle (STD_OUTPUT_HANDLE);
+  hin =  GetStdHandle (STD_INPUT_HANDLE);
 
-    /* Save current keyboard mode, then disable line editing.
-     */
-    GetConsoleMode(hin, &hinmode);
-    SetConsoleMode(hin, 0);         /* disable line mode */
+  /* Save current keyboard mode, then disable line editing.
+   */
+  GetConsoleMode (hin, &hinmode);
+  SetConsoleMode (hin, 0);         /* disable line mode */
 
-    /* Save current console output mode.
-     */
-    GetConsoleMode(hout, &houtmode);
+  /* Save current console output mode.
+   */
+  GetConsoleMode (hout, &houtmode);
 
-    /* Get screen size.
-     */
-    if (GetConsoleScreenBufferInfo(hout, &binfo) == TRUE)
+  /* Get screen size.
+   */
+  if (GetConsoleScreenBufferInfo (hout, &binfo) == TRUE)
     {
-	windowrow = binfo.srWindow.Top;
-	windowcol = binfo.srWindow.Left;
-        nrow = binfo.srWindow.Bottom - windowrow + 1;
-        ncol = binfo.srWindow.Right  - windowcol + 1;
+      windowrow = binfo.srWindow.Top;
+      windowcol = binfo.srWindow.Left;
+      nrow = binfo.srWindow.Bottom - windowrow + 1;
+      ncol = binfo.srWindow.Right  - windowcol + 1;
     }
 
-    /* Set block cursor
-     */
-    cinfo.dwSize = 100;     /* make it 100% visible */
-    cinfo.bVisible = TRUE;
-    SetConsoleCursorInfo(hout, &cinfo);
+  /* Set block cursor
+   */
+  cinfo.dwSize = 100;     /* make it 100% visible */
+  cinfo.bVisible = TRUE;
+  SetConsoleCursorInfo (hout, &cinfo);
 }
 
 /*
  * Restore video system, control-break flag.
  */
-void ttclose()
+void
+ttclose (void)
 {
-    SetConsoleMode(hin, hinmode);
+  SetConsoleMode (hin, hinmode);
 }
 
 /*
  * No operation in MS-DOS.
  */
-void ttflush()
+void
+ttflush (void)
 {
 }
 
@@ -103,26 +108,26 @@ void ttflush()
  * Read character.
  */
 int
-ttgetc(void)
+ttgetc (void)
 {
-    int ch;
+  int ch;
 #if 0
-    DWORD nread;
+  DWORD nread;
 
-    if (ReadFile(hin, &ch, 1, &nread, NULL) != TRUE)
-        exit(3);
-    else
-        return (ch);
+  if (ReadFile (hin, &ch, 1, &nread, NULL) != TRUE)
+    exit (3);
+  else
+    return (ch);
 #else
-    if ((ch = _getch()) == 0 || ch == 0xe0)	/* extended key */
+  if ((ch = _getch ()) == 0 || ch == 0xe0)	/* extended key */
     {
-	if ((ch = _getch()) == 3)	/* null? */
-	    return 0;			/* convert to 0 */
-	else
-	    return (ch + 0x100);	/* flag this as extended key */
+      if ((ch = _getch ()) == 3)	/* null? */
+	return 0;			/* convert to 0 */
+      else
+	return (ch + 0x100);	/* flag this as extended key */
     }
-    else
-	return (ch);			/* normal key */
+  else
+    return (ch);			/* normal key */
 #endif
 }
 
@@ -131,14 +136,14 @@ ttgetc(void)
  * Return TRUE if a key is already in the queue.
  */
 int
-ttstat(void)
+ttstat (void)
 {
 #if 0
-    KBDKEYINFO  kinfo;
+  KBDKEYINFO  kinfo;
 
-    return (KbdPeek(&kinfo,0) == 0);
+  return (KbdPeek (&kinfo,0) == 0);
 #else
-    return 0;
+  return 0;
 #endif
 }
 
@@ -155,7 +160,7 @@ ttinsertc (int c)
   COORD dst;
   static CHAR_INFO fill;
 
-  if (!GetConsoleScreenBufferInfo(hout, &binfo))
+  if (!GetConsoleScreenBufferInfo (hout, &binfo))
     return c;
   pos = binfo.dwCursorPosition;
   src.Left = pos.X;
@@ -166,15 +171,15 @@ ttinsertc (int c)
   dst.Y = pos.Y;
   fill.Char.AsciiChar = ' ';
   fill.Attributes = attnorm;
-  if (!ScrollConsoleScreenBuffer(
+  if (!ScrollConsoleScreenBuffer (
       hout,
       &src,
       NULL,
       dst,
       &fill))
-    ttputc('!');
+    ttputc ('!');
   else
-    ttputc(c); 
+    ttputc (c); 
   return c;
 }
 
@@ -191,7 +196,7 @@ ttdelc (void)
   COORD dst;
   static CHAR_INFO fill;
 
-  if (!GetConsoleScreenBufferInfo(hout, &binfo))
+  if (!GetConsoleScreenBufferInfo (hout, &binfo))
     return;
   pos = binfo.dwCursorPosition;
   src.Left = pos.X + 1;
@@ -202,12 +207,11 @@ ttdelc (void)
   dst.Y = pos.Y;
   fill.Char.AsciiChar = ' ';
   fill.Attributes = attnorm;
-  if (!ScrollConsoleScreenBuffer(
+  if (!ScrollConsoleScreenBuffer (
       hout,
       &src,
       NULL,
       dst,
       &fill))
-    ttputc('!');
+    ttputc ('!');
 }
-

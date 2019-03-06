@@ -360,7 +360,7 @@ tteeop (void)
 void
 ttbeep (void)
 {
-/*	ttputc(BEL); */
+/*	ttputc (BEL); */
   ttflush ();
 }
 

@@ -64,4 +64,4 @@
 #endif
 
 /* Functions. */
-void putline(int row, int col, const wchar_t *buf);
+void putline (int row, int col, const wchar_t *buf);

@@ -399,7 +399,7 @@ ttykeymapinit (void)
   keydup (KF3, "quit");
   keydup (KF4, "undo");
 #if USE_RUBY
-  keydup(KF6,		"ruby-string");
+  keydup (KF6, "ruby-string");
 #else
   keydup (KF5, "display-buffers");
 #endif

@@ -1,18 +1,29 @@
 /*
- * Name:	MicroEMACS
- *		MS-DOS spawn command.com
- * Version:	29
- * Last edit:	29-Mar-88
- * By:		Mark Alexander
- *		drivax!alexande
- */
+    Copyright (C) 2019 Mark Alexander
+
+    This file is part of MicroEMACS, a small text editor.
+
+    MicroEMACS is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+*/
+
 #include	"def.h"
 
 #include	<process.h>
 
 /* extern char *getenv(char *); */
 
-char	*cspec	= NULL; 			/* Command string.	*/
+char *cspec = NULL;		/* Command string.      */
 
 /*
  * Create a subjob with a copy
@@ -22,22 +33,23 @@ char	*cspec	= NULL; 			/* Command string.	*/
  * to "C-C" and called from "C-Z".
  */
 int
-spawncli(int f, int n, int k)
+spawncli (int f, int n, int k)
 {
-	ttcolor(CTEXT); 			/* Normal color.	*/
-	ttwindow(0, nrow-1);			/* Full screen scroll.	*/
-	ttmove(nrow-1, 0);			/* Last line.		*/
-	ttflush();
-	ttclose();
-	if (cspec == NULL) {			/* Try to find it.	*/
-		cspec = getenv("COMSPEC");
-		if (cspec == NULL)
-			cspec = "/c/WINDOWS/system32/cmd.exe";
-	}
-	spawnlp(0,cspec,cspec,"","",NULLPTR);
-	ttopen();
-	sgarbf = TRUE;
-	return(TRUE);
+  ttcolor (CTEXT);		/* Normal color.        */
+  ttwindow (0, nrow - 1);	/* Full screen scroll.  */
+  ttmove (nrow - 1, 0);		/* Last line.           */
+  ttflush ();
+  ttclose ();
+  if (cspec == NULL)
+    {				/* Try to find it.      */
+      cspec = getenv ("COMSPEC");
+      if (cspec == NULL)
+	cspec = "/c/WINDOWS/system32/cmd.exe";
+    }
+  spawnlp (0, cspec, cspec, "", "", NULLPTR);
+  ttopen ();
+  sgarbf = TRUE;
+  return (TRUE);
 }
 
 /*
@@ -47,7 +59,7 @@ spawncli(int f, int n, int k)
  */
 int
 openpipe (const char *program, const char *args[],
-          FILE **infile, FILE **outfile)
+	  FILE ** infile, FILE ** outfile)
 {
-   return FALSE;	/* not imlemented yet on Windows */
+  return FALSE;			/* not implemented yet on Windows */
 }

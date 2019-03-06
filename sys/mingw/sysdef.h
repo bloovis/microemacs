@@ -1,19 +1,22 @@
-/* $Header: /home/bloovis/cvsroot/pe/nt/sysdef.h,v 1.1 2003-11-06 02:51:52 bloovis Exp $
- *
- * Name:	MicroEMACS
- *		Win32 system header file.
- * By:		Mark Alexander
- *		alexande@borland.com
- *
- * $Log: sysdef.h,v $
- * Revision 1.1  2003-11-06 02:51:52  bloovis
- * Initial revision
- *
- * Revision 1.1  2001/04/19 20:26:08  malexander
- * New files for NT version of MicroEMACS.
- *
- * 
- */
+/*
+    Copyright (C) 2019 Mark Alexander
+
+    This file is part of MicroEMACS, a small text editor.
+
+    MicroEMACS is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+*/
+
 #define LARGE	0			/* Large model. 		*/
 #define PCC	1			/* "[]" will work.              */
 #define GOOD	0			/* not in Lattice stdio.h	*/

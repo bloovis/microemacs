@@ -81,12 +81,12 @@ int	specmap[32] = {
  * ALT-Z are mapped to META-A through META-Z.
  */
 int
-getkbd(void)
+getkbd (void)
 {
   register int	c;
   register int	i;
 
-  c = ttgetc();
+  c = ttgetc ();
   if (c < KEY_MIN)			/* normal key?		*/
      return (c);			/* just return it	*/
 
@@ -112,38 +112,39 @@ getkbd(void)
  * As is the case of all the keymap routines, errors
  * are very fatal.
  */
-void ttykeymapinit()
+void
+ttykeymapinit (void)
 {
-  keydup(KUP,		"back-line");
-  keydup(KDOWN,		"forw-line");
-  keydup(KLEFT,		"back-char");
-  keydup(KRIGHT,	"forw-char");
-  keydup(KCTRL|KLEFT,	"back-word");
-  keydup(KCTRL|KRIGHT,	"forw-word");
-  keydup(KPGUP,		"back-page");
-  keydup(KPGDN,		"forw-page");
-  keydup(KCTRL|KPGUP,	"up-window");
-  keydup(KCTRL|KPGDN,	"down-window");
-  keydup(KHOME,		"goto-bol");
-  keydup(KEND,		"goto-eol");
-  keydup(KCTRL|KHOME,	"goto-bob");
-  keydup(KCTRL|KEND,	"goto-eob");
-  keydup(KINS,		"set-overstrike");
-  keydup(KDEL,		"forw-del-char");
-  keydup(KF1,		"help");
-  keydup(KF2,		"file-save");
-  keydup(KF3,		"file-visit");
-  keydup(KF4,		"quit");
-  keydup(KF5,		"undo");
+  keydup (KUP,		"back-line");
+  keydup (KDOWN,	"forw-line");
+  keydup (KLEFT,	"back-char");
+  keydup (KRIGHT,	"forw-char");
+  keydup (KCTRL|KLEFT,	"back-word");
+  keydup (KCTRL|KRIGHT,	"forw-word");
+  keydup (KPGUP,	"back-page");
+  keydup (KPGDN,	"forw-page");
+  keydup (KCTRL|KPGUP,	"up-window");
+  keydup (KCTRL|KPGDN,	"down-window");
+  keydup (KHOME,	"goto-bol");
+  keydup (KEND,		"goto-eol");
+  keydup (KCTRL|KHOME,	"goto-bob");
+  keydup (KCTRL|KEND,	"goto-eob");
+  keydup (KINS,		"set-overstrike");
+  keydup (KDEL,		"forw-del-char");
+  keydup (KF1,		"help");
+  keydup (KF2,		"file-save");
+  keydup (KF3,		"file-visit");
+  keydup (KF4,		"quit");
+  keydup (KF5,		"undo");
 #if USE_RUBY
-  keydup(KF6,		"ruby-string");
+  keydup (KF6,		"ruby-string");
 #else
-  keydup(KF6,		"display-buffers");
+  keydup (KF6,		"display-buffers");
 #endif
-  keydup(KF7,		"redo");
-  keydup(KF8,		"forw-buffer");
-  keydup(KF9,		"search-again");
-  keydup(KF10,		"only-window");
-  keydup(KF11,		"find-cscope");
-  keydup(KF12,		"next-cscope");
+  keydup (KF7,		"redo");
+  keydup (KF8,		"forw-buffer");
+  keydup (KF9,		"search-again");
+  keydup (KF10,		"only-window");
+  keydup (KF11,		"find-cscope");
+  keydup (KF12,		"next-cscope");
 }

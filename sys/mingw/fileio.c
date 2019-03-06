@@ -1,19 +1,22 @@
-/* $Header: /home/bloovis/cvsroot/pe/nt/fileio.c,v 1.1 2003-11-06 02:51:52 bloovis Exp $
- * Name:	MicroEMACS
- *		Win32 file I/O.
- * Version:	29
- * By:		Mark Alexander
- *		drivax!alexande
- *
- * $Log: fileio.c,v $
- * Revision 1.1  2003-11-06 02:51:52  bloovis
- * Initial revision
- *
- * Revision 1.1  2001/04/19 20:26:08  malexander
- * New files for NT version of MicroEMACS.
- *
- *
- */
+/*
+    Copyright (C) 2019 Mark Alexander
+
+    This file is part of MicroEMACS, a small text editor.
+
+    MicroEMACS is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+*/
+
 #include	"def.h"
 #if 0
 #include	<dirent.h>
@@ -23,16 +26,16 @@
 #include	<sys/types.h>
 #include	<sys/stat.h>
 
-char	*getenv();
+char *getenv ();
 
-#define	CTRLZ	0x1a				/* DOS end of file	*/
+#define	CTRLZ	0x1a		/* DOS end of file      */
 
-static	int	ffp;				/* text file pointer	*/
-static	char	cbuf[1024];			/* buffer for getbyte	*/
-static	int	cindex;				/* index into cbuf	*/
-static	int	csize;				/* no. of bytes in cbuf	*/
-static	int	status;				/* read(),write() status*/
-static	int	writing;			/* open for write?	*/
+static int ffp;			/* text file pointer    */
+static char cbuf[1024];		/* buffer for getbyte   */
+static int cindex;		/* index into cbuf      */
+static int csize;		/* no. of bytes in cbuf */
+static int status;		/* read(),write() status */
+static int writing;		/* open for write?      */
 
 #define	getbyte() cindex == csize ? fillbuf() : cbuf[cindex++] & 0xff
 
@@ -42,61 +45,63 @@ static	int	writing;			/* open for write?	*/
  */
 #define ungetbyte(c) cbuf[--cindex] = (c)
 
-static	int	pfp;				/* profile descriptor	*/
-static	char	pbuf[1024];			/* buffer for profile	*/
-static	int	pindex;				/* index into pbuf	*/
-static	int	psize;				/* no. of bytes in pbuf	*/
+static int pfp;			/* profile descriptor   */
+static char pbuf[1024];		/* buffer for profile   */
+static int pindex;		/* index into pbuf      */
+static int psize;		/* no. of bytes in pbuf */
 
 /* Buffer for ffgetline.  Dynamically allocated to handle any line length.
  */
-static	char	*buf;				/* dynamic line buffer */
-static	int	bufsize;			/* size of line buffer */
+static char *buf;		/* dynamic line buffer */
+static int bufsize;		/* size of line buffer */
 
 /*
  * Forward declarations.
  */
-void	putbyte(), adjustcase();
+static void putbytes (const char *s, int len);
 
 /*
  * Expand a filename that has a leading ~ or ~username.
  * FIXME: this does nothing on Windows.
  */
-char *fftilde (char * arg)
+char *
+fftilde (char *arg)
 {
-	return arg;
+  return arg;
 }
 
 /*
  * Determine whether the first 'cpos' characters in the file 'name' refer
  * to a directory or not.  Return TRUE if it is a directory.
  */
-int ffisdir(name, cpos)
-char *name;		/* filename to check */
-int cpos;		/* number of characters in name to check */
+int
+ffisdir (
+     char *name,		/* filename to check */
+     int cpos)			/* number of characters in name to check */
 {
-    struct stat stbuf;
-    int c, ret;
-    
-    c = name[cpos];				/* save following char	*/
-    name[cpos] = '\0';				/* null-terminate it	*/
-    ret = stat(fftilde(name), &stbuf);	/* get file information	*/
-    name[cpos] = c;				/* restore terminator	*/
-    if (ret != 0)				/* file doesn't exist?	*/
-	return FALSE;				/* must not be a dir	*/
-    return (stbuf.st_mode & S_IFDIR) != 0;	/* check dir bit	*/
+  struct stat stbuf;
+  int c, ret;
+
+  c = name[cpos];		/* save following char  */
+  name[cpos] = '\0';		/* null-terminate it    */
+  ret = stat (fftilde (name), &stbuf);	/* get file information */
+  name[cpos] = c;		/* restore terminator   */
+  if (ret != 0)			/* file doesn't exist?  */
+    return FALSE;		/* must not be a dir    */
+  return (stbuf.st_mode & S_IFDIR) != 0;	/* check dir bit        */
 }
 
 /*
  * Open a file for reading.  Used for text files, not profile files.
  */
 int
-ffropen(const char *fn)
+ffropen (const char *fn)
 {
-	writing = FALSE;
-	if ((ffp = open(fn,O_RDONLY|O_BINARY)) < 0)
-		return (FIOFNF);
-	cindex = csize = 0;		/* set up for getbyte()	*/
-	return (FIOSUC);
+  writing = FALSE;
+  if ((ffp = open (fn, O_RDONLY | O_BINARY)) < 0)
+    return (FIOFNF);
+  cindex = csize = 0;		/* set up for getbyte() */
+  return (FIOSUC);
 }
 
 /*
@@ -105,15 +110,18 @@ ffropen(const char *fn)
  * FALSE on error (cannot create).
  */
 int
-ffwopen(const char *fn)
+ffwopen (const char *fn)
 {
-	if ((ffp = open(fn,O_TRUNC|O_WRONLY|O_CREAT|O_BINARY,S_IREAD|S_IWRITE)) < 0) {
-		eprintf("Cannot open file for writing");
-		return (FIOERR);
-	}
-	writing = TRUE;
-	cindex = 0;
-	return (FIOSUC);
+  if ((ffp =
+       open (fn, O_TRUNC | O_WRONLY | O_CREAT | O_BINARY,
+	     S_IREAD | S_IWRITE)) < 0)
+    {
+      eprintf ("Cannot open file for writing");
+      return (FIOERR);
+    }
+  writing = TRUE;
+  cindex = 0;
+  return (FIOSUC);
 }
 
 /*
@@ -121,28 +129,33 @@ ffwopen(const char *fn)
  * Should look at the status.
  */
 int
-ffclose()
+ffclose (void)
 {
-	if (writing) {				/* open for write?	*/
-		if (zflag)
-			putbyte("\32",1);	/* write a CTRLZ	*/
-		if (status >= 0)		/* write OK?		*/
-			status = write(ffp,cbuf,cindex); /* flush output*/
-		close(ffp);
-		if (status < cindex) {
-			eprintf("File write error");
-			return (FIOERR);
-		}
-		else return (FIOSUC);
+  if (writing)
+    {				/* open for write?      */
+      if (zflag)
+	putbytes ("\32", 1);	/* write a CTRLZ        */
+      if (status >= 0)		/* write OK?            */
+	status = write (ffp, cbuf, cindex);	/* flush output */
+      close (ffp);
+      if (status < cindex)
+	{
+	  eprintf ("File write error");
+	  return (FIOERR);
 	}
-	else {					/* open for read	*/
-		close(ffp);
-		if (bufsize) {			/* free line buffer	*/
-			free(buf);
-			bufsize = 0;
-		}
-		return (FIOSUC);		/* ignore errors	*/
+      else
+	return (FIOSUC);
+    }
+  else
+    {				/* open for read        */
+      close (ffp);
+      if (bufsize)
+	{			/* free line buffer     */
+	  free (buf);
+	  bufsize = 0;
 	}
+      return (FIOSUC);		/* ignore errors        */
+    }
 }
 
 /*
@@ -154,33 +167,34 @@ ffclose()
  * says whether to terminate the line with a newline.
  */
 int
-ffputline(const char *buf, int nbuf, int nl)
+ffputline (const char *buf, int nbuf, int nl)
 {
-	putbyte(buf,nbuf);
-	if ((status >= 0) && nl)
-		putbyte("\r\n",2);
-	if (status < 0) {
-		eprintf("File write error");
-		return (FIOERR);
-	}
-	return (FIOSUC);
+  putbytes (buf, nbuf);
+  if ((status >= 0) && nl)
+    putbytes ("\r\n", 2);
+  if (status < 0)
+    {
+      eprintf ("File write error");
+      return (FIOERR);
+    }
+  return (FIOSUC);
 }
 
 /*
  * Fill the input file buffer, return the first character from it.
  */
 static int
-fillbuf(void)
+fillbuf (void)
 {
-	if ((status = read(ffp,cbuf,sizeof(cbuf))) <= 0)
-	{
-		if (status < 0)
-			eprintf("File read error.");
-		return (EOF);
-	}
-	cindex = 0;
-	csize = status;
-	return (cbuf[cindex++] & 0xff);
+  if ((status = read (ffp, cbuf, sizeof (cbuf))) <= 0)
+    {
+      if (status < 0)
+	eprintf ("File read error.");
+      return (EOF);
+    }
+  cindex = 0;
+  csize = status;
+  return (cbuf[cindex++] & 0xff);
 }
 
 
@@ -198,89 +212,95 @@ fillbuf(void)
  * buffer to *buf, and the number of bytes read to *nbytes.
  */
 int
-ffgetline(
-  char	**bufp,
-  int	*nbytes)
+ffgetline (char **bufp, int *nbytes)
 {
-	register int	c;
-	register int	i;
-	char	*newbuf;
-	int	newbufsize;
-	int	merror;
+  register int c;
+  register int i;
+  char *newbuf;
+  int newbufsize;
+  int merror;
 
-	i = 0;
-	merror = 0;
-	for (;;) {
-		c = getbyte();
+  i = 0;
+  merror = 0;
+  for (;;)
+    {
+      c = getbyte ();
 
-		/*  Delete carriage return if followed by line feed
-		 */
-		if (c == '\r') {		/* carriage return?	*/
-			c = getbyte();		/* check next byte	*/
-			if (c != '\n') {	/* next not line feed?	*/
-				ungetbyte(c);	/* put it back		*/
-				c = '\r';	/* put cr into line	*/
-			}
-		}
-
-		/*  Check for terminating character or end of file
-		 */
-		if (c == CTRLZ && zflag) {	/* old eof character?	*/
-			c = EOF;
-			break;
-		}
-		if (c == EOF || c == '\n') 	/* end of line/file?	*/
-			break;
-
-		/*  If the buffer is too small, enlarge it.
-		 */
-		if (i >= bufsize) {		/* line full?		*/
-			newbufsize = bufsize + 256;
-			if (bufsize != 0)
-				newbuf = realloc(buf,newbufsize);
-			else
-				newbuf = malloc(newbufsize);
-			if (!newbuf) {
-				ungetbyte(c);	/* put char back	*/
-				eprintf("Out of memory, line split");
-				merror = 1;
-				break;
-			}
-			buf = newbuf;
-			bufsize = newbufsize;
-		}
-		buf[i++] = c;			/* store byte in line	*/
+      /*  Delete carriage return if followed by line feed
+       */
+      if (c == '\r')
+	{			/* carriage return?     */
+	  c = getbyte ();	/* check next byte      */
+	  if (c != '\n')
+	    {			/* next not line feed?  */
+	      ungetbyte (c);	/* put it back          */
+	      c = '\r';		/* put cr into line     */
+	    }
 	}
-	*nbytes = i;				/* return no. of bytes	*/
-	*bufp = buf;				/* return buf pointer	*/
-	if (c != '\n') {			/* End of file.		*/
-		if (merror)			/* out of memory?	*/
-			return (FIOERR);	/* report error		*/
-		else
-			return (FIOEOF);	/* normal end of file	*/
+
+      /*  Check for terminating character or end of file
+       */
+      if (c == CTRLZ && zflag)
+	{			/* old eof character?   */
+	  c = EOF;
+	  break;
 	}
-	return (FIOSUC);
+      if (c == EOF || c == '\n')	/* end of line/file?    */
+	break;
+
+      /*  If the buffer is too small, enlarge it.
+       */
+      if (i >= bufsize)
+	{			/* line full?           */
+	  newbufsize = bufsize + 256;
+	  if (bufsize != 0)
+	    newbuf = realloc (buf, newbufsize);
+	  else
+	    newbuf = malloc (newbufsize);
+	  if (!newbuf)
+	    {
+	      ungetbyte (c);	/* put char back        */
+	      eprintf ("Out of memory, line split");
+	      merror = 1;
+	      break;
+	    }
+	  buf = newbuf;
+	  bufsize = newbufsize;
+	}
+      buf[i++] = c;		/* store byte in line   */
+    }
+  *nbytes = i;			/* return no. of bytes  */
+  *bufp = buf;			/* return buf pointer   */
+  if (c != '\n')
+    {				/* End of file.         */
+      if (merror)		/* out of memory?       */
+	return (FIOERR);	/* report error         */
+      else
+	return (FIOEOF);	/* normal end of file   */
+    }
+  return (FIOSUC);
 }
 
 /*
  * Put a string of bytes to the output file.  Use our own buffering for speed.
  */
-void putbyte(s,len)
-char	*s;
-int	len;
+static void
+putbytes (const char *s, int len)
 {
-	status = 0;
-	while (len) {
-		if (cindex == sizeof(cbuf)) {		/* buffer full?	*/
-			if (write(ffp,cbuf,sizeof(cbuf)) < sizeof(cbuf))
-				status = -1;		/* disk full	*/
-			cindex = 0;
-		}
-		cbuf[cindex++] = *s++;
-		--len;
+  status = 0;
+  while (len)
+    {
+      if (cindex == sizeof (cbuf))
+	{			/* buffer full? */
+	  if (write (ffp, cbuf, sizeof (cbuf)) < sizeof (cbuf))
+	    status = -1;	/* disk full    */
+	  cindex = 0;
 	}
+      cbuf[cindex++] = *s++;
+      --len;
+    }
 }
-	
+
 #if	BACKUP
 
 /*
@@ -293,32 +313,34 @@ int	len;
  * disk volume; we'd have to copy the whole file.
  */
 int
-fbackupfile(const char *fname)
+fbackupfile (const char *fname)
 {
-	char	nname[NFILEN];		/* new name			*/
-	register char	*p;
-	register char	*bname;		/* XBACKUP directory name	*/
-	register char	lastc;		/* last character in XBACKUP	*/
+  char nname[NFILEN];		/* new name                     */
+  register char *p;
+  register char *bname;		/* XBACKUP directory name       */
+  register char lastc;		/* last character in XBACKUP    */
 
-	/* If there is a XBACKUP environment variable defined, use it
-	 * as a prefix to the original filename.  Otherwise just
-	 * change the extension of the filename to .BAK
-	 */
-	if ((bname = getenv("XBACKUP")) == NULL) {
-		strcpy(nname,fname);
-		for (p = nname; *p && *p != '.'; p++)
-			;			/* search for extension	*/
-		strcpy(p,".BAK");		/* use .BAK extension	*/
-	}
-	else {
-		strcpy(nname,bname);
-		lastc = nname[strlen(nname)-1];	/* get last character	*/
-		if (lastc != '\\' && lastc != '/')
-			strcat(nname,"\\");
-		strcat(nname,fname);
-	}
-	unlink(nname);				/* delete old backup	*/
-	return (rename(fname,nname) == 0);
+  /* If there is a XBACKUP environment variable defined, use it
+   * as a prefix to the original filename.  Otherwise just
+   * change the extension of the filename to .BAK
+   */
+  if ((bname = getenv ("XBACKUP")) == NULL)
+    {
+      strcpy (nname, fname);
+      for (p = nname; *p && *p != '.'; p++)
+	;			/* search for extension */
+      strcpy (p, ".BAK");	/* use .BAK extension   */
+    }
+  else
+    {
+      strcpy (nname, bname);
+      lastc = nname[strlen (nname) - 1];	/* get last character   */
+      if (lastc != '\\' && lastc != '/')
+	strcat (nname, "\\");
+      strcat (nname, fname);
+    }
+  unlink (nname);		/* delete old backup    */
+  return (rename (fname, nname) == 0);
 }
 
 #endif
@@ -333,16 +355,18 @@ fbackupfile(const char *fname)
  * On UNIX file names are dual case, so we leave
  * everything alone.
  */
-void adjustcase(char *fn)
+void
+adjustcase (char *fn)
 {
 #if 0
-	register int	c;
+  register int c;
 
-	while ((c = *fn) != 0) {
-		if (c>='A' && c<='Z')
-			*fn = c + 'a' - 'A';
-		++fn;
-	}
+  while ((c = *fn) != 0)
+    {
+      if (c >= 'A' && c <= 'Z')
+	*fn = c + 'a' - 'A';
+      ++fn;
+    }
 #endif
 }
 
@@ -356,23 +380,24 @@ void adjustcase(char *fn)
  * to be filtered out even in CR/LF combinations.
  */
 int
-ffpopen(char *fn)
+ffpopen (char *fn)
 {
-	static char newname[NFILEN];
+  static char newname[NFILEN];
 
-	if (fn == NULL) {
-		if ((pfp = open("pe.pro",O_RDONLY)) >= 0)
-			return (FIOSUC);
-		if ((fn = getenv("HOME")) != NULL)
-			strcpy(newname,fn);
-		else
-			newname[0] = 0;
-		strcat(newname,"\\pe.pro");
-		fn = newname;
-	}
-	if ((pfp = open(fn,O_RDONLY)) < 0)
-		return (FIOFNF);
+  if (fn == NULL)
+    {
+      if ((pfp = open ("pe.pro", O_RDONLY)) >= 0)
 	return (FIOSUC);
+      if ((fn = getenv ("HOME")) != NULL)
+	strcpy (newname, fn);
+      else
+	newname[0] = 0;
+      strcat (newname, "\\pe.pro");
+      fn = newname;
+    }
+  if ((pfp = open (fn, O_RDONLY)) < 0)
+    return (FIOFNF);
+  return (FIOSUC);
 }
 
 /*
@@ -383,22 +408,22 @@ ffpopen(char *fn)
  * profiles don't have to be efficient.
  */
 int
-ffpread(char *cp)
+ffpread (char *cp)
 {
-	if (pindex == psize)			/* buffer exhausted	*/
+  if (pindex == psize)		/* buffer exhausted     */
+    {
+      if ((status = read (pfp, pbuf, sizeof (pbuf))) <= 0)
 	{
-		if ((status = read(pfp,pbuf,sizeof(pbuf))) <= 0)
-		{
-			if (status < 0)
-				return (FIOERR);
-			else
-				return (FIOEOF);
-		}
-		pindex = 0;
-		psize = status;
+	  if (status < 0)
+	    return (FIOERR);
+	  else
+	    return (FIOEOF);
 	}
-	*cp = pbuf[pindex++] & 0xff;
-	return (FIOSUC);
+      pindex = 0;
+      psize = status;
+    }
+  *cp = pbuf[pindex++] & 0xff;
+  return (FIOSUC);
 }
 
 
@@ -407,10 +432,10 @@ ffpread(char *cp)
  */
 
 int
-ffpclose()
+ffpclose (void)
 {
-	close(pfp);
-	return (FIOSUC);
+  close (pfp);
+  return (FIOSUC);
 }
 
 
@@ -422,48 +447,49 @@ ffpclose()
  * the file.
  */
 char *
-ffsearch(
-  const char *name,	/* filename to search for */
-  int cpos,		/* number of characters in name to match */
-  const char *prev)	/* previous matching name */
+ffsearch (const char *name,	/* filename to search for */
+	  int cpos,		/* number of characters in name to match */
+	  const char *prev)	/* previous matching name */
 {
 #if 0
-	struct dirent *ff;
-	static DIR *dirp;
-	static char buf[65];
-	static int pathlen;
-	int ret, i, c;
+  struct dirent *ff;
+  static DIR *dirp;
+  static char buf[65];
+  static int pathlen;
+  int ret, i, c;
 
-	if (prev == NULL)			/* first time through	*/
-	{
-		if (dirp != NULL)
-			closedir(dirp);
-		strncpy(buf,name,cpos);		/* save the name	*/
-		for (i = cpos; i > 0; --i) {	/* find end of path	*/
-			c = buf[i-1];
-			if (c == ':' || c == '/' || c == '\\')
-				break;
-		}
-		pathlen = i;			/* save length of path	*/
-		if (pathlen == 0)		/* no path specified?	*/
-			dirp = opendir(".");	/* open current dir	*/
-		else {
-			buf[pathlen-1] = '\0';	/* temporarily zap slash */
-			dirp = opendir(buf);	/* open directory	*/
-			buf[pathlen-1] = c;	/* restore slash */
-		}
-		if (dirp == NULL)
-			return (NULL);
+  if (prev == NULL)		/* first time through   */
+    {
+      if (dirp != NULL)
+	closedir (dirp);
+      strncpy (buf, name, cpos);	/* save the name        */
+      for (i = cpos; i > 0; --i)
+	{			/* find end of path     */
+	  c = buf[i - 1];
+	  if (c == ':' || c == '/' || c == '\\')
+	    break;
 	}
-	while ((ff = readdir(dirp)) != NULL)	/* find next file	*/
+      pathlen = i;		/* save length of path  */
+      if (pathlen == 0)		/* no path specified?   */
+	dirp = opendir (".");	/* open current dir     */
+      else
 	{
-		strcpy(&buf[pathlen],ff->d_name); /* append filename	*/
-		strlwr(buf);			/* lower-case it	*/
-		if (strncmp(buf,name,cpos) == 0)/* if it matches,	*/
-			return (buf);		/* return static buffer	*/
+	  buf[pathlen - 1] = '\0';	/* temporarily zap slash */
+	  dirp = opendir (buf);	/* open directory       */
+	  buf[pathlen - 1] = c;	/* restore slash */
 	}
-	closedir(dirp);
-	dirp = NULL;
+      if (dirp == NULL)
+	return (NULL);
+    }
+  while ((ff = readdir (dirp)) != NULL)	/* find next file       */
+    {
+      strcpy (&buf[pathlen], ff->d_name);	/* append filename    */
+      strlwr (buf);		/* lower-case it        */
+      if (strncmp (buf, name, cpos) == 0)	/* if it matches,       */
+	return (buf);		/* return static buffer */
+    }
+  closedir (dirp);
+  dirp = NULL;
 #endif
-	return (NULL);				/* no more files	*/
+  return (NULL);		/* no more files        */
 }

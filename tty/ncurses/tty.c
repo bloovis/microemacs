@@ -57,7 +57,8 @@ int actual_ncol;
 /*
  * Draw vertical borders between pages when npages is greater than zero.
  */
-static void drawborders(void)
+static void
+drawborders (void)
 {
   int row, col;
 
@@ -79,7 +80,8 @@ static void drawborders(void)
  * editor into thinking the screen is longer and narrower than it really is,
  * and leaves room for a vertical border between pages.
  */
-void ttinit (void)
+void
+ttinit (void)
 {
   int new_nrow, new_ncol;
 
@@ -107,13 +109,15 @@ void ttinit (void)
 }
 
 /*
- * The PC needs no tidy up.
+ * Curses needs no tidy up.
  */
-void tttidy (void)
+void
+tttidy (void)
 {
 }
 
-void get_actual_pos (int row, int col, int *actual_row, int *actual_col)
+static void
+get_actual_pos (int row, int col, int *actual_row, int *actual_col)
 {
   if (npages > 1)
     {
@@ -135,7 +139,8 @@ void get_actual_pos (int row, int col, int *actual_row, int *actual_col)
  * have left the cursor in the right
  * location last time!
  */
-void ttmove (int row, int col)
+void
+ttmove (int row, int col)
 {
   int actual_row, actual_col;
 
@@ -148,7 +153,8 @@ void ttmove (int row, int col)
 /*
  * Erase to end of line.
  */
-void tteeol()
+void
+tteeol (void)
 {
   if (npages > 1)
     {
@@ -156,7 +162,7 @@ void tteeol()
 
       get_actual_pos (ttrow, ttcol, &actual_row, &actual_col);
       for (i = ttcol; i < ncol; i++)
-	addch(' ');
+	addch (' ');
       move (actual_row, actual_col);
     }
   else
@@ -166,7 +172,8 @@ void tteeol()
 /*
  * Erase to end of page.
  */
-void tteeop(void)
+void
+tteeop (void)
 {
   clrtobot ();
   drawborders ();
@@ -176,38 +183,38 @@ void tteeop(void)
  * Make a noise.
  */
 
-void ttbeep(void)
+void
+ttbeep (void)
 {
-  if (write(1,"\007",1) != 1)
+  if (write (1,"\007",1) != 1)
     {}	/* suppress warning about "ignoring return value of write" */
 }
 
 /*
  * No-op.
  */
-void ttwindow(int top, int bot)
+void
+ttwindow (int top, int bot)
 {
 }
 
 /*
  * No-op.
  */
-void ttnowindow(void)
+void
+ttnowindow (void)
 {
 }
 
 /*
- * Set display color on IBM PC.  Just convert MicroEMACS
+ * Set display color.  Just convert MicroEMACS
  * color to ncurses background attribute.
  */
-void ttcolor(int color)
+void
+ttcolor (int color)
 {
   tthue = color;
-#if 1
-  bkgdset(' ' | (color == CMODE ? A_REVERSE : A_NORMAL));
-#else
-  attron (color == CMODE ? A_REVERSE : A_NORMAL);
-#endif
+  bkgdset (' ' | (color == CMODE ? A_REVERSE : A_NORMAL));
 }
 
 /*
@@ -223,7 +230,7 @@ void
 ttresize (void)
 {
   setttysize ();		/* found in "ttyio.c",  */
-  ttinit();
+  ttinit ();
   wrefresh (curscr);
 }
 
@@ -231,7 +238,7 @@ ttresize (void)
  * High speed screen update.  row and col are 1-based.
  */
 void
-putline(int row, int col, const wchar_t *buf)
+putline (int row, int col, const wchar_t *buf)
 {
   int actual_row, actual_col;
 
