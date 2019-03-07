@@ -18,9 +18,7 @@
 */
 
 #include	"def.h"
-#if 0
 #include	<dirent.h>
-#endif
 #include	<io.h>
 #include	<fcntl.h>
 #include	<sys/types.h>
@@ -451,12 +449,11 @@ ffsearch (const char *name,	/* filename to search for */
 	  int cpos,		/* number of characters in name to match */
 	  const char *prev)	/* previous matching name */
 {
-#if 0
   struct dirent *ff;
   static DIR *dirp;
   static char buf[65];
   static int pathlen;
-  int ret, i, c;
+  int i, c = 0;
 
   if (prev == NULL)		/* first time through   */
     {
@@ -490,6 +487,5 @@ ffsearch (const char *name,	/* filename to search for */
     }
   closedir (dirp);
   dirp = NULL;
-#endif
   return (NULL);		/* no more files        */
 }
