@@ -35,7 +35,11 @@
 
 #include "def.h"
 
+#ifdef __FreeBSD__
+#include	<ncurses.h>
+#else
 #include <ncursesw/ncurses.h>
+#endif
 #include <unistd.h>
 
 extern  int     tttop;

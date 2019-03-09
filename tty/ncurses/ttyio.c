@@ -39,7 +39,11 @@
 #include	<unistd.h>
 #include	<termios.h>
 #include	<sys/ioctl.h>
+#ifdef __FreeBSD__
+#include	<ncurses.h>
+#else
 #include	<ncursesw/ncurses.h>
+#endif
 #include	<locale.h>
 
 static struct termios oldtty;	/* Old tty state		*/

@@ -98,7 +98,7 @@
 /* #define USE_BORLANDINDENT */	/* Define to use Borland indent	*/
 /* #define USE_RUBYINDENT */	/* Define to use Ruby indent */
 
-#if defined(__linux__) || defined(__APPLE__) || defined(__CYGWIN__)
+#if defined(__linux__) || defined(__APPLE__) || defined(__CYGWIN__) || defined(__FreeBSD__)
   #define HAS_CSCOPE 1
 #else
   #define HAS_CSCOPE 0
