@@ -14,7 +14,7 @@ for the DOS and OS/2 versions, but they are unlikely to be useful in
 the future.
 
 To build a non-debug version with no Ruby support on Linux,
-or on Windows with MinGW:
+or on Windows with MinGW or Cygwin:
 
     mkdir obj
     cd obj

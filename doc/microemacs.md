@@ -1810,7 +1810,7 @@ C-L
     of giving you a screen that has more rows but fewer columns than normal.
     To restore the screen to normal, give an argument of 1.
     Currently this feature only works with the ncurses display code;
-    see [**Building on Linux**](#building-on-linux).
+    see [**Building with GCC**](#building-with-gcc).
 
 C-X 2
 
@@ -2807,9 +2807,9 @@ The dependent modules are briefly described below.
 
 \index{Operating System}
 MicroEMACS runs on several operating systems, including Linux\index{Linux},
-Windows NT, PC-DOS,
-CP/M-86 and MS-DOS on the DEC Rainbow, 4.2 BSD,
-VMS on the VAX, CP/M-68K, GEMDOS, and FlexOS V60/68K/286.
+FreeBSD, and Windows.  Support code for other operating systems has been lost
+(in the distant past, these included CP/M-86 and MS-DOS on the DEC Rainbow,
+VMS on the VAX, CP/M-68K, GEMDOS, and FlexOS V60/68K/286).
 The following modules contain code dependencies on the operating system:
 
 * `ttyio.c` - low level terminal I/O; independent of terminal type.
@@ -2826,33 +2826,38 @@ files, and the header file `sysdef.h`.
 ## Terminal Support
 
 \index{Terminal Support}
-MicroEMACS supports several kinds of terminals, including ANSI, VT-52,
-RAINBOW, PC, and VME/10.
+MicroEMACS supports several kinds of terminals: those
+supporting ncurses or termcap, and the native Windows text console
+(the code for real-mode PC displays and OS/2 terminal windows has been lost).
 The following modules contain code dependencies on the terminal type:
 
 * `tty.c` - high-level terminal support.
 
+* `ttyio.c` - low-level terminal support.
+
 * `ttykbd.c` - keyboard dependencies and extensions.
 
-Changing terminal type consists
-mostly of changing these files, and the header file `ttydef.h`
+Changing terminal type consists mostly of changing these files, and the header file `ttydef.h`
+These files are located in separate per-terminal subdirectories of the `tty` directory.
 
-The Rainbow, VME/10 (under CP/M and GEMDOS)
-and PC have memory mapped displays.
+Some terminals have memory mapped displays, or interfaces that
+act as such.  These include ncurses and Windows text consoles.
 Support for these
 displays is enabled by setting the MEMMAP switch in `ttydef.h` to 1.
 This eliminates the fancy Gosling screen update code in `display.c`,
-and enables writing directly to screen memory.
+and enables writing directly to screen memory (or to a screen buffer
+that the terminal interface library later writes to the screen).
 
 To
 support a new memory-mapped display, you must provide a `putline` function
-for writing lines to the display.  Typically this is written in assembly
-language, but in one case (the VME/10 under CP/M and GEMDOS) it has been
+for writing lines to the display.  On old DOS-base systems, this code
+was written in assembly language, but on modern terminals it is
 written in C and placed in `tty.c`.
 
-## Building on Linux
+## Building with GCC
 
-To build MicroEMACs on Linux\index{Linux}, use these commands:
+To build MicroEMACs on Linux\index{Linux}, FreeBSD, or Windows using Cygwin
+or MinGW, use these commands:
 
     mkdir obj
     cd obj
@@ -2865,6 +2870,7 @@ You can supply one or more optional parameters to the `configure` command:
 
 :   Use this option to make MicroEMACS use the **terminfo** / **termcap**\index{terminfo}\index{termcap} libraries for
     screen management, instead of the default **ncursesw**\index{ncursesw}\index{ncurses} library.
+    This option will not work on Windows.
 
 `--enable-debug`
 
@@ -2874,16 +2880,8 @@ You can supply one or more optional parameters to the `configure` command:
 `--with-ruby`
 
 :   Use this option to build support for Ruby extensions into MicroEMACS.
-    See the [**Ruby Extensions**](#ruby-extensions) section above for more information
-
-## Randomness
-
-In ITS EMACS\index{EMACS}, arguments on the **C-V**
-and **M-V** commands work in lines. In
-Gosling EMACS, arguments on the **C-V**
-and **M-V** commands work in screens.
-The `CVMVAS` compilation switch in `def.h`, if `1`,
-makes the commands work like in Gosling EMACS.
+    This option will not work on Windows or FreeBSD.
+    See the [**Ruby Extensions**](#ruby-extensions) section above for more information.
 
 \newpage
 
@@ -2892,8 +2890,7 @@ makes the commands work like in Gosling EMACS.
 \index{Wall chart}
 Here is a list of the current key
 bindings in MicroEMACS.  The
-terminal-dependent key bindings for
-the PC and the Zenith terminals
+terminal-dependent key bindings
 are presented at the end of this
 section. 
 
