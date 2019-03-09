@@ -40,7 +40,7 @@
 #include	<signal.h>
 #include	<stdlib.h>
 #include	<unistd.h>
-#ifdef __linux__
+#if defined(__linux__) || defined(CYGWIN)
 #include	<sys/types.h>
 #include	<sys/wait.h>
 #include	<fcntl.h>
