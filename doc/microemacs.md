@@ -2862,7 +2862,7 @@ or MinGW, use these commands:
     mkdir obj
     cd obj
     ../configure
-    make
+    make # gmake on FreeBSD
 
 You can supply one or more optional parameters to the `configure` command:
 

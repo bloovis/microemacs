@@ -14,12 +14,12 @@ for the DOS and OS/2 versions, but they are unlikely to be useful in
 the future.
 
 To build a non-debug version with no Ruby support on Linux,
-or on Windows with MinGW or Cygwin:
+FreeBSD, or Windows with MinGW or Cygwin:
 
     mkdir obj
     cd obj
     ../configure
-    make
+    make # gmake on FreeBSD
 
 Dave Conroy released his source code into the public domain.  I have
 changed my version to use the GNU General Public License Version 3.
