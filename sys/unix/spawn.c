@@ -53,6 +53,40 @@ extern struct termios newtty;
 
 static int saw_sigpipe;
 
+
+/*
+ * Get the name of the parent process, and return a pointer to a
+ * static buffer containing the name, or NULL if we can't get
+ * the parent name for some reason.  We do this by getting the
+ * PID of the parent, then reading the file /proc/PID/comm.
+ */
+static const char *
+getparent (void)
+{
+  static char parent[32];
+  pid_t ppid;
+  char procfile[32];
+  int fd;
+  ssize_t actual;
+  char *p;
+
+  if (parent[0] != '\0')
+    return parent;
+  ppid = getppid ();
+  snprintf (procfile, sizeof (procfile), "/proc/%d/comm", ppid);
+  fd = open (procfile, O_RDONLY);
+  if (fd < 0)
+    return NULL;
+  actual = read (fd, parent, sizeof (parent) - 1);
+  if (actual == -1)
+    return NULL;
+  parent[actual] = '\0';
+  for (p = parent; p < &parent[actual]; p++)
+    if (*p == '\n')
+      *p = '\0';
+  return parent;
+}
+
 /*
  * Spawn the program, pass it some arguments.  If the program is NULL,
  * run the shell instead.
@@ -65,11 +99,13 @@ spawn (char *program, const char *args[])
   register void (*oqsig) ();
   register void (*oisig) ();
   int status;
-  int cshell = 0;
+  int jobcontrol = 0;
   char *p, *basename;
 
-  if (program == NULL)
-    {				/* Run the shell        */
+  if (program == NULL)		/* Run the shell        */
+    {
+      /* Try to determine the shell name from the environment.
+       */
       if (shellp == NULL)
 	{
 	  shellp = getenv ("SHELL");
@@ -78,26 +114,49 @@ spawn (char *program, const char *args[])
 	  if (shellp == NULL)
 	    shellp = "/bin/sh";	/* Safer.               */
 	}
+
+      /* Skip past the directory portion of the shell name,
+       * so we can see if this is the C shell (or tcsh).
+       */
+      for (p = basename = shellp; *p != '\0'; p++)
+	if (*p == '/')
+	  basename = p + 1;
+
+      /* Some shells use jobcontrol, i.e., you can use
+       * a signal to invoke them.
+       */
+      jobcontrol = strcmp (basename, "csh") == 0
+        || strcmp (basename, "bash") == 0
+	|| strcmp (basename, "tcsh") == 0;
+
     }
 
   ttcolor (CTEXT);
   ttnowindow ();
 
-  /* Skip past the directory portion of the shell name,
-   * so we can see if this is the C shell (or tcsh).
-   */
-  if (program == NULL)
+  if (jobcontrol)
     {
-      for (p = basename = shellp; *p != '\0'; p++)
-	if (*p == '/')
-	  basename = p + 1;
-      /*      printf("\n\nbase name is %s\n\n", basename); */
-      cshell = strcmp (basename, "csh") == 0
-        || strcmp (basename, "bash") == 0
-	|| strcmp (basename, "tcsh") == 0;
-    }
-  if (cshell)
-    {
+      /* Don't try to get send a job control signal if
+       * the parent process is not a recognizable shell.
+       * This is useful if we've been invoked from
+       * a non-shell program, like a mail client.
+       */
+      const char *parent = getparent ();
+
+      if (parent == NULL)
+	{
+	  eprintf ("Unable to determine parent process name");
+	  return FALSE;
+	}
+      if (strcmp (parent, "bash") != 0 &&
+	  strcmp (parent, "csh") != 0 &&
+	  strcmp (parent, "tcsh") != 0 &&
+	  strcmp (parent, "sh") != 0)
+	{
+	  eprintf ("Parent %s is not a recognized shell", parent);
+	  return FALSE;
+	}
+
       if (epresf != FALSE)
 	{
 	  ttmove (nrow - 1, 0);
@@ -121,7 +180,7 @@ spawn (char *program, const char *args[])
       eprintf ("Unable to restore terminal state");
       return (FALSE);
     }
-  if (cshell)			/* C shell.             */
+  if (jobcontrol)			/* C shell or bash */
     kill (0, SIGTSTP);
   else
     {				/* Bourne shell.        */
