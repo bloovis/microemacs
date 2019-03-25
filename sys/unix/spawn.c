@@ -46,8 +46,6 @@
 #include	<fcntl.h>
 #endif
 
-char *shellp = NULL;		/* Saved "SHELL" name.          */
-
 extern struct termios oldtty;
 extern struct termios newtty;
 
@@ -56,9 +54,10 @@ static int saw_sigpipe;
 
 /*
  * Get the name of the parent process, and return a pointer to a
- * static buffer containing the name, or NULL if we can't get
- * the parent name for some reason.  We do this by getting the
- * PID of the parent, then reading the file /proc/PID/comm.
+ * static buffer containing the first 31 characters of the name,
+ * or NULL if we can't get the parent name for some reason.
+ * We do this by getting the PID of the parent, then reading
+ * the file /proc/PID/comm.
  */
 static const char *
 getparent (void)
@@ -81,10 +80,57 @@ getparent (void)
   if (actual == -1)
     return NULL;
   parent[actual] = '\0';
+
+  /* Zap the newline terminator.
+   */
   for (p = parent; p < &parent[actual]; p++)
     if (*p == '\n')
       *p = '\0';
   return parent;
+}
+
+/*
+ * Get the shell name from the SHELL or shell environment variable.
+ * If no such variable exists, assume /bin/sh.
+ */
+static const char *
+getshell (void)
+{
+  static const char *shellp = NULL;	/* Saved "SHELL" name.          */
+
+  if (shellp == NULL)
+    {
+      shellp = getenv ("SHELL");
+      if (shellp == NULL)
+	shellp = getenv ("shell");
+      if (shellp == NULL)
+	shellp = "/bin/sh";		/* Safer.               */
+    }
+  return shellp;
+}
+
+/*
+ * Determine if the parent process is a shell that supports
+ * job control signals.
+ */
+static int
+jcok (void)
+{
+  const char *parent;
+  static const char *jcshells[3] = {"bash", "csh", "tcsh"};
+  int i, n;
+
+  /* Compare the parent process name against a list of known shells
+   * that support job control.
+   */
+  parent = getparent ();
+  if (parent == NULL)
+    return FALSE;
+  n = sizeof (jcshells) / sizeof (jcshells[0]);
+  for (i = 0; i < n; i++)
+    if (strcmp (parent, jcshells[i]) == 0)
+      return TRUE;
+  return FALSE;
 }
 
 /*
@@ -99,36 +145,17 @@ spawn (char *program, const char *args[])
   register void (*oqsig) ();
   register void (*oisig) ();
   int status;
-  int jobcontrol = 0;
-  char *p, *basename;
+  int jobcontrol = FALSE;
+  const char *shellp = NULL;
 
-  if (program == NULL)		/* Run the shell        */
+  /* If program is NULL, run the shell.  Determine what shell
+   * we are using, and whether we can use job control to return
+   * to the shell temporarily.
+   */
+  if (program == NULL)
     {
-      /* Try to determine the shell name from the environment.
-       */
-      if (shellp == NULL)
-	{
-	  shellp = getenv ("SHELL");
-	  if (shellp == NULL)
-	    shellp = getenv ("shell");
-	  if (shellp == NULL)
-	    shellp = "/bin/sh";	/* Safer.               */
-	}
-
-      /* Skip past the directory portion of the shell name,
-       * so we can see if this is the C shell (or tcsh).
-       */
-      for (p = basename = shellp; *p != '\0'; p++)
-	if (*p == '/')
-	  basename = p + 1;
-
-      /* Some shells use jobcontrol, i.e., you can use
-       * a signal to invoke them.
-       */
-      jobcontrol = strcmp (basename, "csh") == 0
-        || strcmp (basename, "bash") == 0
-	|| strcmp (basename, "tcsh") == 0;
-
+      shellp = getshell ();
+      jobcontrol = jcok ();
     }
 
   ttcolor (CTEXT);
@@ -136,27 +163,6 @@ spawn (char *program, const char *args[])
 
   if (jobcontrol)
     {
-      /* Don't try to get send a job control signal if
-       * the parent process is not a recognizable shell.
-       * This is useful if we've been invoked from
-       * a non-shell program, like a mail client.
-       */
-      const char *parent = getparent ();
-
-      if (parent == NULL)
-	{
-	  eprintf ("Unable to determine parent process name");
-	  return FALSE;
-	}
-      if (strcmp (parent, "bash") != 0 &&
-	  strcmp (parent, "csh") != 0 &&
-	  strcmp (parent, "tcsh") != 0 &&
-	  strcmp (parent, "sh") != 0)
-	{
-	  eprintf ("Parent %s is not a recognized shell", parent);
-	  return FALSE;
-	}
-
       if (epresf != FALSE)
 	{
 	  ttmove (nrow - 1, 0);
@@ -206,22 +212,22 @@ spawn (char *program, const char *args[])
       signal (SIGQUIT, oqsig);
       signal (SIGINT, oisig);
     }
-  sgarbf = TRUE;		/* Force repaint.       */
   if (ttnew () == FALSE)
     {
       eprintf ("Unable to reinitialize terminal state");
       return (FALSE);
     }
+  erefresh (FALSE, 1, 0);	/* Force repaint.       */
   return (TRUE);
 }
 
 /*
  * This code does a one of 2 different
  * things, depending on what version of the shell
- * you are using. If you are using the C shell, which
+ * you are using. If you are using the C shell or Bash, which
  * implies that you are using job control, then MicroEMACS
  * moves the cursor to a nice place and sends itself a
- * stop signal. If you are using the Bourne shell it runs
+ * stop signal. If you are using another shell it runs
  * a subshell using fork/exec.  Bound to "C-C".
  */
 int
