@@ -125,7 +125,7 @@ cleanupguess (char *s)
 /*
  * Prompt for a replacement word.  If the user specifies a replacement
  * successfully, copy the replacement to repl and return TRUE.
- * Otherwise return FALSE
+ * Otherwise return FALSE, or ABORT if the user enters Q or Control-G.
  */
 static int
 getrepl (const char *prompt)
@@ -146,10 +146,12 @@ getrepl (const char *prompt)
 	case CCHR ('G'):
 	  /* Abort the replacement.
 	   */
-	  ctrlg (FALSE, 0, KRANDOM);
+	  status = ctrlg (FALSE, 0, KRANDOM);
+	  done = TRUE;
+	  break;
 	case 'q':
 	case 'Q':
-	  status = FALSE;
+	  status = ABORT;
 	  done = TRUE;
 	  break;
 	case ' ':
