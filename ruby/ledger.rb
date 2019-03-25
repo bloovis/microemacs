@@ -90,12 +90,13 @@ def insdate(n)
       return EFALSE
     end
   end
-  insert $date
+  insert $date + ' '
   return ETRUE
 end
 
-# Return the word under the cursor and its offset in the line.
-# If there is no word under the cursor, return an empty string.
+# Return the word under the cursor and its offset in the line, and move
+# the cursor past the end of the word.  If there is no word under the cursor
+# return an empty string.
 
 def getword
   line = $line
@@ -210,12 +211,12 @@ def cleared(n)
 end
 
 # Prompt for a date, then find the transaction whose date is greater than
-# or equal to that date.
+# or equal to that date, and insert a new line with that date.
 
 def finddate(n)
   line = reply "Enter a date: "
   if line =~ /^(\d\d\d\d\/\d\d\/\d\d)$/
-    date = $1
+    $date = $1
   else
     echo "Date must be in format YYYY/MM/DD"
     return EFALSE
@@ -227,7 +228,10 @@ def finddate(n)
   while keepgoing
     line = $line
     if line =~ /^(\d\d\d\d\/\d\d\/\d\d)/
-      if $1 >= date
+      if $1 >= $date
+	goto_bol
+	ins_nl_and_backup
+	insert $date + ' '
 	return ETRUE
       end
     end
@@ -235,7 +239,7 @@ def finddate(n)
   end
   $lineno = lineno
   $offset = offset
-  echo "Date #{date} not found"
+  echo "Date #{$date} not found"
   return EFALSE
 end
 
