@@ -185,13 +185,24 @@ main (int argc, char *argv[])
       else if (arg[0] != '+')
 	{			/* it's a filename      */
 	  /* If the filename is followed by :N, where N is a decimal number,
-	   * go to the specified line number in the file.
+	   * go to the specified line number in the file.  If the line
+	   * number is also followed by :N, go to the specified column.
 	   */
+	  int column = 0;
+	  const char *lp;	/* pointer to line number */
+
 	  char * colon = strchr (arg, ':');
 	  if (colon != NULL && colon[1] >= '0' && colon[1] <= '9')
 	    {
 	      *colon = '\0';
-	      line = atoi (colon + 1);
+	      lp = colon + 1;
+	      colon = strchr (lp, ':');
+	      if (colon != NULL && colon[1] >= '0' && colon[1] <= '9')
+		{
+		  *colon = '\0';
+		  column = atoi (colon + 1);
+		}
+	      line = atoi (lp);
 	    }
 	  bufinit (arg);	/* make buffer & window */
 	  update ();
@@ -200,6 +211,8 @@ main (int argc, char *argv[])
 	    {
 	      gotoline (TRUE, line, 0);
 	      line = 0;
+	      if (column != 0)
+		forwchar (TRUE, column - 1, KRANDOM);
 	    }
 	}
     }
