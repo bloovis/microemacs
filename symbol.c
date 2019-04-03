@@ -215,7 +215,6 @@ KEY key[] = {
   {KCTLX | '1',		onlywind,	"only-window"},
   {KCTLX | '2',		splitwind,	"split-window"},
   {KCTLX | 'B',		usebuffer,	"use-buffer"},
-  {KCTLX | 'C',		railscontroller,"rails-controller"},
   {KCTLX | 'E',		ctlxe,		"execute-macro"},
   {KCTLX | 'F',		readprofile,	"read-profile"},
   {KCTLX | 'G',		gotoline,	"goto-line"},
@@ -224,7 +223,6 @@ KEY key[] = {
   {KCTLX | 'I',		spellregion,	"spell-region"},
 #endif
   {KCTLX | 'K',		killbuffer,	"kill-buffer"},
-  {KCTLX | 'M',		railsmodel,	"rails-model"},
   {KCTLX | 'N',		nextwind,	"forw-window"},
   {KCTLX | 'P',		prevwind,	"back-window"},
   {KCTLX | 'R',		backisearch,	"back-i-search"},
@@ -234,7 +232,6 @@ KEY key[] = {
   {KCTLX | 'V',		filevisitreadonly, "file-visit-readonly"},
 #else
   {-1,			filevisitreadonly, "file-visit-readonly"},
-  {KCTLX | 'V',		railsview,	"rails-view"},
 #endif
   {KCTLX | 'Z',		enlargewind,	"enlarge-window"},
   {KMETA | KCTRL | 'E',	gccerror,	"gcc-error"},

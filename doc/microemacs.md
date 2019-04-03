@@ -2039,37 +2039,6 @@ M-.
     finds the next occurence.  The command then visits the corresponding
     file and places the dot at the line containing the identifier.
 
-# Ruby on Rails
-
-MicroEMACS has three functions that make it slightly easier to
-find files within a Rails\index{Rails} project.  These functions work only
-when the current directory is the top-level directory of
-your project.
-
-C-X C
-
-:   **rails-controller**\index{rails-controller}
-
-    This command prompts you to enter the name of a database table,
-    then visits the source file for the corresponding controller.
-
-C-X M
-
-:   **rails-model**\index{rails-model}
-
-    This command prompts you to enter the name of a class,
-    then visits the source file for the corresponding model.
-    The class name must be singular and lower case (MicroEMACS
-    does not understand the pluralizing conventions used by Rails).
-
-C-X V
-
-:   **rails-view**\index{rails-view}
-
-    This command prompts you to enter the name of a database table,
-    followed a view method, then visits the source file for the
-    corresponding view.
-
 # GCC errors
 
 \index{GCC errors}
@@ -2419,8 +2388,9 @@ Some things to note about this example:
 * The new command invokes several built-in MicroEMACS functions, passing
   numeric parameters in some cases.
 
-* You must replace dashes with underscores in command names when invoking MicroEMACS commands
-  from Ruby.
+* It invokes built-in MicroEMACS commands, using their names with dashes replaced
+  by underscores.  For example, it invokes the `file-visit` command by calling
+  the `file_visit` method.
 
 * It uses the global variable `$line` to get the contents of the current line.
 
@@ -2559,8 +2529,8 @@ for use in Ruby commands.
 
 `insert(string)`
 
-:   This function inserts the value of the `string` parameter at the dot.
-    The string may contain newline characters, which are treated as
+:   This function inserts the value of the `string` parameter into the current
+    buffer at the dot. The string may contain newline characters, which are treated as
     line breaks.
 
 `bind(name, key)`
@@ -3314,7 +3284,7 @@ C-X C-E
 
 :   echo
 
-*Tags, Rails, GCC*
+*Tags, GCC*
 
 M-,
 
@@ -3327,18 +3297,6 @@ M-G
 M-.
 
 :   find-tag
-
-C-X C
-
-:   rails-controller
-
-C-X M
-
-:   rails-model
-
-C-X V
-
-:   rails-view
 
 M-C-E
 

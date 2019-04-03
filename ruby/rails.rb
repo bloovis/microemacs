@@ -1,4 +1,4 @@
-# Replacements for the built-in Rails-related commands.
+# Replacements for the old (now deleted) built-in Rails-related commands.
 # These are a little smarter, though; they attempt
 # to figure out class and method names by examining
 # the source code in the current window.

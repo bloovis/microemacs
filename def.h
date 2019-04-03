@@ -897,9 +897,6 @@ const char * symsearch (const char *sname, /* Search for symbol.	*/
  */
 int findtag (int f, int n, int k);	/* Search for a tag             */
 int freetags (int f, int n, int k);	/* Free up tag list		*/
-int railscontroller (int f, int n, int k); /* Find Rails controller	*/
-int railsview (int f, int n, int k);	/* Find Rails view		*/
-int railsmodel (int f, int n, int k);	/* Find Rails model		*/
 int gccerror (int f, int n, int k);	/* Find line in gcc error	*/
 
 tagfile * findtagfile (const char *name);

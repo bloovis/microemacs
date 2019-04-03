@@ -127,7 +127,7 @@ freetags (int f, int n, int k)
  * Add a filename to the end of the filename list, return a
  * pointer to the next file structure, or NULL if out of memory.
  */
-tagfile *
+static tagfile *
 addtagfile (const char *name)
 {
   tagfile *newfile;
@@ -555,129 +555,6 @@ int
 findtag (int f, int n, int k)
 {
   return searchtag (f, n, preptag, "tag");
-}
-
-/*
- * Convert a CamelCase name to an underline_name.
- */
-static const char *
-uncamel(const char *s)
-{
-  static char buf[256];
-  int i, j;
-
-  for (i = 0, j = 0; j < sizeof(buf); i++)
-    {
-      char c = s[i];
-      if (CISUPPER(c))
-	{
-	  if (j > 0)
-	    buf[j++] = '_';
-	  buf[j++] = CTOLOWER(c);
-	}
-      else
-	buf[j++] = c;
-      if (c == '\0')
-        break;
-     }
-   return buf;
-}
-
-/*
- * Most of the code for searching for a Rails component: gets
- * the name under the cursor, converts it to a non-camelcase
- * string, and returns the converted name.  Returns NULL on error.
- */
-
-const char *
-getrailsname(const char *type)
-{
-  int s;
-  char tpat[NPAT];		/* temporary pattern    */
-
-  /* Get a default string to search for by looking at the word
-   * under the cursor (if any).
-   */
-  getcursorword (tagpat, sizeof (tagpat), FALSE);
-
-  /* Prompt for the tag to search for if no argument
-   * specified.
-   */
-  s = ereply ("Find %s [%s]: ", tpat, NPAT, type, tagpat);
-  if (s == TRUE)		/* Specified            */
-    strcpy (tagpat, tpat);
-  else if (s == FALSE && tagpat[0] != 0)	/* CR, but old one      */
-    s = TRUE;
-  if (s != TRUE)
-    return NULL;
-  return uncamel(tagpat);
-}
-
-/*
- * Search for a Rails controller.
- */
-int
-railscontroller(int f, int n, int k)
-{
-  char filename[NFILEN];
-  const char *uname = getrailsname("controller for DB table");
-
-  if (uname == NULL)
-    return FALSE;
-  else
-    {
-      snprintf(filename, NFILEN, "app/controllers/%s_controller.rb", uname);
-      if (visit_file (filename) == FALSE)
-        return FALSE;
-      return TRUE;
-    }
-}
-
-/*
- * Search for a Rails view
- */
-int
-railsview(int f, int n, int k)
-{
-  char filename[NFILEN];
-  char method[NPAT];
-  const char *classname;
-  int s;
-
-  classname = getrailsname("view for DB table");
-  if (classname == NULL)
-    return FALSE;
-  else
-    {
-      method[0] = '\0';
-      s = ereply("view method: ", method, NPAT);
-      if (s == FALSE || s == ABORT || method[0] == '\0')
-	return FALSE;
-      snprintf(filename, NFILEN, "app/views/%s/%s.html.erb", classname, method);
-      if (visit_file (filename) == FALSE)
-        return FALSE;
-      return TRUE;
-    }
-}
-
-/*
- * Search for a Rails model.
- */
-int
-railsmodel(int f, int n, int k)
-{
-  char filename[NFILEN];
-  const char *uname = getrailsname("model for class (singular, lower case)");
-
-  if (uname == NULL)
-    return FALSE;
-  else
-    {
-      snprintf(filename, NFILEN, "app/models/%s.rb", uname);
-      if (visit_file (filename) == FALSE)
-        return FALSE;
-      return TRUE;
-    }
 }
 
 /*
