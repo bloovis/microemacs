@@ -534,8 +534,6 @@ extern int curmsgf;
 extern int newmsgf;
 extern char msg[];
 extern char oldbufn[NBUFN];
-extern char *kbufp;
-extern int kused;
 extern int casefold;
 extern int fillcol;
 extern int tabsize;

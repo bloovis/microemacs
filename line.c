@@ -55,12 +55,12 @@
 #define UPPER 0x01
 #define LOWER 0x02
 
-char *kbufp = NULL;		/* Kill buffer data.            */
-int kindex = -1;		/* kremove UTF-8 index into KB.	*/
-const uchar *kptr = NULL;	/* kremove pointer into KB.	*/
-int kused = 0;			/* # of bytes used in KB.       */
-int ksize = 0;			/* # of bytes allocated in KB.  */
-int kchars = 0;			/* # of UTF-8 chars in KB.	*/
+static char *kbufp = NULL;		/* Kill buffer data.            */
+static int kindex = -1;			/* kremove UTF-8 index into KB.	*/
+static const uchar *kptr = NULL;	/* kremove pointer into KB.	*/
+static int kused = 0;			/* # of bytes used in KB.       */
+static int ksize = 0;			/* # of bytes allocated in KB.  */
+static int kchars = 0;			/* # of UTF-8 chars in KB.	*/
 
 /*
  * Forward declarations.
@@ -875,7 +875,7 @@ kinsert (const char *s, int n)
     }
   memcpy (&kbufp[kused], s, n);
   kused += n;
-  kchars = unslen ((const uchar *)kbufp, kused);
+  kchars += unslen ((const uchar *)s, n);
   return (TRUE);
 }
 
