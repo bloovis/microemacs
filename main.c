@@ -85,6 +85,7 @@ uchar pat[NPAT] = { 0 };	/* Pattern                      */
 SYMBOL *symbol[NSHASH];		/* Symbol table listhead.       */
 int inprof;			/* True if reading profile      */
 int bflag;			/* True if -b option specified  */
+int noupdatecscope;		/* True if -d option specified	*/
 int mouse;			/* True if -m option specified  */
 int rflag;			/* True if -r option specified  */
 int xflag;			/* True if -x option specified  */
@@ -136,6 +137,9 @@ main (int argc, char *argv[])
 	      bflag = TRUE;
 	      break;
 #endif
+	    case 'd':
+	      noupdatecscope = TRUE;
+	      break;
 	    case 'g':
 	      n++;
 	      if (n < argc)

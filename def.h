@@ -510,6 +510,7 @@ extern SYMBOL *symbol[];
 extern int inprof;
 extern int bflag;
 extern int rflag;
+extern int noupdatecscope;
 extern int mouse;
 extern int xflag;
 extern int zflag;
