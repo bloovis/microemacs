@@ -99,10 +99,27 @@ mouseclick(int x, int y)
 	    }
 	  if (lp != bp->b_linep)
 	    {
+	      int mousecol = wp->w_leftcol + x;
+	      uchar *s = lgets (lp);
+	      uchar *end = lend (lp);
+	      int col = 0;
+
 	      curwp = wp;
 	      curbp = bp;
 	      curwp->w_dot.p = lp;
-	      curwp->w_dot.o = 0;	/* FIXME! */
+	      curwp->w_dot.o = 0;
+	      while (s < end && col < mousecol)
+		{
+		  int ulen;
+		  int c = ugetc (s, 0, &ulen);
+		  s += ulen;
+		  if (c == '\t')
+		    col += (tabsize - col % tabsize) - 1;
+		  else if (c < 0x80 && CISCTRL (c) != FALSE)
+		    ++col;
+		  ++col;
+		  ++curwp->w_dot.o;
+		}
 	      curwp->w_flag |= WFMOVE;
 	      update ();
 	    }

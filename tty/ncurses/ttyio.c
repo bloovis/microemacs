@@ -85,7 +85,7 @@ ttopen (void)
   cbreak ();			/* take input chars one at a time, no wait for \n */
   noecho ();
   raw ();
-  mousemask (BUTTON1_CLICKED, &mask);
+  mousemask (/*BUTTON1_CLICKED*/ALL_MOUSE_EVENTS, &mask);
   setttysize ();
   tcgetattr (0, &newtty);
 }
