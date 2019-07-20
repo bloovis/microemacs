@@ -33,9 +33,10 @@ end
 def xact(n)
   line = $line
   lineno = $lineno
-  if line =~ /^(\d\d\d\d\/\d\d\/\d\d)\s+(\w+.*)/
+  if line =~ /^(\d\d\d\d\/\d\d\/\d\d)\s+(\(\d+\)\s+)?(\w+.*)/
     date = $1
-    payee = $2.gsub(/'/, "\\'")
+    checkno = $2
+    payee = $3.gsub(/'/, "\\'")
     # echo "payee = #{payee}"
     transaction, stderr_str, status = Open3.capture3('ledger', '--no-aliases',
       '-f', 'ledger.dat', 'xact', date, payee)
@@ -69,6 +70,7 @@ def xact(n)
     end
     $lineno = lineno
     $offset = 11
+    insert checkno if checkno
     return ETRUE
   else
     echo "Transaction must start with date and partial payee name"
@@ -259,5 +261,5 @@ bind "finddate", ctlx('f')
 # Set up some global variables used by the commands.
 
 readaliases
-$date = Time.now.strftime("%Y/%m/%d ")	# Used by the insdate command
+$date = Time.now.strftime("%Y/%m/%d")	# Used by the insdate command
 $acct = 'Assets:TBTF Bank'		# Used by the cleared command
