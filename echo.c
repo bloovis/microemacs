@@ -279,7 +279,7 @@ readmsg (void)
  */
 
 int
-echo (void)
+eecho (void)
 {
   register int s;
   char echoline[NCOL];
@@ -426,9 +426,9 @@ startchoices ()
  * spacing.
  */
 void
-addchoice (name, flag)
-     char *name;
-     int flag;
+addchoice (const
+     char *name,
+     int flag)
 {
   int len1, len2, pad;
   char bname[NBUFN];

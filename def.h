@@ -656,7 +656,7 @@ int mouseevent (int f, int n, int k);	/* Handle mouse button event.	*/
  */
 int readmsg (void);			/* Read next line of message.   */
 int writemsg (const char *sp);		/* Send string to message line.	*/
-int echo (void);			/* Echo text on status line.    */
+int eecho (void);			/* Echo text on status line.    */
 int ereply (const char *fp, char *buf, int nbuf, ...);
 int ereplyf (const char *fp, char *buf, int nbuf, int flag, ...);
 void eformat (const char *fp, va_list ap);

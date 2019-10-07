@@ -462,9 +462,8 @@ ttykeymaptidy (void)
  */
 
 static void
-adddict (kstr, kcode)
-     char *kstr;
-     KEY kcode;
+adddict (char *kstr,
+         KEY kcode)
 {
   keywords = tinsert (kstr, kcode, keywords);
 }

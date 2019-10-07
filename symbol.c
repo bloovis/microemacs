@@ -193,7 +193,7 @@ KEY key[] = {
 #if	DIRLIST
   {KCTLX | KCTRL | 'D', dirlist,	"display-directory"},
 #endif
-  {KCTLX | KCTRL | 'E', echo,		"echo"},
+  {KCTLX | KCTRL | 'E', eecho,		"echo"},
   {KCTLX | KCTRL | 'F', filename,	"set-file-name"},
   {KCTLX | KCTRL | 'I', fileinsert,	"file-insert"},
   {KCTLX | KCTRL | 'L', lowerregion,	"lower-region"},
