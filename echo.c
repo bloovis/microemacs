@@ -441,6 +441,8 @@ addchoice (const
   if (flag & EFFILE)
     {				/* Filename?            */
       makename (bname, name);	/* Strip out the path   */
+      if (flag & EFDIR)
+	strcat (bname, "/");
       name = bname;
     }
   len1 = strlen (choicebuf);
@@ -678,8 +680,12 @@ eread (const char *fp, char *buf, int nbuf, int flag, va_list ap)
 	  np2 = NULL;
 	  while ((np1 = nextname (buf, cpos, np2, flag)) != NULL)
 	    {
+	      int dirflag = 0;
+
+	      if ((flag & EFFILE) != 0 && ffisdir (np1, strlen (np1)))
+		dirflag = EFDIR;
 	      if (popup)	/* add to list  */
-		addchoice (np1, flag);
+		addchoice (np1, flag | dirflag);
 	      if (nhits++ == 0)
 		{
 		  strcpy (savebuf, np1);

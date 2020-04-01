@@ -367,7 +367,7 @@ ffsearch (
 {
   struct dirent *ff;
   static DIR *dirp;
-  static char buf[256];
+  static char buf[NFILEN];
   static int pathlen;
   int i, c = 0;
 
@@ -412,16 +412,17 @@ ffsearch (
  */
 int
 ffisdir (
-     char *name,		/* filename to check */
+     const char *name,		/* filename to check */
      int cpos)			/* number of characters in name to check */
 {
+  static char fname[NFILEN];	/* temporary buffer */
   struct stat stbuf;
-  int c, ret;
+  int ret;
 
-  c = name[cpos];		/* save following char  */
-  name[cpos] = '\0';		/* null-terminate it    */
-  ret = stat (fftilde (name), &stbuf);	/* get file information */
-  name[cpos] = c;		/* restore terminator   */
+  strncpy (fname, name, sizeof (fname) - 1);
+  if (cpos < NFILEN)		/* cpos isn't too big for buffer? */
+    fname[cpos] = '\0';		/* null-terminate it    */
+  ret = stat (fftilde (fname), &stbuf);	/* get file information */
   if (ret != 0)			/* file doesn't exist?  */
     return FALSE;		/* must not be a dir    */
   return (stbuf.st_mode & S_IFDIR) != 0;	/* check dir bit        */

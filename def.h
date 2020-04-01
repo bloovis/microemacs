@@ -195,6 +195,7 @@ typedef unsigned char uchar;
 #define EFFILE  0x0008		/* Autocomplete filename.       */
 #define EFBUF   0x0010		/* Autocomplete buffer name.    */
 #define EFPAT   0x0020		/* Autocomplete search pattern. */
+#define EFDIR   0x0040		/* Filename is a directory.	*/
 
 /*
  * Keys are represented inside using a 32 bit
@@ -726,7 +727,7 @@ int fbackupfile (const char *fname);	/* Rename file to backup.	*/
 char *ffsearch (const char *name,	/* Find matching filename.	*/
 		int cpos,
 		const char *prev);
-int ffisdir (char *name, int cpos);	/* name[0..cpos-1] is dir?	*/
+int ffisdir (const char *name, int cpos); /* name[0..cpos-1] is dir?	*/
 const char * ffexedir (void);		/* Get dir of pe executable.	*/
 
 /*
