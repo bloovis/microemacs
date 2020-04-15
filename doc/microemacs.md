@@ -2641,7 +2641,7 @@ Here are the **Key** methods:
 ### Global variables
 
 MicroEMACS provides several global virtual variables that may be both read
-and written.
+and written in Ruby code.
 
 `$line`
 

@@ -863,7 +863,7 @@ rubyinit (int quiet)
                global_pe_rb);
       return FALSE;
     }
-  if (loadscript ("/etc/pe.rb") == FALSE)
+  if (loadscript (global_pe_rb) == FALSE)
     return FALSE;
 
   /* Construct the name of $HOME/.pe.rb and load that file.
