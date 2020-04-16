@@ -2686,6 +2686,17 @@ and written in Ruby code.
 :   This variable contains the current fill column for paragraph justification.  Writing to this variable
     sets the fill column, as in the **set-fill-column** command.
 
+`$bflag`
+
+:   This variable contains the current buffer's flags, and can be read or written.
+    The flags are an OR of these values: BFCHG (buffer has changed), BFBAK (buffer
+    needs a backup), and BFRO (buffer is read-only).  For example, this code:
+
+        $bflag &= ~BFCHG
+
+    turns off the "buffer changed" flag.  This is a dangerous operation, because
+    it could result in data loss.
+
 ## Exceptions
 
 If an exception occurs in Ruby code, MicroEMACS will open a temporary

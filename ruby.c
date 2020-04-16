@@ -454,6 +454,29 @@ set_lineno (VALUE val, ID id)
 }
 
 /*
+ * Get the current buffer's flags.
+ */
+static VALUE
+get_bflag (VALUE self)
+{
+  VALUE ret;
+
+  ret = INT2NUM (curbp->b_flag);
+  return ret;
+}
+
+/*
+ * Set the current buffer's flags.
+ */
+static void
+set_bflag (VALUE val, ID id)
+{
+  int flag = NUM2INT (val);
+  curbp->b_flag = flag;
+  curwp->w_flag |= WFMODE;
+}
+
+/*
  * Get the current line length in UTF-8 characters, not bytes.
  */
 static VALUE
@@ -845,6 +868,7 @@ rubyinit (int quiet)
   rb_define_virtual_variable ("$filename", get_filename, set_filename);
   rb_define_virtual_variable ("$tabsize", get_tabsize, set_tabsize);
   rb_define_virtual_variable ("$fillcol", get_fillcol, set_fillcol);
+  rb_define_virtual_variable ("$bflag", get_bflag, set_bflag);
 
   /* Add the current directory to the Ruby load path.
    * This allows the user to load other scripts without specifying

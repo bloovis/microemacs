@@ -9,6 +9,13 @@ EFALSE = 0
 ETRUE  = 1
 EABORT = 2
 
+# The variable $bflag (the current buffer's flags) is an OR
+# of the following values.
+
+BFCHG = 1	# changed
+BFBAK = 2	# need backup
+BFRO  = 4	# read-only
+
 # Trap SIGINT so we can cleanly cause Ruby to
 # exit instead of killing MicroEMACS.
 
