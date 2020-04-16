@@ -414,6 +414,12 @@ out:
    */
   bp->b_dot.p = lp1;
 
+  /* Set up the mode for this file.
+   */
+#if USE_RUBY
+  rubymode();
+#endif
+
   return (s != FIOERR);		/* False if error.      */
 }
 

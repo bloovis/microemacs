@@ -7,6 +7,7 @@ $nameoffset = 46
 def showdir(dir)
   # Switch to the dired buffer and destroy any existing content
   use_buffer '*dired*'
+  $bflag = 0
   goto_bob
   set_mark
   goto_eob
@@ -29,34 +30,59 @@ def showdir(dir)
   end
   $lineno = 5
   $offset = $nameoffset
+  $bflag = BFRO
   return ETRUE
 end
 
-def dired(n)
-  # Prompt for the directory name and expand it fully.
-  dir = reply "Enter a directory name: "
-  return showdir(dir)
-end
-
 def openfile(n)
-  if $lineno < 3
-    return EFALSE
+  line = $line.chomp
+  if $lineno == 1
+    line.gsub!(/:/, '')
+
+    # Extract the portion of the path up to next / after the cursor
+    offset = $offset
+    after = line[offset..-1]
+    if after =~ /^([^\/]*)\//
+      afterlen = $1.length
+      filename = line[1..offset+afterlen]
+    else
+      filename = line[1..-1]
+    end
+    dir = ''
+  else
+    if $lineno < 3
+      return EFALSE
+    end
+    old_lineno = $lineno
+    old_offset = $offset
+    goto_bob
+    dir = $line[0..-3]
+    $lineno = old_lineno
+    $offset = old_offset
+    filename = line[$nameoffset..-1]
+    filename.gsub!(/\*/, '')		# executable file
+    filename.gsub!(/ -> .*/, '')	# symbolic link
   end
-  filename = $line[$nameoffset..-2]
-  old_lineno = $lineno
-  old_offset = $offset
-  goto_bob
-  dir = $line[0..-3]
-  $lineno = old_lineno
-  $offset = old_offset
   full = dir + '/' + filename
-  if full[-1] == '/'
+  if File.directory?(full)
+    if full[-1] != '/'
+      full << '/'
+    end
     showdir(full)
   else
     file_visit(full)
   end
 end
   
+def dired(n)
+  # Prompt for the directory name and expand it fully.
+  dir = reply "Enter a directory name: "
+  unless dir
+    return EFALSE
+  end
+  return showdir(dir)
+end
+
 # Tell MicroEMACS about the new commands.
 
 ruby_command "dired"

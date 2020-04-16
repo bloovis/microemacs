@@ -854,6 +854,8 @@ int rubyload (int f, int n, int k);	/* Load a Ruby script.		*/
 int rubyinit (int quiet);		/* Initialize Ruby.		*/
 int rubycall (const char *name, int f,	/* Call a Ruby command.		*/
 	      int n);
+void rubymode (void);			/* Call ruby "initmode"		*/
+
 /*
  * Defined by "spell.c".
  */

@@ -1052,3 +1052,15 @@ rubycommand (int f, int n, int k)
       return TRUE;
     }
 }
+
+/*
+ * Call the Ruby function initmode to set up the
+ * mode for the current buffer.
+ */
+void
+rubymode (void)
+{
+  if (rubyinit (FALSE) != TRUE)
+    return;
+  rubycall ("initmode", FALSE, 0);
+}
