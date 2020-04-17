@@ -857,15 +857,15 @@ wallchart (int f, int n, int k)
  * Remove the current mode structure from the current
  * buffer and free all of its substructures.
  */
-static void
-removemode (void)
+void
+removemode (BUFFER *bp)
 {
   MODE *m;
   int i;
 
-  if (curbp == NULL)
+  if (bp == NULL)
     return;
-  m = curbp->b_mode;
+  m = bp->b_mode;
   if (m == NULL)
     return;
   free (m->m_name);
@@ -879,6 +879,7 @@ removemode (void)
 	  free (b);
 	}
     }
+  bp->b_mode = NULL;
 }
 
 /*
@@ -895,7 +896,7 @@ createmode (const char *name)
   if (curbp == NULL)
     return;
   if (curbp->b_mode != NULL)
-    removemode ();
+    removemode (curbp);
   m = calloc (1, sizeof (*m));
   if (m == NULL)
     {

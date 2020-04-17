@@ -897,7 +897,9 @@ const char * symsearch (const char *sname, /* Search for symbol.	*/
 			int cpos,
 			const char *prev);
 void createmode (const char *name);	/* Set mode for current buffer	*/
+void removemode (BUFFER *bp);		/* Remove mode for a buffer	*/
 const char * modename (BUFFER *bp);	/* Return name for current mode	*/
+
 /*
  * Defined by "tags.c".
  */

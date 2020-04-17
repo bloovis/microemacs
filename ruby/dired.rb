@@ -4,6 +4,24 @@ require 'open3'
 
 $nameoffset = 46
 
+def viewfile(filename, kind)
+  case kind
+  when :visit
+    file_visit filename
+  when :open
+    only_window
+    split_window
+    forw_window
+    file_visit filename
+  when :display
+    only_window
+    split_window
+    forw_window
+    file_visit filename
+    back_window
+  end
+end
+
 def showdir(dir)
   # Switch to the dired buffer and destroy any existing content
   use_buffer '*dired*'
@@ -31,15 +49,18 @@ def showdir(dir)
   $lineno = 5
   $offset = $nameoffset
   $bflag = BFRO
+  setmode "dired"
+  bind "visitfile", ctrl('m')
+  bind "openfile", key('o')
+  bind "displayfile", ctrl('o')
   return ETRUE
 end
 
-def openfile(n)
+def handlefile(kind)
   line = $line.chomp
   if $lineno == 1
+    # Extract the portion of the path up to next / after the cursor on line 1
     line.gsub!(/:/, '')
-
-    # Extract the portion of the path up to next / after the cursor
     offset = $offset
     after = line[offset..-1]
     if after =~ /^([^\/]*)\//
@@ -50,6 +71,7 @@ def openfile(n)
     end
     dir = ''
   else
+    # Extract the filename from the directory listing.
     if $lineno < 3
       return EFALSE
     end
@@ -70,10 +92,22 @@ def openfile(n)
     end
     showdir(full)
   else
-    file_visit(full)
+    viewfile(full, kind)
   end
 end
   
+def visitfile(n)
+  handlefile :visit
+end
+
+def openfile(n)
+  handlefile :open
+end
+
+def displayfile(n)
+  handlefile :display
+end
+
 def dired(n)
   # Prompt for the directory name and expand it fully.
   dir = reply "Enter a directory name: "
@@ -87,5 +121,6 @@ end
 
 ruby_command "dired"
 bind "dired", ctlx('d')
+ruby_command "visitfile"
 ruby_command "openfile"
-bind "openfile", ctlxctrl('d')
+ruby_command "displayfile"

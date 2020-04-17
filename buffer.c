@@ -251,6 +251,7 @@ killbuffer (int f, int n, int k)
   if (!strcmp (oldbufn, bp->b_bname))	/* same name as old?    */
     oldbufn[0] = 0;		/* clear old name       */
   killundo (bp);		/* Free undo records	*/
+  removemode (bp);		/* Free mode record	*/
   free ((char *) bp);		/* Release buffer block */
   return (TRUE);
 }
