@@ -171,7 +171,7 @@ my_cbind (VALUE self, VALUE c, VALUE k)
       cret = FALSE;
     }
   if (cret == TRUE)
-    setbinding (key, sp);
+    setmodebinding (key, sp);
 
   ret = INT2NUM (cret);
   return ret;
@@ -686,6 +686,33 @@ my_getkey (VALUE self)
 }
 
 /*
+ * Initialize a mode for the current buffer.  The parameter
+ * is the name of the mode.  The key binding table for the mode
+ * is cleared, and can be filled in with subsequent calls to bind.
+ * Return 1 if success, or zero otherwise.
+ */
+static VALUE
+my_setmode (VALUE self, VALUE s)
+{
+  VALUE ret;
+  int cret;
+
+  if (!RB_TYPE_P(s, T_STRING))
+    {
+      eprintf ("setmode parameter must be a string");
+      cret = FALSE;
+    }
+  else
+    {
+      char *cs = StringValuePtr (s);
+      createmode (cs);
+      cret = TRUE;
+    }
+  ret = INT2NUM (cret);
+  return ret;
+}
+
+/*
  * Check if the last call to Ruby returned an exception.
  * If so, display the exception string on the echo line
  * and return FALSE.  Otherwise return TRUE.
@@ -857,6 +884,7 @@ rubyinit (int quiet)
   rb_define_global_function("cbind", my_cbind, 2);
   rb_define_global_function("reply", my_reply, 1);
   rb_define_global_function("cgetkey", my_getkey, 0);
+  rb_define_global_function("setmode", my_setmode, 1);
 
   /* Define some virtual global variables, along with
    * their getters and setters.

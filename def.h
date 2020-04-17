@@ -364,6 +364,7 @@ typedef struct BUFFER
   int b_leftcol;		/* Left column of windows       */
   char b_fname[NFILEN];		/* File name                    */
   char b_bname[NBUFN];		/* Buffer name                  */
+  struct MODE *b_mode;		/* Emacs-like major mode	*/
 }
 BUFFER;
 
@@ -888,12 +889,15 @@ void keydup (int new,		/* Bind key to existing func.	*/
 SYMBOL *symlookup (const char *cp);	/* Symbol table lookup		*/
 int getbindingforcmd (const char *s);	/* Find key bound to cmd. name	*/
 SYMBOL *getbinding (int key);		/* Get symbol bound to key	*/
-void setbinding (int key, SYMBOL *sym);	/* Set symbol bound to key	*/
+void setbinding (int key, SYMBOL *sym);	/* Add global key binding	*/
+void setmodebinding (int key,
+                     SYMBOL *sym);	/* Add key binding to mode	*/
 int wallchart (int f, int n, int k);	/* Make wall chart.             */
 const char * symsearch (const char *sname, /* Search for symbol.	*/
 			int cpos,
 			const char *prev);
-
+void createmode (const char *name);	/* Set mode for current buffer	*/
+const char * modename (BUFFER *bp);	/* Return name for current mode	*/
 /*
  * Defined by "tags.c".
  */

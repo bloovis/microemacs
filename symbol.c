@@ -89,7 +89,7 @@
  * 
  * Revision 1.1  89/01/13  11:07:38  MGA
  * Initial revision
- * 
+ *
  */
 #include	"def.h"
 
@@ -320,6 +320,17 @@ typedef struct BINDING
 static BINDING *binding[NSHASH];	/* Key bindings.                */
 
 /*
+ * A mode is a string containing the name of the mode, and
+ * a set of key bindings.  A mode is attached to a buffer,
+ * but may be missing
+ */
+typedef struct MODE
+{
+  char *m_name;
+  BINDING *m_binding[NSHASH];
+} MODE;
+
+/*
  * Take a string, and compute the symbol table
  * bucket number. This is done by adding all of the characters
  * together, and taking the sum mod NSHASH. The string probably
@@ -360,26 +371,44 @@ keyhash (int key)
 
 /*
  * Return a pointer to the SYMBOL node that is bound
- * to a particular key.
+ * to a particular key.  Look first in the mode binding
+ * table, then in the global table.
  */
-SYMBOL *
-getbinding (int key)
+static SYMBOL *
+findbinding (int key, BINDING **table)
 {
   BINDING *bp;
   int hash;
 
   hash = keyhash (key);
-  for (bp = binding[hash]; bp != NULL; bp = bp->bi_next)
+  for (bp = table[hash]; bp != NULL; bp = bp->bi_next)
     if (bp->bi_key == key)
       return bp->bi_symbol;
   return NULL;		/* not found */
 }
 
 /*
- * Set the binding for a key to the specified symbol.
+ * Return a pointer to the SYMBOL node that is bound
+ * to a particular key.  Look first in the mode binding
+ * table, then in the global table.
  */
-void
-setbinding (int key, SYMBOL *sym)
+SYMBOL *
+getbinding (int key)
+{
+  SYMBOL *s = NULL;
+  if (curbp == NULL || curbp->b_mode == NULL ||
+      (s = findbinding (key, curbp->b_mode->m_binding)) == NULL)
+    s = findbinding (key, binding);
+  return s;
+}
+
+/*
+ * Add a key binding to the specified binding table,
+ * which is either the global binding table or a mode
+ * binding table.
+ */
+static void
+addbinding (int key, SYMBOL *sym, BINDING **table)
 {
   BINDING *bp, *bp1;
   int hash;
@@ -389,7 +418,7 @@ setbinding (int key, SYMBOL *sym)
    */
   hash = keyhash (key);
   bp = NULL;
-  for (bp1 = binding[hash]; bp1 != NULL; bp1 = bp1->bi_next)
+  for (bp1 = table[hash]; bp1 != NULL; bp1 = bp1->bi_next)
     if (bp1->bi_key == key)
       {
 	bp = bp1;
@@ -403,12 +432,36 @@ setbinding (int key, SYMBOL *sym)
       bp = calloc (1, sizeof (*bp));
       if (bp == NULL)
 	abort ();
-      bp->bi_next = binding[hash];
+      bp->bi_next = table[hash];
       bp->bi_key = key;
-      binding[hash] = bp;
+      table[hash] = bp;
     }
   bp->bi_symbol = sym;		/* Bind to new symbol */
   ++sym->s_nkey;
+}
+
+/*
+ * Add the binding for a key to the specified symbol to
+ * the global binding table.
+ */
+void
+setbinding (int key, SYMBOL *sym)
+{
+  addbinding (key, sym, binding);
+}
+
+/*
+ * Add the binding for a key to the specified symbol to
+ * the mode binding table, if it exists.  Otherwise,
+ * add it to the global binding table.
+ */
+void
+setmodebinding (int key, SYMBOL *sym)
+{
+  if (curbp != NULL && curbp->b_mode != NULL)
+    addbinding (key, sym, curbp->b_mode->m_binding);
+  else
+    addbinding (key, sym, binding);
 }
 
 /*
@@ -724,6 +777,57 @@ sortblist (void)
 }
 
 /*
+ * Helper function for wallchart.  It searches the specified
+ * binding table, and adds all entries to the popup buffer.
+ * If mode is TRUE, search the current buffer's mode table,
+ * and add a '+' character to each entry; otherwise
+ * search the global binding table.  Return TRUE if success.
+ */
+static int
+showbindings (int f, int mode)
+{
+  register int key;
+  register SYMBOL *sp;
+  register char *cp1;
+  char buf[64];
+  BINDING *bp;
+  BINDING **table;
+  int hash;
+
+  if (mode == TRUE)
+    {
+      if (curbp == NULL || curbp->b_mode == NULL)
+	return TRUE;
+      table = curbp->b_mode->m_binding;
+    }
+  else
+    table = binding;
+  for (hash = 0; hash < NSHASH; hash++)
+    {
+      for (bp = table[hash]; bp != NULL; bp = bp->bi_next)
+	{
+	  key = bp->bi_key;
+	  sp = bp->bi_symbol;
+	  if (f != FALSE || strcmp (sp->s_name, "ins-self") != 0)
+	    {
+	      ekeyname (buf, key);
+	      cp1 = &buf[0];	/* Find end.            */
+	      while (*cp1 != '\0')
+		++cp1;
+	      while (cp1 < &buf[16])	/* Goto column 16.      */
+		*cp1++ = ' ';
+	      strcpy (cp1, sp->s_name);	/* Add function name.   */
+	      if (mode)
+		strcat (cp1++, "+");
+	      if (addline (buf) == FALSE)
+		return (FALSE);
+	    }
+	}
+    }
+  return TRUE;
+}
+
+/*
  * This function creates a table, listing all
  * of the command keys and their current bindings, and stores
  * the table in the standard pop-op buffer (the one used by the
@@ -735,41 +839,88 @@ int
 wallchart (int f, int n, int k)
 {
   register int s;
-  register int key;
-  register SYMBOL *sp;
-  register char *cp1;
-  const char *cp2;
-  char buf[64];
-  BINDING *bp;
-  int hash;
 
   if ((s = bclear (blistp)) != TRUE)	/* Clear it out.        */
     return (s);
   strcpy (blistp->b_fname, "");
-  for (hash = 0; hash < NSHASH; hash++)
-    {
-      for (bp = binding[hash]; bp != NULL; bp = bp->bi_next)
-	{
-	  key = bp->bi_key;
-	  sp = bp->bi_symbol;
-	  if (f != FALSE || strcmp (sp->s_name, "ins-self") != 0)
-	    {
-	      ekeyname (buf, key);
-	      cp1 = &buf[0];	/* Find end.            */
-	      while (*cp1 != 0)
-		++cp1;
-	      while (cp1 < &buf[16])	/* Goto column 16.      */
-		*cp1++ = ' ';
-	      cp2 = sp->s_name;	/* Add function name.   */
-	      while ((*cp1++ = *cp2++) != 0)
-		;
-	      if (addline (buf) == FALSE)
-		return (FALSE);
-	    }
-	}
-    }
   if (addline ("") == FALSE)
     return (FALSE);
+  if (showbindings (f, FALSE) != TRUE)
+    return FALSE;
+  if (showbindings (f, TRUE) != TRUE)
+    return FALSE;
   sortblist ();
   return (popblist ());
+}
+
+/*
+ * Remove the current mode structure from the current
+ * buffer and free all of its substructures.
+ */
+static void
+removemode (void)
+{
+  MODE *m;
+  int i;
+
+  if (curbp == NULL)
+    return;
+  m = curbp->b_mode;
+  if (m == NULL)
+    return;
+  free (m->m_name);
+  for (i = 0; i < NSHASH; i++)
+    {
+      BINDING *b, *next;
+
+      for (b = m->m_binding[i]; b != NULL; b = next)
+	{
+	  next = b->bi_next;
+	  free (b);
+	}
+    }
+}
+
+/*
+ * Create a new mode structure with the given name and
+ * an empty key binding table, and attach it to the
+ * current buffer.  If there is already a mode structure
+ * for the buffer, remove it first.
+ */
+void
+createmode (const char *name)
+{
+  MODE *m;
+
+  if (curbp == NULL)
+    return;
+  if (curbp->b_mode != NULL)
+    removemode ();
+  m = calloc (1, sizeof (*m));
+  if (m == NULL)
+    {
+      eprintf ("Unable to create mode structure!");
+      return;
+    }
+  m->m_name = strdup (name);
+  if (m->m_name == NULL)
+    {
+      eprintf ("Unable to allocate mode name!");
+      return;
+    }
+  curbp->b_mode = m;
+  curwp->w_flag |= WFMODE;	/* Force redisplay of mode line */
+}
+
+/*
+ * Return the specified buffer's mode's name, or NULL if the buffer
+ * has no mode.
+ */
+const char *
+modename (BUFFER *bp)
+{
+  if (bp != NULL && bp->b_mode != NULL)
+    return bp->b_mode->m_name;
+  else
+    return NULL;
 }

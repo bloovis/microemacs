@@ -707,6 +707,7 @@ modeline (EWINDOW *wp)
 {
   register BUFFER *bp;
   register int n;
+  const char *mname;
 
   n = wp->w_toprow + wp->w_ntrows;	/* Location.            */
   vtmove (n, 0);		/* Seek to right line.  */
@@ -719,6 +720,13 @@ modeline (EWINDOW *wp)
   else
     vtputc (' ');
   vtstring ("MicroEMACS");
+  mname = modename (bp);
+  if (mname != NULL)
+    {
+      vtstring (" (");
+      vtstring (mname);
+      vtputc (')');
+    }
   if (bp->b_bname[0] != 0)
     {				/* Buffer name.         */
       vtputc (' ');
