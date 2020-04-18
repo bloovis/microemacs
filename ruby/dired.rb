@@ -23,7 +23,7 @@ def viewfile(filename, kind)
 end
 
 def showdir(dir)
-  # Switch to the dired buffer and destroy any existing content
+  # Switch to the dired buffer and destroy any existing content.
   use_buffer '*dired*'
   $bflag = 0
   goto_bob
@@ -48,6 +48,9 @@ def showdir(dir)
   end
   $lineno = 5
   $offset = $nameoffset
+
+  # Make the buffer readonly, attach a mode to it, and bind
+  # some keys to special functions.
   $bflag = BFRO
   setmode "dired"
   bind "visitfile", ctrl('m')

@@ -104,15 +104,6 @@
   #define HAS_CSCOPE 0
 #endif
 
-#define	DIRLIST	0		/* Disarmed!                    */
-
-#if	DIRLIST
-/*
- * Defined by "dirlist.c".
- */
-extern int dirlist ();		/* Directory list.              */
-#endif
-
 /*
  * Key binding structure.
  */
@@ -190,9 +181,6 @@ KEY key[] = {
 /* {	KCTRL|'Z',	jeffexit,	"jeff-exit" }, */
   {KCTLX | KCTRL | 'B', listbuffers,	"display-buffers"},
   {KCTLX | KCTRL | 'C', quit,		"quit"},
-#if	DIRLIST
-  {KCTLX | KCTRL | 'D', dirlist,	"display-directory"},
-#endif
   {KCTLX | KCTRL | 'E', eecho,		"echo"},
   {KCTLX | KCTRL | 'F', filename,	"set-file-name"},
   {KCTLX | KCTRL | 'I', fileinsert,	"file-insert"},

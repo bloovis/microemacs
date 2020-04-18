@@ -909,7 +909,7 @@ rubyinit (int quiet)
   dir = rb_str_new_cstr (STRINGIFY(PREFIX) "/share/pe");
   rb_funcall (loadpath, rb_intern ("push"), 1, dir);
 
-  /* Load the Ruby helper file, pe.rb.  It should be in /etc.
+  /* Load the Ruby helper file, pe.rb.  It should be in PREFIX/share/pe.
    * Give an error if it doesn't exist.
    */
   if (access (global_pe_rb, R_OK) != F_OK)
