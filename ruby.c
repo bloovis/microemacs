@@ -53,6 +53,7 @@ const char *fnames[] =		/* Do not change this line */
   "rb_set_errinfo",
   "rb_intern2",
   "rb_funcall",
+  "rb_funcallv",
   "rb_str_new",
   "rb_str_new_static",
   "rb_str_new_cstr",
@@ -821,9 +822,9 @@ rubyinit (int quiet)
 {
   int i, status, namecount, fptrcount;
   VALUE loadpath;
-  VALUE dot;
+  VALUE dir;
   static const char *libruby = STRINGIFY(LIBRUBY);
-  static const char *global_pe_rb = "/etc/pe.rb";
+  static const char *global_pe_rb = STRINGIFY(PREFIX) "/share/pe/pe.rb";
   const char *home_pe_rb;
   static const char *local_pe_rb = "./.pe.rb";
 
@@ -898,13 +899,15 @@ rubyinit (int quiet)
   rb_define_virtual_variable ("$fillcol", get_fillcol, set_fillcol);
   rb_define_virtual_variable ("$bflag", get_bflag, set_bflag);
 
-  /* Add the current directory to the Ruby load path.
+  /* Add the current directory and the location of pe.rb to the Ruby load path.
    * This allows the user to load other scripts without specifying
    * full paths.
    */
   loadpath = rb_gv_get("$LOAD_PATH");
-  dot = rb_str_new_cstr (".");
-  rb_funcall (loadpath, rb_intern ("push"), 1, dot);
+  dir = rb_str_new_cstr (".");
+  rb_funcall (loadpath, rb_intern ("push"), 1, dir);
+  dir = rb_str_new_cstr (STRINGIFY(PREFIX) "/share/pe");
+  rb_funcall (loadpath, rb_intern ("push"), 1, dir);
 
   /* Load the Ruby helper file, pe.rb.  It should be in /etc.
    * Give an error if it doesn't exist.

@@ -17,7 +17,7 @@ CC		= @CC@
 CFLAGS_DEBUG	= @CFLAGS_DEBUG@
 CFLAGS_OPTIMIZE	= @CFLAGS_OPTIMIZE@
 CFLAGS_RUBY     = @CFLAGS_RUBY@
-CFLAGS		= $(@CFLAGS_DEFAULT@) $(CFLAGS_RUBY) @DEFS@ @DEFINES@ $(INC) -Wall
+CFLAGS		= $(@CFLAGS_DEFAULT@) $(CFLAGS_RUBY) @DEFS@ @DEFINES@ $(INC) -Wall -DPREFIX=@prefix@
 
 LD		= @CC@
 LDFLAGS		= @LDFLAGS@
@@ -76,11 +76,12 @@ cstest:	cscope.o
 
 # Miscellaneous rules.
 
-install:
-	cp -p pe@EXEEXT@ /usr/local/bin
-	strip /usr/local/bin/pe@EXEEXT@
+install: pe@EXEEXT@
+	cp -p pe@EXEEXT@ @prefix@/bin
+	strip @prefix@/bin/pe@EXEEXT@
 ifneq ($(strip $(CFLAGS_RUBY)),)
-	cp -p $(srcdir)/ruby/pe.rb /etc
+	mkdir -p @prefix@/share/pe
+	cp -p $(srcdir)/ruby/*.rb @prefix@/share/pe
 endif
 
 clean:
