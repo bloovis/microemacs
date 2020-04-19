@@ -2539,10 +2539,13 @@ for use in Ruby commands.
     buffer at the dot. The string may contain newline characters, which are treated as
     line breaks.
 
-`bind(name, key)`
+`bind(name, key, mode=false)`
 
 :   This function binds the command whose name is the string `name`
-    to the keycode `key`.  See below for the helper functions
+    to the keycode `key`.  If the `mode` parameter is present, and is
+    `true`, the binding is attached to the current buffer's mode, if any.
+    Otherrwise, the binding is made global, i.e., available in
+    all buffers. See below for the helper functions
     that provide keycodes.
 
 `reply(string)`

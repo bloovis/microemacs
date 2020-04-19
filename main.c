@@ -173,7 +173,7 @@ main (int argc, char *argv[])
 	}
     }
   vtinit ();			/* Virtual terminal.    */
-  if ((blistp = bcreate ("")) == NULL)	/* Special list buffer. */
+  if ((blistp = bcreate ("*blist*")) == NULL)	/* Special list buffer. */
     abort ();
   keymapinit ();		/* Symbols, bindings.   */
   upmapinit ();			/* Upper case map table */

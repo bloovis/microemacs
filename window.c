@@ -171,12 +171,12 @@ mvupwind (int f, int n, int k)
   lp = curwp->w_linep;
   if (n < 0)
     {
-      while (n++ && lforw (lp) != curbp->b_linep)
+      while (n++ && lp != lastline (curbp))
 	lp = lforw (lp);
     }
   else
     {
-      while (n-- && lback (lp) != curbp->b_linep)
+      while (n-- && lp != firstline (curbp))
 	lp = lback (lp);
     }
   curwp->w_linep = lp;
@@ -185,13 +185,13 @@ mvupwind (int f, int n, int k)
     {
       if (lp == curwp->w_dot.p)
 	return (TRUE);
-      if (lforw (lp) == curbp->b_linep)
+      if (lp == lastline (curbp))
 	break;
       lp = lforw (lp);
     }
   lp = curwp->w_linep;
   i = curwp->w_ntrows / 2;
-  while (i-- && lforw (lp) != curbp->b_linep)
+  while (i-- && lp != lastline (curbp))
     lp = lforw (lp);
   curwp->w_dot.p = lp;
   curwp->w_dot.o = 0;
@@ -232,7 +232,7 @@ onlywind (int f, int n, int k)
     }
   lp = curwp->w_linep;
   i = curwp->w_toprow;
-  while (i != 0 && lback (lp) != curbp->b_linep)
+  while (i != 0 && lp != firstline (curbp))
     {
       --i;
       lp = lback (lp);
@@ -366,7 +366,7 @@ enlargewind (int f, int n, int k)
   if (curwp->w_wndp == adjwp)
     {				/* Shrink below.        */
       lp = adjwp->w_linep;
-      for (i = 0; i < n && lforw (lp) != adjwp->w_bufp->b_linep; ++i)
+      for (i = 0; i < n && lp != lastline (adjwp->w_bufp); ++i)
 	lp = lforw (lp);
       adjwp->w_linep = lp;
       adjwp->w_toprow += n;
@@ -374,7 +374,7 @@ enlargewind (int f, int n, int k)
   else
     {				/* Shrink above.        */
       lp = curwp->w_linep;
-      for (i = 0; i < n && lback (lp) != curbp->b_linep; ++i)
+      for (i = 0; i < n && lp != firstline (curbp); ++i)
 	lp = lback (lp);
       curwp->w_linep = lp;
       curwp->w_toprow -= n;
@@ -420,7 +420,7 @@ shrinkwind (int f, int n, int k)
   if (curwp->w_wndp == adjwp)
     {				/* Grow below.          */
       lp = adjwp->w_linep;
-      for (i = 0; i < n && lback (lp) != adjwp->w_bufp->b_linep; ++i)
+      for (i = 0; i < n && lp != firstline (adjwp->w_bufp); ++i)
 	lp = lback (lp);
       adjwp->w_linep = lp;
       adjwp->w_toprow -= n;
@@ -428,7 +428,7 @@ shrinkwind (int f, int n, int k)
   else
     {				/* Grow above.          */
       lp = curwp->w_linep;
-      for (i = 0; i < n && lforw (lp) != curbp->b_linep; ++i)
+      for (i = 0; i < n && lp != lastline (curbp); ++i)
 	lp = lforw (lp);
       curwp->w_linep = lp;
       curwp->w_toprow += n;
@@ -472,7 +472,7 @@ balancewindows (int f, int n, int k)
 	  /* Shrink this window. */
 	  n = wp->w_ntrows - size;
 	  lp = wp->w_linep;
-	  for (i = 0; i < n && lforw (lp) != wp->w_bufp->b_linep; ++i)
+	  for (i = 0; i < n && lp != lastline (wp->w_bufp); ++i)
 	    lp = lforw (lp);
 	  wp->w_linep = lp;
 	}

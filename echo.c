@@ -477,7 +477,7 @@ showchoices ()
 	return;			/* don't pop up choices */
       addline ("(no choices)");	/* display empty list   */
     }
-  if (addline (choicebuf) == FALSE || addline ("") == FALSE)
+  if (addline (choicebuf) == FALSE)
     return;
   popblist ();			/* pop up the buffer    */
   row = ttrow;			/* save cursor position */

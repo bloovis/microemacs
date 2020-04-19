@@ -99,7 +99,7 @@ getregion (REGION *rp)
   flp = curwp->w_dot.p;
   bsize = curwp->w_dot.o;
   fsize = wllength (flp) - bsize + 1;	/* +1 for newline */
-  while (flp != curbp->b_linep || lback (blp) != curbp->b_linep)
+  while (flp != curbp->b_linep || blp != firstline (curbp))
     {
       if (flp != curbp->b_linep)
 	{
@@ -112,7 +112,7 @@ getregion (REGION *rp)
 	    }
 	  fsize += wllength (flp) + 1;
 	}
-      if (lback (blp) != curbp->b_linep)
+      if (blp != firstline (curbp))
 	{
 	  blp = lback (blp);
 	  bsize += wllength (blp) + 1;

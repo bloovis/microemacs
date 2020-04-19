@@ -179,7 +179,7 @@ lineno (const LINE *lp)
   nline = 0;
   for (;;)
     {
-      if (lforw(clp) == curbp->b_linep || clp == lp)
+      if (clp == lastline (curbp) || clp == lp)
 	break;
       clp = lforw (clp);
       ++nline;

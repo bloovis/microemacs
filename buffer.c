@@ -377,7 +377,7 @@ makelist (void)
     if (addline (line) == FALSE)
       return (FALSE);
   }
-  return (addline (""));	/* All done             */
+  return TRUE;			/* All done             */
 }
 
 /*
@@ -415,7 +415,7 @@ addline (const char *text)
   if ((lp = lalloc (ntext)) == NULL)
     return (FALSE);
   lputs (lp, text, ntext);
-  endp = blistp->b_linep;
+  endp = lastline (blistp);
   endp->l_bp->l_fp = lp;	/* Hook onto the end    */
   lp->l_bp = endp->l_bp;
   endp->l_bp = lp;

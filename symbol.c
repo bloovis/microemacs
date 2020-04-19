@@ -831,8 +831,6 @@ wallchart (int f, int n, int k)
   if ((s = bclear (blistp)) != TRUE)	/* Clear it out.        */
     return (s);
   strcpy (blistp->b_fname, "");
-  if (addline ("") == FALSE)
-    return (FALSE);
   if (showbindings (f, FALSE) != TRUE)
     return FALSE;
   if (showbindings (f, TRUE) != TRUE)

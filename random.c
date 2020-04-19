@@ -351,7 +351,7 @@ newline (int f, int n, int k)
       lp = curwp->w_dot.p;
       if (wllength (lp) == curwp->w_dot.o
 	  && lp != curbp->b_linep
-	  && lforw (lp) != curbp->b_linep && wllength (lforw (lp)) == 0)
+	  && lp != lastline (curbp) && wllength (lforw (lp)) == 0)
 	{
 	  if ((s = forwchar (FALSE, 1, KRANDOM)) != TRUE)
 	    return (s);
@@ -767,7 +767,7 @@ killline (int f, int n, int k)
       curwp->w_dot.o = 0;
       while (n++)
 	{
-	  if (lback (curwp->w_dot.p) == curbp->b_linep)
+	  if (curwp->w_dot.p == firstline (curbp))
 	    break;
 	  curwp->w_dot.p = lback (curwp->w_dot.p);
 	  curwp->w_flag |= WFMOVE;
@@ -842,7 +842,7 @@ yank (int f, int n, int k)
   lp = curwp->w_linep;		/* Cosmetic adjustment  */
   if (curwp->w_dot.p == lp)
     {				/* if offscreen insert. */
-      while (nline-- && lback (lp) != curbp->b_linep)
+      while (nline-- && lp != firstline (curbp))
 	lp = lback (lp);
       curwp->w_linep = lp;	/* Adjust framing.      */
       curwp->w_flag |= WFHARD;

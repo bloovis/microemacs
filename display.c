@@ -454,7 +454,7 @@ update (void)
 	  else
 	    i = wp->w_ntrows / 2;
 	  lp = wp->w_dot.p;
-	  while (i != 0 && lback (lp) != wp->w_bufp->b_linep)
+	  while (i != 0 && lp != firstline (wp->w_bufp))
 	    {
 	      --i;
 	      lp = lback (lp);

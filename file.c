@@ -246,7 +246,7 @@ visit_file (char *fname)
 	  }
 	lp = curwp->w_dot.p;
 	i = curwp->w_ntrows / 2;
-	while (i-- && lback (lp) != curbp->b_linep)
+	while (i-- && lp != firstline (curbp))
 	  lp = lback (lp);
 	curwp->w_linep = lp;
 	curwp->w_flag |= WFMODE | WFHARD;
@@ -595,7 +595,7 @@ writeout (const char *fn)
   /* Check if the file has no terminating newline.  This is the
    * case if the last line in the file is not empty.
    */
-  lp = lback (curbp->b_linep);	/* Last line.           */
+  lp = lastline (curbp);	/* Last line.           */
   if (lp != curbp->b_linep && llength (lp) != 0 && kbdmop == NULL)
     {
       s = eyesno ("File doesn't end with a newline. Should I add one");

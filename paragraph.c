@@ -170,7 +170,7 @@ fillpara (int f, int n, int k)
    */
   gotoeop (FALSE, 1, KRANDOM);
   eopline = curwp->w_dot.p;
-  if (lforw (eopline) == curbp->b_linep)
+  if (eopline == lastline (curbp))
     eopline = curbp->b_linep;
 
   /* Move to the begining of the paragraph.

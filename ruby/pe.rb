@@ -175,6 +175,7 @@ end
 # Parameters:
 #   name: string containing the function name
 #   key:  keycode
+#   mode: (optional) true if binding to mode, false if global (default)
 
 def bind(name, key, mode=false)
   cbind(name, key.to_i, mode)	# Call C helper function

@@ -137,7 +137,7 @@ gotobob (int f, int n, int k)
 int
 gotoeob (int f, int n, int k)
 {
-  curwp->w_dot.p = lback (curbp->b_linep);
+  curwp->w_dot.p = lastline (curbp);
   curwp->w_dot.o = wllength (curwp->w_dot.p);
   curwp->w_flag |= WFHARD;
   return (TRUE);
@@ -217,7 +217,7 @@ forwline (int f, int n, int k)
   thisflag |= CFCPCN;
   dlp = curwp->w_dot.p;
   ret = FALSE;
-  while (n-- && lforw (dlp) != curbp->b_linep)
+  while (n-- && dlp != lastline (curbp))
     {
       dlp = lforw (dlp);
       ret = TRUE;
@@ -250,7 +250,7 @@ backline (int f, int n, int k)
   thisflag |= CFCPCN;
   dlp = curwp->w_dot.p;
   ret = FALSE;
-  while (n-- && lback (dlp) != curbp->b_linep)
+  while (n-- && dlp != firstline (curbp))
     {
       dlp = lback (dlp);
       ret = TRUE;
@@ -325,7 +325,7 @@ forwpage (int f, int n, int k)
     n *= page;			/* to lines.            */
 #endif
   lp = curwp->w_linep;
-  while (n-- && lforw (lp) != curbp->b_linep)
+  while (n-- && lp != lastline (curbp))
     lp = lforw (lp);
   curwp->w_linep = lp;		/* move the window ptr  */
   checkdot ();			/* see if dot must move */
@@ -363,7 +363,7 @@ backpage (int f, int n, int k)
     n *= page;			/* to lines.            */
 #endif
   lp = curwp->w_linep;
-  while (n-- && lback (lp) != curbp->b_linep)
+  while (n-- && lp != firstline (curbp))
     lp = lback (lp);
   curwp->w_linep = lp;
   checkdot ();

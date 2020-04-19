@@ -321,7 +321,7 @@ get_line (ID id)
 
   /* Append a newline if this is not the last line.
    */
-  if (lforw (lp) != curbp->b_linep)
+  if (lp != lastline (curbp))
     {
       str[len] = '\n';
       ++len;
@@ -481,6 +481,34 @@ set_bflag (VALUE val, ID id)
 {
   int flag = NUM2INT (val);
   curbp->b_flag = flag;
+  curwp->w_flag |= WFMODE;
+}
+
+/*
+ * Get the current buffer's name (not filename).
+ */
+static VALUE
+get_bname (VALUE self)
+{
+  VALUE ret;
+
+  ret = rb_str_new_cstr (curbp->b_bname);
+  return ret;
+}
+
+/*
+ * Set the current buffer's name (not filename).
+ */
+static void
+set_bname (VALUE val, ID id)
+{
+  const char *str = StringValueCStr (val);
+  if (strlen (str) >= NBUFN)
+    {
+      eprintf ("Buffer name too long!");
+      return;
+    }
+  strcpy (curbp->b_bname, str);
   curwp->w_flag |= WFMODE;
 }
 
@@ -902,6 +930,7 @@ rubyinit (int quiet)
   rb_define_virtual_variable ("$tabsize", get_tabsize, set_tabsize);
   rb_define_virtual_variable ("$fillcol", get_fillcol, set_fillcol);
   rb_define_virtual_variable ("$bflag", get_bflag, set_bflag);
+  rb_define_virtual_variable ("$bname", get_bname, set_bname);
 
   /* Add the current directory and the location of pe.rb to the Ruby load path.
    * This allows the user to load other scripts without specifying
