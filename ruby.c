@@ -142,7 +142,7 @@ my_iscmd (VALUE self, VALUE c)
  * keycode.
  */
 static VALUE
-my_cbind (VALUE self, VALUE c, VALUE k)
+my_cbind (VALUE self, VALUE c, VALUE k, VALUE mode)
 {
   VALUE ret;
   const char *name = NULL;
@@ -172,7 +172,12 @@ my_cbind (VALUE self, VALUE c, VALUE k)
       cret = FALSE;
     }
   if (cret == TRUE)
-    setmodebinding (key, sp);
+    {
+      if (mode == Qtrue)
+	setmodebinding (key, sp);
+      else
+	setbinding (key, sp);
+    }
 
   ret = INT2NUM (cret);
   return ret;
@@ -881,7 +886,7 @@ rubyinit (int quiet)
   rb_define_global_function("linelen", my_linelen, 0);
   rb_define_global_function("insert", my_insert, 1);
   rb_define_global_function("popup", my_popup, 1);
-  rb_define_global_function("cbind", my_cbind, 2);
+  rb_define_global_function("cbind", my_cbind, 3);
   rb_define_global_function("reply", my_reply, 1);
   rb_define_global_function("cgetkey", my_getkey, 0);
   rb_define_global_function("setmode", my_setmode, 1);

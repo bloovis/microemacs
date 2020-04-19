@@ -176,8 +176,8 @@ end
 #   name: string containing the function name
 #   key:  keycode
 
-def bind(name, key)
-  cbind(name, key.to_i)	# Call C helper function
+def bind(name, key, mode=false)
+  cbind(name, key.to_i, mode)	# Call C helper function
 end
 
 # A mode is a record containing a name and a set of key bindings;

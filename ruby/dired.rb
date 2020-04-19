@@ -53,9 +53,9 @@ def showdir(dir)
   # some keys to special functions.
   $bflag = BFRO
   setmode "dired"
-  bind "visitfile", ctrl('m')
-  bind "openfile", key('o')
-  bind "displayfile", ctrl('o')
+  bind "visitfile", ctrl('m'), true
+  bind "openfile", key('o'), true
+  bind "displayfile", ctrl('o'), true
   return ETRUE
 end
 
