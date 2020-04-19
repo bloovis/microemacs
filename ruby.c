@@ -438,8 +438,10 @@ static VALUE
 get_lineno (ID id)
 {
   VALUE ret;
+  int l;
 
-  ret = INT2NUM (lineno (curwp->w_dot.p) + 1);
+  l = lineno (curwp->w_dot.p) + 1;
+  ret = INT2NUM (l);
   return ret;
 }
 
@@ -511,10 +513,7 @@ set_offset (VALUE val, ID id)
   if (offset > wllength (curwp->w_dot.p))
     eprintf ("Offset too large");
   else
-    {
-      curwp->w_dot.o = offset;
-      update ();
-    }
+    curwp->w_dot.o = offset;
 }
 
 /*

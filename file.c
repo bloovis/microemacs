@@ -362,14 +362,14 @@ readin (const char *fname)
   register LINE *lp2;
   int s;
 
-  bp = curbp;			/* Cheap.               */
+  bp = curbp;				/* Cheap.               */
   if ((s = bclear (bp)) != TRUE)	/* Might be old.        */
     return (s);
-  lp2 = bp->b_linep;		/* Header line          */
+  lp2 = firstline (bp);			/* Header line          */
 #if	BACKUP
   bp->b_flag &= ~(BFCHG | BFBAK);	/* No change, backup.   */
 #else
-  bp->b_flag &= ~BFCHG;		/* No change.           */
+  bp->b_flag &= ~BFCHG;			/* No change.           */
 #endif
   strcpy (bp->b_fname, fname);
   if ((s = ffropen (fname)) == FIOERR)	/* Hard file open.      */
@@ -380,23 +380,19 @@ readin (const char *fname)
 	eprintf ("[New file]");
       goto out;
     }
-  if (readlines (lp2, &s))
-    {				/* Last line had \n?    */
-      if ((lp1 = lalloc (0)) == NULL)	/* Get a blank line     */
-	s = FIOERR;
-      else
-	{			/* Link it in           */
-	  lp1->l_bp = lp2->l_bp;
-	  lp1->l_fp = lp2;
-	  lp2->l_bp->l_fp = lp1;
-	  lp2->l_bp = lp1;
-	}
+  if (!readlines (lp2, &s))
+    {				/* Last line didn't have \n?    */
+      lp1 = lastline(bp);	/* Delete empty last line	*/
+      lp2 = lback(lp1);
+      lp2->l_fp = lp1->l_fp;
+      lp1->l_fp->l_bp = lp2;
+      free (lp1);
     }
 #if	BACKUP
   bp->b_flag |= BFBAK;		/* Need a backup.       */
 #endif
 out:
-  lp1 = lforw (lp2);		/* First line in buffer */
+  lp1 = firstline (bp);		/* First line in buffer */
   ALLWIND (wp)
   {
     if (wp->w_bufp == bp)
@@ -619,13 +615,13 @@ writeout (const char *fn)
   eprintf ("[Writing...]");
   if ((s = ffwopen (fn)) != FIOSUC)	/* Open writes message. */
     return (FALSE);
-  lp = lforw (curbp->b_linep);	/* First line.          */
-  nline = 0;			/* Number of lines.     */
+  lp = firstline (curbp);		/* First line.          */
+  nline = 0;				/* Number of lines.     */
   while (lp != curbp->b_linep)
     {
       llen = llength (lp);
       fp = lforw (lp);
-      if (savetabs)		/* Preserving tabs?     */
+      if (savetabs)			/* Preserving tabs?     */
 	buf = (const char *) lgets (lp);	/* Use line as is.      */
       else /* Else expand tabs.        */
       if ((buf = expand ((const char *) lgets (lp), &llen)) == NULL)

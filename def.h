@@ -369,6 +369,8 @@ typedef struct BUFFER
 BUFFER;
 
 #define b_mark b_ring.m_ring[0] /* Current "mark" position	*/
+#define firstline(bp) (lforw((bp)->b_linep))
+#define lastline(bp)  (lback((bp)->b_linep))
 
 #define BFCHG	0x01		/* Changed.                     */
 #define BFBAK	0x02		/* Need to make a backup.       */

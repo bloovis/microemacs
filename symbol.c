@@ -733,7 +733,7 @@ sortblist (void)
   while (!done)
     {
       swapped = FALSE;
-      for (lp = lforw (blistp->b_linep);
+      for (lp = firstline (blistp);
 	   lp != blistp->b_linep &&
 	   (next = lforw (lp)) != blistp->b_linep;
 	   lp = next)

@@ -123,7 +123,7 @@ forwchar (int f, int n, int k)
 int
 gotobob (int f, int n, int k)
 {
-  curwp->w_dot.p = lforw (curbp->b_linep);
+  curwp->w_dot.p = firstline (curbp);
   curwp->w_dot.o = 0;
   curwp->w_flag |= WFHARD;
   return (TRUE);
@@ -448,7 +448,7 @@ gotoline (int f, int n, int k)
       eprintf ("Bad line");
       return (FALSE);
     }
-  clp = lforw (curbp->b_linep);	/* "clp" is first line  */
+  clp = firstline (curbp);	/* "clp" is first line  */
   while (n != 1 && clp != curbp->b_linep)
     {
       clp = lforw (clp);

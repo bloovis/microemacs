@@ -209,7 +209,7 @@ main (int argc, char *argv[])
 	      line = atoi (lp);
 	    }
 	  bufinit (arg);	/* make buffer & window */
-	  update ();
+//	  update ();
 	  readin (arg);		/* read in the file     */
 	  if (line != 0)	/* goto line specified  */
 	    {
@@ -224,7 +224,7 @@ main (int argc, char *argv[])
   if (nbuf == 0)
     {				/* no files read in?    */
       bufinit ("main");		/* make an empty buffer */
-      update ();
+//      update ();
     }
   else
     {
@@ -360,6 +360,7 @@ bufinit (const char *fname)
   char *mod;			/* Ptr to name modifier */
   register BUFFER *bp;
   register EWINDOW *wp;
+  LINE *lp;
 
   makename (bname, fname);	/* Get buffer name      */
   if (bfind (bname, FALSE))	/* if names conflict    */
@@ -392,8 +393,9 @@ bufinit (const char *fname)
       wp->w_wndp = NULL;	/* Initialize window.   */
       wp->w_bufp = bp;
       bp->b_nwnd = 1;		/* Displayed.           */
-      wp->w_linep = bp->b_linep;
-      wp->w_dot.p = bp->b_linep;
+      lp = firstline (bp);
+      wp->w_linep = lp;
+      wp->w_dot.p = lp;
       wp->w_dot.o = 0;
       clearmarks (&wp->w_ring);
       wp->w_force = 0;

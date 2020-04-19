@@ -103,7 +103,7 @@ showcpos (int f, int n, int k)
   register int ratio;
   register int row;
 
-  clp = lforw (curbp->b_linep);	/* Collect the data.    */
+  clp = firstline (curbp);	/* Collect the data.    */
   dotp = curwp->w_dot.p;
   doto = curwp->w_dot.o;
   cchar = nchar = 0;

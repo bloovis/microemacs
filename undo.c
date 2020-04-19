@@ -175,11 +175,11 @@ lineno (const LINE *lp)
   LINE *clp;
   int nline;
 
-  clp = lforw (curbp->b_linep);
+  clp = firstline (curbp);
   nline = 0;
   for (;;)
     {
-      if (clp == curbp->b_linep || clp == lp)
+      if (lforw(clp) == curbp->b_linep || clp == lp)
 	break;
       clp = lforw (clp);
       ++nline;

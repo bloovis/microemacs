@@ -167,7 +167,7 @@ usebuf (BUFFER *bp)
   strcpy (oldbufn, curbp->b_bname);	/* save current name    */
   curbp = bp;			/* Switch.              */
   curwp->w_bufp = bp;
-  curwp->w_linep = bp->b_linep;	/* For macros, ignored. */
+  curwp->w_linep = firstline (bp);	/* For macros, ignored. */
   curwp->w_flag |= WFMODE | WFFORCE | WFHARD;	/* Quite nasty.         */
   addwind (curwp, 1);
   if (bp->b_nwnd == 1)		/* First use.           */
@@ -298,8 +298,9 @@ popblist (void)
   {				/* Update windows       */
     if (wp->w_bufp == blistp)
       {
-	wp->w_linep = lforw (blistp->b_linep);
-	wp->w_dot.p = lforw (blistp->b_linep);
+	LINE *lp = firstline (blistp);
+	wp->w_linep = lp;
+	wp->w_dot.p = lp;
 	wp->w_leftcol = 0;
 	wp->w_dot.o = 0;
 	wp->w_mark.p = NULL;
@@ -347,7 +348,7 @@ makelist (void)
       *cp1++ = ' ';
     *cp1++ = ' ';		/* Gap.                 */
     nbytes = 0;			/* Count bytes in buf.  */
-    lp = lforw (bp->b_linep);
+    lp = firstline (bp);
     while (lp != bp->b_linep)
       {
 	nbytes += llength (lp) + 1;
@@ -494,6 +495,26 @@ bufsearch (
 }
 
 /*
+ * Add an empty line to the end of buffer.
+ */
+static void
+addemptyline (BUFFER *bp)
+{
+  LINE *lp, *last;
+
+  if ((lp = lallocx (0)) == NULL)
+    {
+      free ((char *) bp);
+      return;
+    }
+  last = lastline(bp);
+  lp->l_bp = last;
+  lp->l_fp = last->l_fp;
+  lp->l_fp->l_bp = lp;
+  last->l_fp = lp;
+}
+
+/*
  * Create a buffer, by name.
  * Return a pointer to the BUFFER header
  * block, or NULL if the buffer cannot
@@ -516,16 +537,17 @@ bcreate (const char *bname)
       return (NULL);
     }
   bp->b_bufp = NULL;
-  bp->b_dot.p = lp;
-  bp->b_dot.o = 0;
   clearmarks (&bp->b_ring);
   bp->b_flag = rflag ? BFRO : 0;
   bp->b_nwnd = 0;
   bp->b_linep = lp;
+  lp->l_fp = lp->l_bp = lp;	/* Header line  */
+  addemptyline (bp);
+  bp->b_dot.p = lforw (lp);
+  bp->b_dot.o = 0;
   bp->b_leftcol = 0;
   strcpy (bp->b_fname, "");
   strcpy (bp->b_bname, bname);
-  lp->l_fp = lp->l_bp = lp;	/* Header line  */
   bp->b_undo = NULL;
   bp->b_mode = NULL;
   return (bp);
@@ -552,7 +574,7 @@ bclear (BUFFER *bp)
       && (s = eyesno ("Discard changes")) != TRUE)
     return (s);
   bp->b_flag &= ~BFCHG;		/* Not changed          */
-  lp = lforw (bp->b_linep);
+  lp = firstline (bp);
   while (lp != bp->b_linep)
     {
       nextlp = lforw (lp);
@@ -561,6 +583,8 @@ bclear (BUFFER *bp)
     }
   lp = bp->b_linep;		/* Header line          */
   lp->l_fp = lp->l_bp = lp;	/* Point it to itself   */
+  addemptyline (bp);		/* Add an empty line	*/
+  lp = firstline (bp);
   bp->b_dot.p = lp;		/* Make this the dot    */
   bp->b_dot.o = 0;
   bp->b_mark.p = NULL;		/* Invalidate "mark"    */
