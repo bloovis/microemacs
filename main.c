@@ -300,9 +300,7 @@ loop:
 	}
       *kbdmip++ = c;
     }
-  startsaveundo ();
   execute (c, f, n);		/* Do it.               */
-  endsaveundo ();
   replyq_clear ();
   goto loop;
 }
@@ -329,6 +327,7 @@ execute (int c, int f, int n)
   if (sp != NULL)
     {
       thisflag = 0;
+      startsaveundo ();
       if (sp->s_macro)
 	status = domacro (sp->s_macro, n);
 #if USE_RUBY
@@ -338,6 +337,7 @@ execute (int c, int f, int n)
       else
 	status = (*sp->s_funcp) (f, n, c);
       lastflag = thisflag;
+      endsaveundo ();
       return (status);
     }
   eprintf ("Unknown command");
