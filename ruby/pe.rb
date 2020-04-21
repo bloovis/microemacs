@@ -204,14 +204,14 @@ end
 # for an example.
 
 # Table associating filename patterns to mode names.
-$modetable = {
-  /\.c$/ => "c",
-  /\.rb$/ => "ruby",
-  /\.cc$/ => "cplusplus",
-  /\.cpp$/ => "cplusplus",
-  /\.cr$/ => "crystal",
-  /\.sh$/ => "shell"
-}
+$modetable = [
+  [ /\.c$/,   "c" ],
+  [ /\.rb$/,  "ruby" ],
+  [ /\.cc$/,  "cplusplus" ],
+  [ /\.cpp$/, "cplusplus" ],
+  [ /\.cr$/,  "crystal" ],
+  [ /\.sh$/,  "shell" ]
+]
 
 # This function is called whenever a file is read into a buffer.
 # It attempts to determine the mode for the file, and then
@@ -244,13 +244,11 @@ def initmode(n)
   $lineno = lineno
   $offset = offset
 
-  # Try to determine the mode from the file extension.
+  # Try to determine the mode from the filename pattern.
   if mode.nil?
-    $modetable.each do |r, m|
-      if f =~ r
-	mode = m
-	break
-      end
+    match = $modetable.find {|a| f =~ a[0] }
+    if match
+      mode = match[1]
     end
   end
 
