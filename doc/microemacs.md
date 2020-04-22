@@ -2768,10 +2768,9 @@ where `MODE` is the name of the mode associated with the file.
 
 If such a string cannot be found, `initmode` then examines the name
 of the file itself, and attempts to find a match in the `$modetable`
-hash variable in `pe.rb`.  This table associates each mode names with 
-a regular expression the specifies a filename pattern.  The table has only a very few entries
-by default, but you can expand it as necessary by editing `pe.rb` directly,
-or with code in your own Ruby extension.
+array in `pe.rb`.  This table associates filename patterns with mode names.
+The table has very few entries by default, but you can expand it as necessary by editing `pe.rb` directly,
+or by overwriting it or adding to it in your own Ruby extension.
 
 If `initmode` can determine the mode name, it calls the function `MODE_mode`,
 where `MODE` is the name of the mode.  For example, if `initmode` determines
