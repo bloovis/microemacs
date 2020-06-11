@@ -305,7 +305,7 @@ ask_ispell (int info)
 	       */
 	      if (strlen (prompt) + strlen (guesses[i]) + 3 > ncol)
 		{
-		  nguesses = i - 1;
+		  nguesses = i;
 		  break;
 		}
 	      n[0] = i + '0';
