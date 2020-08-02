@@ -231,6 +231,8 @@ main (int argc, char *argv[])
       curwp = wheadp;		/* reset current window */
       curbp = curwp->w_bufp;	/* reset current buffer */
     }
+
+  update ();
   lastflag = 0;			/* Fake last flags.     */
 
 #if USE_RUBY
@@ -242,10 +244,10 @@ main (int argc, char *argv[])
   if (!inprof && proptr != NULLPTR)	/* -p option failed?    */
     eprintf ("Unable to open profile %s", proptr);
 #if USE_RUBY
-  else if (ruby_status != FALSE)
-#else
-  else
+  else if (ruby_status != TRUE)
+    eprintf (rubyerror ());
 #endif
+  else
     eprintf ("This is free software; use Esc Ctrl-V to see license information");
 
 loop:

@@ -855,6 +855,7 @@ int rubycommand (int f, int n, int k);	/* Define a Ruby command.	*/
 int rubyload (int f, int n, int k);	/* Load a Ruby script.		*/
 
 int rubyinit (int quiet);		/* Initialize Ruby.		*/
+const char * rubyerror (void);		/* Error string from rubyinit	*/
 int rubycall (const char *name, int f,	/* Call a Ruby command.		*/
 	      int n);
 void rubymode (void);			/* Call ruby "initmode"		*/

@@ -25,7 +25,10 @@
 #define RUBY_DONT_SUBST
 #include	<ruby.h>
 
-static void *ruby_handle;
+static void *ruby_handle;	/* Handle to libruby.so, NULL if rubyinit failed */
+static int rubyinit_called;	/* TRUE if rubyinit has been called */
+char rubyinit_error[100];	/* Buffer containing error message from rubyinit */
+
 void *ruby_fptrs[100];
 
 /*
@@ -843,6 +846,33 @@ loadscript (const char *path)
 }
 
 /*
+ * Helper function for rubyinit: store an error message in
+ * rubyinit_error and return FALSE.
+ */
+static int
+set_rubyinit_error (const char *fmt, ...)
+{
+  va_list ap;
+
+  va_start (ap, fmt);
+  vsnprintf (rubyinit_error, sizeof (rubyinit_error), fmt, ap);
+  va_end (ap);
+  return FALSE;
+}
+
+
+/*
+ * Return error string from failed rubyinit call, or empty
+ * string if rubyinit succeeded.
+ */
+const char *
+rubyerror (void)
+{
+  return rubyinit_error;
+}
+
+
+/*
  * Load the Ruby library, initialize the pointers to the APIs,
  * define some C helper functions, and load the Ruby helper code
  * in pe.rb. Return TRUE on success, or FALSE on failure.
@@ -860,26 +890,27 @@ rubyinit (int quiet)
   const char *home_pe_rb;
   static const char *local_pe_rb = "./.pe.rb";
 
+  /* If we've been called before, return the status from that call.
+   */
+  if (rubyinit_called)
+    return ruby_handle != NULL;
+  rubyinit_called = TRUE;
+
   /* Make sure the API address table is big enough.
    */
   namecount = sizeof (fnames) / sizeof (fnames[0]);
   fptrcount = sizeof (ruby_fptrs) / sizeof (ruby_fptrs[0]);
   if (namecount >= fptrcount)
     {
-      eprintf ("ruby_fptrs has %d entries but needs %d", fptrcount, namecount);
-      return FALSE;
+      return set_rubyinit_error ("ruby_fptrs has %d entries but needs %d", fptrcount, namecount);
     }
 
   /* Open the Ruby runtime library.
    */
-  if (ruby_handle != NULL)
-    return TRUE;
   ruby_handle = dlopen(libruby, RTLD_LAZY);
   if (ruby_handle == NULL)
     {
-      if (quiet == TRUE)
-	eprintf ("Unable to load %s", libruby);
-      return FALSE;
+      return set_rubyinit_error ("Unable to load %s", libruby);
     }
 
   /* Query the addresses of our required Ruby API functions.
@@ -889,8 +920,8 @@ rubyinit (int quiet)
       ruby_fptrs[i] = dlsym (ruby_handle, fnames[i]);
       if (ruby_fptrs[i] == NULL)
 	{
-	  eprintf ("Unable to get address of ruby function %s", fnames[i]);
-	  return FALSE;
+	  ruby_handle = NULL;
+	  return set_rubyinit_error ("Unable to get address of ruby function %s", fnames[i]);
 	}
       else
 	{
@@ -899,8 +930,8 @@ rubyinit (int quiet)
     }
   if ((status = ruby_setup ()) != 0)
     {
-      eprintf ("ruby_setup returned %d", status);
-      return FALSE;
+      ruby_handle = NULL;
+      return set_rubyinit_error ("ruby_setup returned %d", status);
     }
 
   /* Initialize the load path for gems.
@@ -947,12 +978,16 @@ rubyinit (int quiet)
    */
   if (access (global_pe_rb, R_OK) != F_OK)
     {
-      eprintf ("The file %s does not exist; cannot initialize Ruby",
-               global_pe_rb);
+      ruby_handle = NULL;
+      return set_rubyinit_error ("The file %s does not exist; cannot initialize Ruby",
+				 global_pe_rb);
       return FALSE;
     }
   if (loadscript (global_pe_rb) == FALSE)
-    return FALSE;
+    {
+      ruby_handle = NULL;
+      return FALSE;
+    }
 
   /* Construct the name of $HOME/.pe.rb and load that file.
    * If it doesn't exist, try loading ./.pe.rb.  But don't
