@@ -71,6 +71,7 @@ const char *fnames[] =		/* Do not change this line */
   "rb_cObject",
   "rb_protect",
   "rb_load",
+  "rb_ruby_verbose_ptr",
 #if __i386__
   "rb_num2long",
   "rb_int2big",
@@ -983,11 +984,17 @@ rubyinit (int quiet)
 				 global_pe_rb);
       return FALSE;
     }
+
+  /* When loading pe.rb, temporarily suppress Ruby 2.7 warning about how
+   * redefining Object#method_missing may cause infinite loop.
+   */
+  ruby_verbose = Qnil;
   if (loadscript (global_pe_rb) == FALSE)
     {
       ruby_handle = NULL;
       return FALSE;
     }
+  ruby_verbose = Qtrue;
 
   /* Construct the name of $HOME/.pe.rb and load that file.
    * If it doesn't exist, try loading ./.pe.rb.  But don't

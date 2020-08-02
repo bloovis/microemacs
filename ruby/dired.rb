@@ -35,6 +35,7 @@ def showdir(dir)
   # the dot to the first entry other than . or ..
   fulldir = File.expand_path(dir)
   output, stderr_str, status = Open3.capture3('ls', '-laF', fulldir)
+  stderr_str += ""	# suppress warning about unused variable
   insert fulldir + ":\n"
   insert output
 
