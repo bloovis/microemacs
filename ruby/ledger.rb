@@ -78,19 +78,36 @@ def xact(n)
   end
 end
 
+# Prompt for a date, and return it if it is valid, or nil otherwise.
+# The date can be in two formats: YYYY/MM/DD or D/M/Y.  If the latter
+# is entered, convert it to the former.
+
+def getdate
+  line = reply "Enter a date: "
+  if line.nil?
+    return nil
+  end
+  if line =~ /^(\d\d\d\d\/\d\d\/\d\d)$/
+    return $1
+  elsif line =~ /^(\d+)\/(\d+)\/(20\d\d)$/
+    return sprintf("%04d/%02d/%02d", $3, $1, $2)
+  else
+    echo "Date must be in format YYYY/MM/DD"
+    return nil
+  end
+end
+
 # Insert the most recently set date.  If an argument is present,
 # prompt for a new date to be used in subsequent invocations.
 # The initial date is today's date.
 
 def insdate(n)
   if n
-    line = reply "Enter a date: "
-    if line =~ /^(\d\d\d\d\/\d\d\/\d\d)$/
-      $date = $1
-    else
-      echo "Date must be in format YYYY/MM/DD"
+    d = getdate
+    if d.nil?
       return EFALSE
     end
+    $date = d
   end
   insert $date + ' '
   return ETRUE
@@ -216,13 +233,11 @@ end
 # or equal to that date, and insert a new line with that date.
 
 def finddate(n)
-  line = reply "Enter a date: "
-  if line =~ /^(\d\d\d\d\/\d\d\/\d\d)$/
-    $date = $1
-  else
-    echo "Date must be in format YYYY/MM/DD"
+  d = getdate
+  if d.nil?
     return EFALSE
   end
+  $date = d
   lineno = $lineno
   offset = $offset
   goto_bob
@@ -231,18 +246,15 @@ def finddate(n)
     line = $line
     if line =~ /^(\d\d\d\d\/\d\d\/\d\d)/
       if $1 >= $date
-	goto_bol
-	ins_nl_and_backup
-	insert $date + ' '
-	return ETRUE
+	break
       end
     end
     keepgoing = forw_line == ETRUE
   end
-  $lineno = lineno
-  $offset = offset
-  echo "Date #{$date} not found"
-  return EFALSE
+  goto_bol
+  ins_nl_and_backup
+  insert $date + ' '
+  return ETRUE
 end
 
 # Tell MicroEMACS about the new commands.
