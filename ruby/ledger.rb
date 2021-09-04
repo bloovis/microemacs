@@ -91,6 +91,8 @@ def getdate
     return $1
   elsif line =~ /^(\d+)\/(\d+)\/(20\d\d)$/
     return sprintf("%04d/%02d/%02d", $3, $1, $2)
+  elsif line =~ /^(\d+)\/(\d+)$/
+    return Time.now.strftime('%Y') + sprintf('/%02d/%02d', $1, $2)
   else
     echo "Date must be in format YYYY/MM/DD"
     return nil
