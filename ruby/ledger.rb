@@ -79,7 +79,7 @@ def xact(n)
 end
 
 # Prompt for a date, and return it if it is valid, or nil otherwise.
-# The date can be in three formats: YYYY/MM/DD, D/M/20YY, or D/M.  If the latter
+# The date can be in three formats: YYYY/MM/DD, D/M/20YY, or M/D.  If the latter
 # two are entered, convert them to YYYY/MM/DD.
 
 def getdate
