@@ -303,7 +303,7 @@ my_cmd (VALUE self, VALUE c, VALUE f, VALUE n, VALUE k, VALUE s)
  * Get the current line's text.
  */
 static VALUE
-get_line (ID id)
+get_line (ID id, VALUE *var)
 {
   VALUE ret;
   VALUE utf8;
@@ -344,7 +344,7 @@ get_line (ID id)
  * Replace the current line with the new string;
  */
 static void
-set_line (VALUE val, ID id)
+set_line (VALUE val, ID id, VALUE *var)
 {
   int len;
   char *str;
@@ -374,7 +374,7 @@ set_line (VALUE val, ID id)
  * as a one-character UTF-8 string.
  */
 static VALUE
-get_char (VALUE self)
+get_char (VALUE self, VALUE *var)
 {
   VALUE ret;
   VALUE utf8;
@@ -404,7 +404,7 @@ get_char (VALUE self)
  * Replace character at the current position with the new string.
  */
 static void
-set_char (VALUE val, ID id)
+set_char (VALUE val, ID id, VALUE *var)
 {
   const char *str = StringValueCStr (val);
   if (forwchar (TRUE, 1, KRANDOM) == TRUE)
@@ -419,7 +419,7 @@ set_char (VALUE val, ID id)
  * Get the current buffer's filename.
  */
 static VALUE
-get_filename (VALUE self)
+get_filename (VALUE self, VALUE *var)
 {
   VALUE ret;
 
@@ -431,7 +431,7 @@ get_filename (VALUE self)
  * Set the current buffer's filename.
  */
 static void
-set_filename (VALUE val, ID id)
+set_filename (VALUE val, ID id, VALUE *var)
 {
   const char *str = StringValueCStr (val);
   replyq_put (str);
@@ -444,7 +444,7 @@ set_filename (VALUE val, ID id)
  * display-position.
  */
 static VALUE
-get_lineno (ID id)
+get_lineno (ID id, VALUE *var)
 {
   VALUE ret;
   int l;
@@ -459,7 +459,7 @@ get_lineno (ID id)
  * be used with goto-line.
  */
 static void
-set_lineno (VALUE val, ID id)
+set_lineno (VALUE val, ID id, VALUE *var)
 {
   int lineno = NUM2INT (val);
   gotoline (TRUE, lineno, KRANDOM);
@@ -469,7 +469,7 @@ set_lineno (VALUE val, ID id)
  * Get the current buffer's flags.
  */
 static VALUE
-get_bflag (VALUE self)
+get_bflag (VALUE self, VALUE *var)
 {
   VALUE ret;
 
@@ -481,7 +481,7 @@ get_bflag (VALUE self)
  * Set the current buffer's flags.
  */
 static void
-set_bflag (VALUE val, ID id)
+set_bflag (VALUE val, ID id, VALUE *var)
 {
   int flag = NUM2INT (val);
   curbp->b_flag = flag;
@@ -492,7 +492,7 @@ set_bflag (VALUE val, ID id)
  * Get the current buffer's name (not filename).
  */
 static VALUE
-get_bname (VALUE self)
+get_bname (VALUE self, VALUE *var)
 {
   VALUE ret;
 
@@ -504,7 +504,7 @@ get_bname (VALUE self)
  * Set the current buffer's name (not filename).
  */
 static void
-set_bname (VALUE val, ID id)
+set_bname (VALUE val, ID id, VALUE *var)
 {
   const char *str = StringValueCStr (val);
   if (strlen (str) >= NBUFN)
@@ -532,7 +532,7 @@ my_linelen (VALUE self)
  * Get the current offset into the current line.
  */
 static VALUE
-get_offset (ID id)
+get_offset (ID id, VALUE *var)
 {
   VALUE ret;
 
@@ -544,7 +544,7 @@ get_offset (ID id)
  * Set the offset into the current line.
  */
 static void
-set_offset (VALUE val, ID id)
+set_offset (VALUE val, ID id, VALUE *var)
 {
   int offset = NUM2INT (val);
   if (offset > wllength (curwp->w_dot.p))
@@ -557,7 +557,7 @@ set_offset (VALUE val, ID id)
  * Get the current tab size.
  */
 static VALUE
-get_tabsize (VALUE self)
+get_tabsize (VALUE self, VALUE *var)
 {
   VALUE ret;
 
@@ -569,7 +569,7 @@ get_tabsize (VALUE self)
  * Set the current tab size.
  */
 static void
-set_tabsize (VALUE val, ID id)
+set_tabsize (VALUE val, ID id, VALUE *var)
 {
   settabsize (TRUE, NUM2INT (val), KRANDOM);
 }
@@ -578,7 +578,7 @@ set_tabsize (VALUE val, ID id)
  * Get the current fill column.
  */
 static VALUE
-get_fillcol (VALUE self)
+get_fillcol (VALUE self, VALUE *var)
 {
   VALUE ret;
 
@@ -590,7 +590,7 @@ get_fillcol (VALUE self)
  * Set the current fill column.
  */
 static void
-set_fillcol (VALUE val, ID id)
+set_fillcol (VALUE val, ID id, VALUE *var)
 {
   setfillcol (TRUE, NUM2INT (val), KRANDOM);
 }
