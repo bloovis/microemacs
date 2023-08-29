@@ -36,7 +36,7 @@ class Key
   KRANDOM = 0x80
 
   def initialize(c, f=0)
-    if c.class == String
+    if c.is_a?(String)
       if f != 0
 	@key = c.upcase.ord | f
       else
