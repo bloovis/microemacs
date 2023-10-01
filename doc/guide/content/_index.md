@@ -6,7 +6,8 @@ type: docs
 # What Is This?
 
 This the web version of the [MicroEMACS manual](https://www.bloovis.com/cgit/microemacs/tree/doc/microemacs.pdf).
-It uses [Hugo](https://gohugo.io/) to generate the web site, which you can find here.
+It uses [Hugo](https://gohugo.io/) to generate the web site, which you can find
+[here](https://www.bloovis.com/meguide/).
 
 This guide was written by the original author of MicroEMACS, David G. Conroy
 of Digital Equipment Corporation.  I have updated it with information about
@@ -22,3 +23,23 @@ of built-in displays.
 * [Starting]({{< relref "starting" >}})
 * [Quitting]({{< relref "quitting" >}})
 * [Moving Around]({{< relref "moving" >}})
+* [Inserting]({{< relref "inserting" >}})
+* [Deleting]({{< relref "deleting" >}})
+* [Words]({{< relref "words" >}})
+* [Case Conversion]({{< relref "case" >}})
+* [Searching and Spelling]({{< relref "searching" >}})
+* [Files]({{< relref "files" >}})
+* [Keyboard Macros]({{< relref "macros" >}})
+* [Buffer Management]({{< relref "buffer" >}})
+* [Window Management]({{< relref "window" >}})
+* [Messages]({{< relref "messages" >}})
+* [Key Binding Commands]({{< relref "binding" >}})
+* [Tags]({{< relref "tagging" >}})
+* [GCC Errors]({{< relref "gcc" >}})
+* [Undo]({{< relref "undo" >}})
+* [Profiles]({{< relref "profiles" >}})
+* [Ruby Extensions]({{< relref "ruby" >}})
+* [Modes]({{< relref "modes" >}})
+* [UTF-8 and Unicode]({{< relref "utf8" >}})
+* [Building a MicroEMACS]({{< relref "building" >}})
+* [Wall Chart]({{< relref "wallchart" >}})
