@@ -24,4 +24,6 @@ FreeBSD, or Windows with MinGW or Cygwin:
 Dave Conroy released his source code into the public domain.  I have
 changed my version to use the GNU General Public License Version 3.
 
+There is a web version of the MicroEMACS manual [here](https://www.bloovis.com/meguide/).
+
 --Mark Alexander (marka@pobox.com)
