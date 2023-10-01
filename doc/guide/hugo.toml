@@ -1,0 +1,6 @@
+baseURL = 'https://www.bloovis.com/meguide'
+languageCode = 'en-us'
+title = 'MicroEMACS User Guide'
+theme = "hugo-book"
+relativeURLs = false
+BookSearch = true
