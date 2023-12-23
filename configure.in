@@ -1,10 +1,11 @@
 dnl Autoconf configure script for MicroEMACS.
 dnl Process this file with autoconf to produce a configure script.
 
-AC_INIT(display.c)
+AC_INIT
+AC_CONFIG_SRCDIR([display.c])
 AC_PROG_CC
-AC_CANONICAL_SYSTEM
-AC_CONFIG_HEADER(config.h)
+AC_CANONICAL_TARGET
+AC_CONFIG_HEADERS([config.h])
 AC_CHECK_HEADERS(unistd.h)
 
 CFLAGS_DEBUG="-g -DDEBUG=1"
@@ -74,4 +75,5 @@ AC_SUBST(CFLAGS_DEFAULT)
 AC_SUBST(CFLAGS_OPTIMIZE)
 AC_SUBST(CFLAGS_RUBY)
 
-AC_OUTPUT(Makefile)
+AC_CONFIG_FILES([Makefile])
+AC_OUTPUT
