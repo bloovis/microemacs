@@ -222,11 +222,11 @@ def cleared(n)
   end
   file_save
   line = `ledger -f ledger.dat bal --cleared '#{$acct}'`
-  if line =~ /\$([\d\.,]+)/
+  if line =~ /\$([\-\d\.,]+)/
     echo "#{$acct} cleared balance = #{$1}"
     return ETRUE
   else
-    echo "invalid balance line: #{line}"
+    echo "invalid balance line: #{line.strip}"
     return EFALSE
   end
 end
@@ -240,8 +240,6 @@ def finddate(n)
     return EFALSE
   end
   $date = d
-  lineno = $lineno
-  offset = $offset
   goto_bob
   keepgoing = true
   while keepgoing
