@@ -26,12 +26,14 @@
  * uclen (defined in def.h) is inlined.
  */
 
+#define _XOPEN_SOURCE
+#include <wchar.h>
+
 #include "def.h"
 #ifdef TEST
 #include <time.h>
 #endif
 
-#include <wchar.h>
 #include <string.h>
 #include <stdio.h>
 
@@ -267,6 +269,16 @@ uputc (wchar_t c, uchar *s)
   /* Error */
   s[0] = c;
   return 1;
+}
+
+/*
+ * Return the display width of a Unicode character.
+ * This is just a wrapper for wcwidth.
+ */
+int
+uwidth (wchar_t c)
+{
+  return wcwidth(c);
 }
 
 /*

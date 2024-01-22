@@ -398,10 +398,11 @@ update (void)
       c = ugetc (s, 0, &ulen);
       s += ulen;
       if (c == '\t')
-	curcol += (tabsize - curcol % tabsize) - 1;
+	curcol += (tabsize - curcol % tabsize);
       else if (c < 0x80 && CISCTRL (c) != FALSE)
-	++curcol;
-      ++curcol;
+	curcol += 2;
+      else
+	curcol += uwidth(c);
     }
   if (curcol >= ncol + curwp->w_leftcol)
     {				/* need scroll right?   */

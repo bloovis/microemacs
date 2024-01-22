@@ -1027,6 +1027,7 @@ wchar_t ugetprevc (const uchar *s, int *len);
 					/*  to s as 32-bit Unicode	*/
 int ucombining (wchar_t c);		/* c is a combining char?	*/
 int uputc (wchar_t c, unsigned char *s);/* Convert Unicode to UTF-8	*/
+int uwidth (wchar_t c);			/* Display length of c		*/
 int unicode (int f, int n, int k);	/* Command to insert Unicode.	*/
 
 /*
