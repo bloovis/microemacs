@@ -6,12 +6,18 @@ predates the very popular Daniel Lawrence version of MicroEMACS, which
 is much larger.
 
 I have added a few features over the years, most recently support for
-etags, cscope, ispell, Rails, undo, UTF-8, regular expression search and
+etags, cscope, ispell, undo, UTF-8, regular expression search and
 replace, and extensions written in Ruby.  In the past I ported it to
 numerous operating systems, but currently this source tree supports
 only Linux and Windows (using MinGW).  I seem to have lost the source
-for the DOS and OS/2 versions, but they are unlikely to be useful in
+for the MS-DOS and OS/2 versions, but they are unlikely to be useful in
 the future.
+
+MicroEMACS is still very "micro", even with all the new features I've
+added.  Back in the 80s, as a 16-bit MS-DOS executable, it contained
+about 57K of code.  Now, as a 64-bit Linux executable, it contains
+about 145K of code.  By comparison, vim-tiny contains about 1.4MB of
+code, and nano contains about 262K of code.
 
 To build a non-debug version with no Ruby support on Linux,
 FreeBSD, or Windows with MinGW or Cygwin:
