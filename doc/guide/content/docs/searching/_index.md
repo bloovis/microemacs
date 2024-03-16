@@ -210,7 +210,7 @@ M-R
 
 M-/
 
-:   **reg-query-replace**
+:   **reg-replace**
 
     Similar to **query-replace**, except that the search string is a
     regular expression, and the replacement string can contain
@@ -227,9 +227,9 @@ M-/
 
 M-?
 
-:   **rep-replace**
+:   **rep-query-replace**
 
-    Similar to **reg-query-replace**, except that the user is prompted
+    Similar to **reg-replace**, except that the user is prompted
     to confirm each replacement, as in **query-replace**.
 
 C-X I
