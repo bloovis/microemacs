@@ -208,7 +208,7 @@ M-R
     You can defeat this "feature"
     if you prefix this command with an argument (the argument value is ignored).
 
-M-?
+M-/
 
 :   **reg-query-replace**
 
@@ -225,7 +225,7 @@ M-?
     * `\` followed  by either `\` or `&` stands for that character itself,
       without the leading `\`.
 
-M-/
+M-?
 
 :   **rep-replace**
 
