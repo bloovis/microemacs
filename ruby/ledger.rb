@@ -209,7 +209,14 @@ end
 
 def cleared(n)
   if n
-    $acct = reply "Enter account name: "
+    al = reply "Enter account alias (#{$accts.keys.join(',')}): "
+    return EFALSE if al.nil?
+    acct = $accts[al]
+    if acct.nil?
+      echo "Invalid alias #{al}"
+      return EFALSE
+    end
+    $acct = acct
   end
   line = $line
   if line =~ /^(\d\d\d\d\/\d\d\/\d\d\s+)(.*)/ ||
@@ -274,4 +281,10 @@ bind "finddate", ctlx('f')
 
 readaliases
 $date = Time.now.strftime("%Y/%m/%d")	# Used by the insdate command
-$acct = 'Assets:TBTF Bank'		# Used by the cleared command
+$accts = {
+  'tbtf' => 'Assets:TBTF Bank',
+  'big' => 'Assets:Huge Bank'
+}
+# Set a default account, but allow the user to change it
+# by giving an argument to C-X C (cleared command).
+$acct = $accts['tbtf']
