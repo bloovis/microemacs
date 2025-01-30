@@ -9,10 +9,10 @@ microemacs.pdf : microemacs.md template.latex
 #   before-hyperref:
 #       - \usepackage{imakeidx}
 
-DEFAULT_TEMPLATE = /usr/share/pandoc/data/templates/default.latex
-template.latex : ${DEFAULT_TEMPLATE}
+template.latex :
+	pandoc -D latex | \
 	sed -e 's/.*\\usepackage{hyperref}.*/$$for(before-hyperref)$$\n$$before-hyperref$$\n$$endfor$$\n&/' \
-		${DEFAULT_TEMPLATE} >template.latex
+	>template.latex
 
 .PHONY : clean
 
