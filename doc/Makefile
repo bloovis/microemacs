@@ -11,7 +11,7 @@ microemacs.pdf : microemacs.md template.latex
 
 DEFAULT_TEMPLATE = /usr/share/pandoc/data/templates/default.latex
 template.latex : ${DEFAULT_TEMPLATE}
-	sed -e 's/\\usepackage{hyperref}/$$for(before-hyperref)$$\n$$before-hyperref$$\n$$endfor$$\n&/' \
+	sed -e 's/.*\\usepackage{hyperref}.*/$$for(before-hyperref)$$\n$$before-hyperref$$\n$$endfor$$\n&/' \
 		${DEFAULT_TEMPLATE} >template.latex
 
 .PHONY : clean
