@@ -198,7 +198,7 @@ capword (int f, int n, int k)
 	}
       if (inword () != FALSE)
 	{
-	  c = lgetc (curwp->w_dot.p, curwp->w_dot.o);
+	  c = wlgetc (curwp->w_dot.p, curwp->w_dot.o);
 	  if (CISLOWER (c) != FALSE)
 	    {
 	      c = CTOUPPER (c);
@@ -209,7 +209,7 @@ capword (int f, int n, int k)
 	    return (FALSE);
 	  while (inword () != FALSE)
 	    {
-	      c = lgetc (curwp->w_dot.p, curwp->w_dot.o);
+	      c = wlgetc (curwp->w_dot.p, curwp->w_dot.o);
 	      if (CISUPPER (c) != FALSE)
 		{
 		  c = CTOLOWER (c);
