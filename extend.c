@@ -319,6 +319,9 @@ insertmacro (int f, int n, int k)
       ekeyname (xname, k);	/* Get key name.        */
       if ((k >= 0x20 && k <= 0x7e) || (strlen (xname) <= 1))
 	{			/* Simple ASCII?        */
+	  if (k == '\\')	/* Escape backslash	*/
+	    if (outstrchr (k) == FALSE)
+	      return (FALSE);
 	  if (outstrchr (k) == FALSE)
 	    return (FALSE);
 	}
