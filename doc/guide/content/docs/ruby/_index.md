@@ -134,7 +134,7 @@ MicroEMACS has several built-in commands related to Ruby extensions:
 
 [unbound]
 
-:    **ruby-command**
+:   **ruby-command**
 
     This command prompts you to enter the name of a Ruby function
     that implements a new command.  MicroEMACS then enters
